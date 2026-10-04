@@ -29,7 +29,7 @@
     const BOSS_ATTACK = { hitFrom: 18, hitTo: 22, strikeUntil: 30, end: 38 };
     const SKATE = { duration: 34, speed: 3.2, cooldown: 70 };
     const JUMP = { impulse: 3.4, gravity: 0.22, speed: 1.7 };
-    const VINYL = { perCrate: 5, max: 20, radius: 30, damage: 4 };
+    const VINYL = { start: 5, perCrate: 5, max: 20, radius: 30, damage: 4 };
 
     const rand = (min, max) => min + Math.random() * (max - min);
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -332,7 +332,8 @@
             special: cfg.every ?? 0, skateCooldown: 0, hits: new Set(), landed: false, boss: false,
             scale: cfg.scale ?? 1,
             weapon: null, weaponUntil: 0, // arme ramassée (héros)
-            z: 0, vz: 0, vinyls: 0,        // hauteur du saut, vinyles en réserve
+            z: 0, vz: 0,                   // hauteur du saut
+            vinyls: type === 'hero' ? VINYL.start : 0, // vinyles en poche au départ
         };
     }
 
