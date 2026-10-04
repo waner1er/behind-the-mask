@@ -51,8 +51,30 @@ final class Scene
     private const BARREL = ['.kkkkkk.', 'kOOOOOOk', 'koOOOOok', 'kkkkkkkk', 'koOOOOok', 'koOOOOok', 'kkkkkkkk', 'koOOOOok', '.kkkkkk.'];
     private const RUBBLE = ['....k.....', '..kdek.k..', '.kdddekdk.', 'kddkdddddk'];
 
+    // La ville libérée (fin du jeu) : arbres et fleurs
+    private const TREE_COLORS = ['L' => '#3fbf4a', 'l' => '#2a8a34', 'p' => '#ff8ac8', 'T' => '#7a4a2a', 't' => '#4a2a14'];
+    private const TREE = [
+        '....LLLLL.....',
+        '..LLLlLLpLL...',
+        '.LLlLLLLLlLL..',
+        'LLpLLLlLLLLLL.',
+        'LlLLLLLLLpLlLL',
+        'LLLLlLLLLLLLLL',
+        '.LLLLpLLlLLLL.',
+        '..LLLlLLLLLL..',
+        '...LLLLLLLL...',
+        '.....TTt......',
+        '.....TTt......',
+        '.....TTt......',
+        '.....TTt......',
+        '....TTTTt.....',
+    ];
+    private const FLOWER_PETALS = ['#ff3ea5', '#ffd23f', '#3ef0ff', '#ff8a1e', '#ffffff', '#c58aff'];
+
     private string $accent;
     private float $chaos;
+    private bool $peace;
+    private bool $datacenter;
     private array $sky;
     private array $signs;
     private array $tags;
@@ -69,6 +91,8 @@ final class Scene
         $this->signs = $theme['signs'] ?? ['BAR'];
         $this->tags = $tags ?: ['VIGILANTE'];
         $this->chaos = $theme['chaos'] ?? 0;
+        $this->peace = $theme['peace'] ?? false;
+        $this->datacenter = $theme['datacenter'] ?? false;
     }
 
     /** Tout le décor, prêt à être injecté dans le <svg> de l'écran. */
@@ -345,6 +369,25 @@ final class Scene
 
         $svg .= $this->lamp(36, false) . $this->lamp(196, true);
 
+        // la ville libérée : des arbres qui poussent et des fleurs qui sortent du bitume
+        if ($this->peace) {
+            foreach ([[70, 0.4], [150, 1.2], [268, 2]] as [$tx, $delay]) {
+                $svg .= sprintf(
+                    '<g class="grow" style="animation-delay:%.1fs">%s</g>',
+                    $delay,
+                    PixelArt::toSvg(PixelArt::compose(14, 14, [['rows' => self::TREE]]), self::TREE_COLORS + ['K' => self::INK], $tx, $ground - 10)
+                );
+            }
+            for ($i = 0; $i < 26; $i++) {
+                $fx = mt_rand(2, self::WIDTH - 4);
+                $fy = mt_rand($ground + 2, $ground + 14);
+                $petal = self::FLOWER_PETALS[mt_rand(0, count(self::FLOWER_PETALS) - 1)];
+                $flower = self::rect($fx, $fy - 2, 1, 3, '#2a8a34')
+                    . self::rect($fx - 1, $fy - 3, 3, 1, $petal) . self::rect($fx, $fy - 4, 1, 3, $petal) . self::rect($fx, $fy - 3, 1, 1, '#ffd23f');
+                $svg .= sprintf('<g class="bloom" style="animation-delay:%.1fs">%s</g>', 1 + mt_rand(0, 40) / 10, $flower);
+            }
+        }
+
         // gravats, baril en feu, épave de voiture calcinée
         for ($i = 0, $count = (int) round($this->chaos * 4); $i < $count; $i++) {
             $svg .= PixelArt::toSvg(self::RUBBLE, self::WRECK_COLORS, mt_rand(0, self::WIDTH - 12), $ground + mt_rand(3, 12));
@@ -389,14 +432,16 @@ final class Scene
         // corniche
         $svg .= self::rect($x, $top, $w, 1, self::PAPER) . self::rect($x, $top + 1, $w, 2, self::INK) . self::rect($x, $top + 3, $w, 1, self::PAPER, 'opacity=".6"');
 
-        // fenêtres
+        // fenêtres (ou baies de serveurs pour le data center du Docteur Mask)
         $columns = intdiv($w - 8, 9);
         $offset = $x + intdiv($w - ($columns * 9 - 4), 2);
         $floors = [];
         for ($wy = $top + 9; $wy + 8 < self::GROUND - 26; $wy += 13) {
             $floors[] = $wy;
             for ($c = 0; $c < $columns; $c++) {
-                $svg .= $this->window($offset + $c * 9, $wy);
+                $svg .= $this->datacenter && $index % 2 === 1
+                    ? $this->serverRack($offset + $c * 9, $wy)
+                    : $this->window($offset + $c * 9, $wy);
             }
         }
 
@@ -439,10 +484,41 @@ final class Scene
         return $svg;
     }
 
+    /** Baie de serveurs : LED qui clignotent (data center du Docteur Mask). */
+    private function serverRack(int $x, int $y): string
+    {
+        $svg = self::rect($x - 1, $y - 1, 7, 10, '#3a3f4a') . self::rect($x, $y, 5, 8, '#0b0e14');
+        $leds = ['#3ef0ff', '#7dff5a', '#e8203a', '#3ef0ff'];
+        for ($row = 0; $row < 4; $row++) {
+            $svg .= self::rect($x, $y + $row * 2, 5, 1, '#1a1f2a');
+            $svg .= self::rect($x + mt_rand(0, 3), $y + $row * 2, 1, 1, $leds[mt_rand(0, 3)], sprintf('class="blink" style="animation-delay:-%.1fs"', mt_rand(0, 16) / 10));
+        }
+
+        return $svg;
+    }
+
+    /** Jardinière fleurie sous une fenêtre (la ville libérée). */
+    private function flowerBox(int $x, int $y): string
+    {
+        $svg = self::rect($x - 1, $y + 8, 7, 2, '#7a4a2a');
+        for ($i = 0; $i < 3; $i++) {
+            $svg .= self::rect($x + $i * 2, $y + 6, 1, 2, '#2a8a34')
+                . self::rect($x + $i * 2, $y + 5, 1, 1, self::FLOWER_PETALS[mt_rand(0, count(self::FLOWER_PETALS) - 1)]);
+        }
+
+        return sprintf('<g class="bloom" style="animation-delay:%.1fs">%s</g>', mt_rand(0, 30) / 10, $svg);
+    }
+
     private function window(int $x, int $y): string
     {
         $svg = self::rect($x - 1, $y - 1, 7, 9, self::PAPER);
         $roll = mt_rand(0, 99);
+
+        if ($this->peace) {
+            // ville libérée : fenêtres allumées et fleuries
+            $svg .= self::rect($x, $y, 5, 7, $roll < 70 ? '#f7f3e6' : '#ffe9a0');
+            return $svg . (mt_rand(0, 99) < 45 ? $this->flowerBox($x, $y) : '');
+        }
 
         // vitre brisée et traces de suie
         if (mt_rand(0, 99) < $this->chaos * 45) {

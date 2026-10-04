@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Personnages du jeu : le Vigilante (kimono, ceinture noire, jo d'aïkido, masque)
+ * Personnages du jeu : le Vigilante (kimono, ceinture noire, katana, masque)
  * et les ennemis (skinhead, masculiniste).
  *
  * Tous partagent le même squelette : mêmes jambes, mêmes positions de bras,
@@ -173,7 +173,7 @@ $hero = (function () use ($legs, $nearLeg, $farLeg, $walkCycle) {
         'A' => '#ecebe4', 'a' => '#b5b2c4', 'v' => '#8a879c',  // pantalon
         'O' => '#2a2430', 'o' => '#4a4256', 'q' => '#18141e',  // rangers
         'X' => '#1e1a24',
-        'N' => '#c8955a', 'n' => '#8a5a30',                    // jo (bâton)
+        'N' => '#eef0f6', 'n' => '#8a8c9a', 'h' => '#2a1a20',  // katana : lame, reflet, poignée
         'k' => '#1a1a1e', 'r' => '#ffd23f', 'T' => '#9a9aa6', 'W' => '#f4f4f4', // skate
         '1' => '#e4e4ec', '2' => '#8a8a98', '3' => '#1c1a20', '4' => '#ffc62a', // armes ramassées
     ];
@@ -243,7 +243,12 @@ $hero = (function () use ($legs, $nearLeg, $farLeg, $walkCycle) {
 
     $poses = [
         'guard' => [
-            'staff' => PixelArt::line(10, 32, 34, 8, 'N', 'n'),
+            // katana en garde, pointe vers le haut : poignée dans les mains, garde dorée, lame
+            'sword' => [
+                PixelArt::line(16, 26, 23, 19, 'h', 'h'),
+                ['x' => 24, 'y' => 16, 'rows' => ['YY', 'YY']],
+                PixelArt::line(26, 16, 38, 4, 'N', 'n'),
+            ],
             'nearArm' => ['y' => 18, 'rows' => [
                 '...............cCC',
                 '................cCC',
@@ -260,7 +265,12 @@ $hero = (function () use ($legs, $nearLeg, $farLeg, $walkCycle) {
             ]],
         ],
         'windup' => [
-            'staff' => PixelArt::line(0, 24, 30, 20, 'N', 'n'),
+            // katana armé en arrière, lame vers l'arrière
+            'sword' => [
+                PixelArt::line(11, 22, 20, 21, 'h', 'h'),
+                ['x' => 9, 'y' => 21, 'rows' => ['Y', 'Y', 'Y']],
+                PixelArt::line(0, 23, 8, 22, 'N', 'n'),
+            ],
             'nearArm' => ['y' => 18, 'rows' => [
                 '...............cCC',
                 '..............cCC',
@@ -277,7 +287,12 @@ $hero = (function () use ($legs, $nearLeg, $farLeg, $walkCycle) {
             ]],
         ],
         'strike' => [
-            'staff' => PixelArt::line(14, 20, 50, 20, 'N', 'n'),
+            // coup tendu : la lame file vers l'avant
+            'sword' => [
+                PixelArt::line(19, 20, 29, 20, 'h', 'h'),
+                ['x' => 30, 'y' => 19, 'rows' => ['Y', 'Y', 'Y', 'Y']],
+                PixelArt::line(31, 20, 52, 20, 'N', 'n'),
+            ],
             'nearArm' => ['y' => 18, 'rows' => [
                 '...............cCC',
                 '................cCCCCC',
@@ -293,16 +308,17 @@ $hero = (function () use ($legs, $nearLeg, $farLeg, $walkCycle) {
         ],
     ];
 
-    // $weapon : arme ramassée sur un ennemi (à la place du jo)
+    // $weapon : arme ramassée sur un ennemi (à la place de son katana)
     $frame = function (string $far, string $near, string $pose, int $dx = 0, int $dy = 0, bool $riding = false, ?callable $weapon = null) use ($legs, $nearLeg, $farLeg, $head, $torso, $poses, $boardOnBack, $boardUnder, $hands, $weaponMap) {
         // sur la planche, tout le corps monte de 3 pixels
         $lift = $riding ? -3 : 0;
         $up = fn(array $layer) => shift($layer, $dx, $dy + $lift);
 
-        $held = $poses[$pose]['staff'];
+        // le katana de Pete, ou l'arme ramassée sur un ennemi
+        $held = $poses[$pose]['sword'];
         if ($weapon) {
             [$hand, $weaponPose] = $hands[$pose];
-            $held = ($weapon($weaponPose, $hand) ?? ['rows' => []]) + ['map' => $weaponMap];
+            $held = [($weapon($weaponPose, $hand) ?? ['rows' => []]) + ['map' => $weaponMap]];
         }
 
         return PixelArt::compose(56, SPRITE_HEIGHT, [
@@ -312,12 +328,12 @@ $hero = (function () use ($legs, $nearLeg, $farLeg, $walkCycle) {
             $up($torso),
             $up($head),
             $up($poses[$pose]['farArm']),
-            $up($held),
+            ...array_map($up, $held),
             $up($poses[$pose]['nearArm']),
         ]);
     };
 
-    // Toutes les animations, avec le jo (ou avec une arme ramassée)
+    // Toutes les animations, avec le katana (ou avec une arme ramassée)
     $build = function (?callable $weapon = null) use ($frame, $walkCycle) {
         $walk = [];
         foreach ($walkCycle as $step) {
@@ -766,7 +782,7 @@ $bosses['nightmare'] = [
         'C' => '#3a2a52', 'c' => '#261a38', 'e' => '#9b4dff', 'D' => '#c53cff',
         'A' => '#3a2a52', 'a' => '#261a38', 'v' => '#160e22',
         'O' => '#120a1a', 'o' => '#2a1d3a', 'q' => '#05030a', 'X' => '#05030a',
-        'N' => '#6a4a8a', 'n' => '#3a2a52',
+        'N' => '#c58aff', 'n' => '#6a4a8a', 'h' => '#05030a', // katana violet du double maléfique
         'k' => '#05030a', 'r' => '#c53cff', 'T' => '#3a2a52', 'W' => '#8a7a9a',
     ],
     'frames' => $hero['frames'],
@@ -1017,11 +1033,11 @@ $bosses['dealer'] = $boss(
     ]]
 );
 
-// 09 Behind the Mask : costume noir, masque blanc, yeux rouges
+// 09 Behind the Mask : le Docteur Mask, blouse de labo, masque blanc aux yeux rouges, cape
 $bosses['mask'] = $boss(
     [
         'H' => '#0c0a10', 'W' => '#f2efe6', 'w' => '#b8b4a8', 'R' => '#ff1e3c',
-        'C' => '#18161c', 'c' => '#0c0b0e', 'T' => '#d01c32', 'D' => '#050506',
+        'C' => '#dcdce2', 'c' => '#9a9aa8', 'T' => '#d01c32', 'D' => '#050506', // blouse blanche, chemise noire
         'A' => '#18161c', 'a' => '#0c0b0e', 'v' => '#050506',
         'O' => '#050506', 'o' => '#2a2830', 'q' => '#020203', 'X' => '#020203',
     ],
@@ -1040,8 +1056,8 @@ $bosses['mask'] = $boss(
     ]],
     ['y' => 16, 'rows' => [
         '..............sssss',
-        '............cCCWWTWWCCc',
-        '............cCCCWTWCCCc',
+        '............cCCDDTDDCCc',
+        '............cCCCDTDCCCc',
         '............cCCCCTCCCCc',
         '............cCCCCTCCCCc',
         '............cCCCCTCCCCc',

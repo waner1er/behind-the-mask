@@ -23,3 +23,6 @@ foreach (array_keys($album['tracks']) as $index) {
     file_put_contents("scenes/level-$index.html", levelScene($album, $levelConfig, $props, $index));
     echo "scenes/level-$index.html\n";
 }
+
+file_put_contents('scenes/level-peace.html', peaceScene($props));
+echo "scenes/level-peace.html\n";

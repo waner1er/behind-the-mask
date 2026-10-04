@@ -25,23 +25,20 @@ $game = [
         'knifer' => ['name' => 'MASCU AU COUTEAU', 'hp' => 3, 'speed' => 1.1, 'damage' => 15, 'reach' => 32, 'weapon' => 'knife', 'score' => 150, 'moves' => ['strike' => 2, 'lunge' => 2, 'throw' => 1], 'throws' => 'knife'],
         'gymbro' => ['name' => 'GYM BRO', 'hp' => 9, 'speed' => 0.45, 'damage' => 22, 'reach' => 30, 'weapon' => 'dumbbell', 'score' => 250, 'moves' => ['strike' => 3, 'lunge' => 1, 'throw' => 1], 'throws' => 'dumbbell'],
     ],
-    // Armes lâchées par les ennemis : le héros les garde 15 secondes à la place du jo
+    // Armes lâchées par les ennemis : le héros les garde 15 secondes à la place de son katana
     'weaponDuration' => 15 * 60, // en images (60 par seconde)
     'weapons' => [
-        'staff' => ['name' => 'JO', 'damage' => 1, 'reach' => 40, 'knockback' => 2.6],
+        'staff' => ['name' => 'KATANA', 'damage' => 1, 'reach' => 40, 'knockback' => 2.6],
         'bat' => ['name' => 'BATTE', 'damage' => 2, 'reach' => 38, 'knockback' => 4],
         'chain' => ['name' => 'CHAÎNE', 'damage' => 1, 'reach' => 50, 'knockback' => 2.2],
         'knife' => ['name' => 'COUTEAU', 'damage' => 2, 'reach' => 28, 'knockback' => 1.6],
         'dumbbell' => ['name' => 'HALTÈRE', 'damage' => 3, 'reach' => 28, 'knockback' => 5],
     ],
     'levels' => $levels,
-    'ending' => [
-        "WHO'S BEHIND THE MASK?",
-        "IT'S A MEMBER OF YOUR FRIENDS",
-        "IT'S A MEMBER OF YOUR FAMILY",
-        'IF YOU KILL A MONSTER<br>YOU CAN BECOME A MONSTER',
-    ],
     'links' => $album['links'],
+    // scénario : intro, fin et générique (voir src/story.php)
+    'story' => require __DIR__ . '/src/story.php',
+    'logo' => 'medias/images/logo-vigilante.png',
     // décor d'un niveau : généré par PHP, ou fichier statique pour GitHub Pages (voir tools/build.php)
     'sceneUrl' => defined('STATIC_BUILD') ? 'scenes/level-%d.html' : 'scene.php?level=%d',
     'sprites' => require __DIR__ . '/src/sprites/characters.php',
@@ -100,6 +97,10 @@ $game = [
                     </div>
 
                     <div class="hud__message" data-hud="message"></div>
+                    <!-- boîte de dialogue des scènes d'intro et de fin -->
+                    <div class="hud__dialog" data-hud="dialog" hidden></div>
+                    <!-- générique de fin qui défile -->
+                    <div class="hud__credits" data-hud="credits" hidden></div>
                     <p class="hud__go" data-hud="go" hidden>GO ➜</p>
                     <p class="hud__mute" data-hud="mute" hidden>♪ OFF</p>
                 </div>
@@ -114,11 +115,11 @@ $game = [
             </div>
             <ul class="panel__help">
                 <li><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> marcher · <kbd>ENTRÉE</kbd> start</li>
-                <li><kbd>ESPACE</kbd> coup de jo · <kbd>B</kbd> coup de pied sauté</li>
+                <li><kbd>ESPACE</kbd> coup de katana · <kbd>B</kbd> coup de pied sauté</li>
                 <li><kbd>V</kbd> vinyle · <kbd>C</kbd> skate · <kbd>M</kbd> musique</li>
             </ul>
             <div class="panel__buttons">
-                <?php foreach ([['red', 'Space', 'JO'], ['yellow', 'KeyB', 'B'], ['white', 'KeyV', 'V'], ['black', 'KeyC', 'C']] as [$color, $key, $label]): ?>
+                <?php foreach ([['red', 'Space', 'KATANA'], ['yellow', 'KeyB', 'B'], ['white', 'KeyV', 'V'], ['black', 'KeyC', 'C']] as [$color, $key, $label]): ?>
                     <label class="arcade-btn-wrap">
                         <button class="arcade-btn arcade-btn--<?= $color ?>" type="button" data-key="<?= $key ?>" aria-label="<?= $label ?>"></button>
                         <span><?= $label ?></span>

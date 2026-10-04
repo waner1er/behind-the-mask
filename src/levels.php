@@ -60,8 +60,8 @@ return [
         'boss' => ['scale' => 2.5, 'sprite' => 'dealer', 'name' => 'THE DEALER', 'hp' => 88, 'speed' => 0.65, 'damage' => 16, 'special' => 'throw', 'projectile' => 'heart', 'every' => 65, 'line' => 'MY HEART IS A JUNKIE'],
     ],
     9 => [
-        'theme' => ['chaos' => 1, 'seed' => 909, 'sky' => 'night', 'celestial' => 'moon', 'accent' => '#e8203a', 'signs' => ['BANK', 'VIGIL', 'HOTEL', 'NEWS']],
-        'tags' => ['WHO?', 'BEHIND THE MASK', 'ACTION!', 'NO SURRENDER'],
-        'boss' => ['scale' => 3, 'sprite' => 'mask', 'name' => 'THE MASK', 'hp' => 112, 'speed' => 0.75, 'damage' => 20, 'special' => 'summon', 'every' => 280, 'line' => 'HOW MANY FOLLOWERS?'],
+        'theme' => ['chaos' => 1, 'seed' => 909, 'sky' => 'night', 'celestial' => 'moon', 'accent' => '#e8203a', 'signs' => ['DATA', 'IA', 'CLOUD', 'SERVER', 'MASK'], 'datacenter' => true],
+        'tags' => ['WHO?', 'BEHIND THE MASK', 'STOP IA', 'NO SURRENDER'],
+        'boss' => ['scale' => 3, 'sprite' => 'mask', 'name' => 'DOCTEUR MASK', 'hp' => 112, 'speed' => 0.75, 'damage' => 20, 'special' => 'summon', 'every' => 280, 'line' => "L'IA A DÉJÀ GAGNÉ !"],
     ],
 ];

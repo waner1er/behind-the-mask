@@ -18,6 +18,7 @@
     const canvas = document.querySelector('.screen__actors');
     const ctx = canvas.getContext('2d');
     const hud = Object.fromEntries([...document.querySelectorAll('[data-hud]')].map((el) => [el.dataset.hud, el]));
+    hud.root = document.querySelector('.hud');
     const joystick = document.querySelector('[data-joystick]');
     let layers = readLayers();
 
@@ -276,7 +277,12 @@
     // -----------------------------------------------------------------------
     let nextId = 1;
     const state = {
-        mode: 'title', // title | loading | intro | playing | clear | gameover | ending
+        mode: 'title', // title | select | story | loading | intro | playing | clear | gameover
+        menu: 0,       // choix du menu d'accueil
+        cast: [],      // personnages des scènes animées
+        citizens: [],  // gens qui sortent dans la ville libérée
+        birds: [],
+        fx: [],        // symboles qui s'envolent ($, AI...)
         tick: 0,
         modeTimer: 0,
         selected: 0,
@@ -358,42 +364,440 @@
     }
 
     // -----------------------------------------------------------------------
-    // Écran titre : choix du morceau
+    // Écran d'accueil : JOUER (avec le scénario) ou MORCEAUX (choix du niveau)
     // -----------------------------------------------------------------------
-    function showTitle() {
-        const level = data.levels[state.selected];
+    const MENU = ['JOUER', 'MORCEAUX'];
+
+    function showHome() {
+        const items = MENU.map((label, i) => (i === state.menu
+            ? `<span class="hud__menu-item is-active">▶ ${label}</span>`
+            : `<span class="hud__menu-item">${label}</span>`)).join('');
+        hud.root.classList.add('hud--home');
         message(
-            `<span class="hud__small">SELECT TRACK</span><br>`
-            + `<span class="hud__track">◀ ${pad(level.number, 2)} ${level.title} ▶</span>`
-            + (level.feat ? `<br><span class="hud__small">FEAT. ${level.feat}</span>` : '')
-            + `<br><br><span class="blink-text">INSERT COIN · PRESS START</span>`
+            `<img class="hud__logo" src="${data.logo}" alt="Vigilante - Behind the Mask">`
+            + `<div class="hud__menu">${items}</div>`
+            + `<span class="blink-text hud__small">INSERT COIN · PRESS START</span>`
         );
         hud.level.textContent = 'HI-SCORE';
     }
 
-    function selectTrack(delta) {
-        state.selected = (state.selected + delta + data.levels.length) % data.levels.length;
-        showTitle();
-        loadScene(state.selected);
-        playTrack(data.levels[state.selected]);
-        sfx('select');
+    function goHome() {
+        state.player = null;
+        state.enemies = [];
+        state.cast = [];
+        state.menu = 0;
+        hud.dialog.hidden = true;
+        hud.credits.hidden = true;
+        hud.root.classList.remove('hud--story');
+        window.Sfx?.stopMusic();
+        loadScene(0);
+        state.level = data.levels[0];
+        setMode('title');
     }
 
-    function updateTitle() {
+    /** Le héros marche sur place pendant que la ville défile derrière lui. */
+    function walkInPlace() {
         if (!state.player) state.player = createFighter('hero', 150, 158);
         state.cam += 0.5;
         state.player.x = state.cam + 150;
         state.player.anim++;
         setState(state.player, 'walk');
+    }
 
-        if (state.modeTimer === 1) showTitle();
-        if (pressed.has('ArrowRight')) selectTrack(1);
-        if (pressed.has('ArrowLeft')) selectTrack(-1);
-        if (pressed.has('Enter')) {
+    function updateHome() {
+        walkInPlace();
+        if (state.modeTimer === 1) showHome();
+        if (pressed.has('ArrowUp') || pressed.has('ArrowDown')) {
+            state.menu = (state.menu + 1) % MENU.length;
+            showHome();
+            sfx('select');
+        }
+        if (pressed.has('Enter') || pressed.has('Space')) {
             state.score = 0;
             state.lives = 3;
-            startLevel(state.selected);
+            sfx('start');
+            hud.root.classList.remove('hud--home');
+            if (state.menu === 0) {
+                startStory(data.story.intro, () => startLevel(0));
+                window.Sfx?.playMusic(data.levels[data.story.introTrack - 1]?.audio);
+            } else {
+                setMode('select');
+                showSelect();
+                playTrack(data.levels[state.selected]);
+            }
         }
+    }
+
+    function showSelect() {
+        const level = data.levels[state.selected];
+        message(
+            `<span class="hud__small">SELECT TRACK</span><br>`
+            + `<span class="hud__track">◀ ${pad(level.number, 2)} ${level.title} ▶</span>`
+            + (level.feat ? `<br><span class="hud__small">FEAT. ${level.feat}</span>` : '')
+            + `<br><br><span class="blink-text">PRESS START</span><br><span class="hud__small">▲ RETOUR</span>`
+        );
+    }
+
+    function selectTrack(delta) {
+        state.selected = (state.selected + delta + data.levels.length) % data.levels.length;
+        showSelect();
+        loadScene(state.selected);
+        playTrack(data.levels[state.selected]);
+        sfx('select');
+    }
+
+    function updateSelect() {
+        walkInPlace();
+        if (pressed.has('ArrowRight')) selectTrack(1);
+        if (pressed.has('ArrowLeft')) selectTrack(-1);
+        if (pressed.has('ArrowUp')) goHome();
+        else if (pressed.has('Enter') || pressed.has('Space')) startLevel(state.selected);
+    }
+
+    // -----------------------------------------------------------------------
+    // Scènes animées (intro et fin) : un "réalisateur" par plan anime les sprites,
+    // le texte s'écrit lettre par lettre dans la boîte de dialogue.
+    // -----------------------------------------------------------------------
+    const story = { steps: [], index: 0, t: 0, typed: -1, onEnd: null, shown: '' };
+    const PEACE_LEVEL = { chaos: 0, accent: '#ffc62a', shouts: [], rain: false, fog: false, number: 10 };
+
+    function startStory(steps, onEnd) {
+        Object.assign(story, { steps, index: 0, onEnd });
+        Object.assign(state, {
+            player: null, cast: [], enemies: [], projectiles: [], pickups: [], pows: [],
+            explosions: [], notes: [], texts: [], birds: [], fx: [], citizens: [],
+        });
+        hud.root.classList.add('hud--story');
+        message('');
+        setMode('story');
+        enterStep();
+    }
+
+    /** Retire les balises [PAUSE n] du texte et note où la machine à écrire doit s'arrêter. */
+    function parsePauses(raw) {
+        const pauses = {};
+        let text = '';
+        for (const part of raw.split(/(\[PAUSE \d+(?:\.\d+)?\])/)) {
+            const pause = part.match(/^\[PAUSE (\d+(?:\.\d+)?)\]$/);
+            if (pause) pauses[text.length] = Math.round(parseFloat(pause[1]) * 60);
+            else text += part;
+        }
+        return { text, pauses };
+    }
+
+    function enterStep() {
+        const step = story.steps[story.index];
+        const samePlan = story.steps[story.index - 1]?.scene === step.scene;
+        Object.assign(story, parsePauses(step.text ?? ''), { pauseLeft: 0, pauseDone: {} });
+        hud.dialog.hidden = !step.text;
+        story.typed = 0;
+        story.shown = '';
+        // même plan que l'étape précédente : l'animation continue, on ne la rejoue pas
+        if (!samePlan) {
+            story.t = 0;
+            directors[step.scene]?.enter?.(step);
+        }
+
+        // réplique en bulle et action de Pete, au moment précis de cette étape
+        const pete = state.cast.find((a) => a.type === 'hero');
+        if (pete && step.shout) {
+            shout(step.shout, pete.x + 40, pete.y - 60 * pete.scale, '#ffd23f');
+            sfx('kick');
+        }
+        if (pete && step.action === 'skate') {
+            setState(pete, 'skate');
+            sfx('skate');
+        }
+    }
+
+    function nextStep() {
+        story.index++;
+        if (story.index >= story.steps.length) {
+            hud.dialog.hidden = true;
+            hud.root.classList.remove('hud--story');
+            story.onEnd?.();
+            return;
+        }
+        enterStep();
+    }
+
+    function updateStory() {
+        const step = story.steps[story.index];
+        story.t++;
+        directors[step.scene]?.update?.(step);
+        updateCast();
+
+        // texte qui s'écrit lettre par lettre (avec un petit bip), avec des pauses comiques
+        const text = story.text;
+        if (text) {
+            const before = Math.floor(story.typed);
+            const pause = story.pauses[before];
+            if (pause && story.pauseLeft === 0 && !story.pauseDone?.[before]) {
+                story.pauseLeft = pause; // silence gênant...
+                story.pauseDone = { ...story.pauseDone, [before]: true };
+                sfx('cricket');
+            }
+            if (story.pauseLeft > 0) {
+                story.pauseLeft--;
+            } else {
+                story.typed = Math.min(text.length, story.typed + 0.7);
+                if (Math.floor(story.typed) > before && before % 3 === 0 && text[before] !== ' ') sfx('type');
+            }
+            const done = story.typed >= text.length;
+            const html = text.slice(0, Math.floor(story.typed)) + (done ? ' <span class="blink-text">▶</span>' : '');
+            if (html !== story.shown) {
+                hud.dialog.innerHTML = html;
+                story.shown = html;
+            }
+        }
+
+        const skip = pressed.has('Enter') || pressed.has('Space') || pressed.has('KeyB');
+        if (step.duration) {
+            if (story.t >= step.duration) nextStep();
+        } else if (skip && step.scene !== 'credits') {
+            if (story.typed < text.length) {
+                story.typed = text.length; // on affiche tout d'un coup
+                story.pauseLeft = 0;
+            } else {
+                nextStep();
+            }
+        }
+    }
+
+    /** Fait bouger la distribution : marcher vers une cible, finir une attaque, sautiller... */
+    function updateCast() {
+        for (const actor of state.cast) {
+            actor.anim++;
+            if (actor.state === 'attack') {
+                actor.t++;
+                if (actor.t >= 20) setState(actor, 'idle');
+                continue;
+            }
+            if (actor.state === 'jump') {
+                actor.t++;
+                actor.z += actor.vz;
+                actor.vz -= 0.22;
+                if (actor.z <= 0) Object.assign(actor, { z: 0, vz: 0 }) && setState(actor, 'idle');
+                continue;
+            }
+            if (actor.state === 'skate') {
+                actor.x += actor.dir * 2.6;
+                continue;
+            }
+            if (actor.targetX !== undefined && Math.abs(actor.targetX - actor.x) > 1) {
+                actor.dir = Math.sign(actor.targetX - actor.x);
+                actor.x += actor.dir * (actor.speed ?? 1);
+                setState(actor, 'walk');
+            } else if (actor.state === 'walk') {
+                actor.dir = actor.face ?? actor.dir;
+                setState(actor, 'idle');
+            }
+        }
+        for (const c of state.citizens ?? []) {
+            c.t++;
+            c.x += c.vx;
+        }
+        for (const bird of state.birds) {
+            bird.t++;
+            bird.x += bird.vx;
+        }
+        state.birds = state.birds.filter((bird) => bird.x > -20 && bird.x < W + 20);
+        for (const f of state.fx) {
+            f.t++;
+            f.y -= 0.4;
+        }
+        state.fx = state.fx.filter((f) => f.t < 90);
+    }
+
+    /** Ajoute un personnage à la scène. */
+    function actor(type, x, y, options = {}) {
+        const cfg = data.enemies[type] ?? data.levels.find((l) => l.boss.sprite === type)?.boss ?? null;
+        const a = createFighter(type, x, y, cfg ?? undefined);
+        Object.assign(a, { z: 0, vz: 0 }, options);
+        a.dir = options.dir ?? 1;
+        state.cast.push(a);
+        return a;
+    }
+
+    /** Les citoyens libérés (variantes de couleurs des otages) qui sortent en sautillant. */
+    const citizenImages = (() => {
+        const base = data.sprites.pow;
+        const looks = [
+            { G: '#7dff5a', g: '#3aa02a', J: '#26262e', A: '#3d63d6' },
+            { G: '#ff3ea5', g: '#a8136f', J: '#e8203a', A: '#2c2c38' },
+            { G: '#ffd23f', g: '#c08a1a', J: '#3a6a3a', A: '#8a5a30' },
+            { G: '#3ef0ff', g: '#1a8aa0', J: '#5a2a7a', A: '#26408f' },
+            { G: '#f4f4f4', g: '#a8a8b8', J: '#ff8a1e', A: '#3d63d6' },
+        ];
+        return looks.map((look) => gridToCanvas(base.frames.tied[1], {
+            ...base.palette, ...look, j: look.J, r: look.J, R: look.J, // plus de cordes : ils sont libres !
+        }));
+    })();
+
+    const directors = {
+        // Pete arrive en marchant, salue et fait un kata
+        pete: {
+            enter() {
+                state.cam = 0;
+                state.cast = [];
+                loadScene(0);
+                state.level = data.levels[0];
+                actor('hero', -30, 160, { targetX: 150, face: 1, scale: 2, speed: 1.4 });
+            },
+            update() {
+                const pete = state.cast[0];
+                if (story.t === 140) shout('OSS !', pete.x, pete.y - 90, '#ffffff');
+                if (story.t > 160 && story.t % 110 === 0) {
+                    setState(pete, 'attack');
+                    sfx('whoosh');
+                }
+            },
+        },
+        // les méchants entrent un par un en roulant des mécaniques
+        villains: {
+            enter() {
+                state.cast = [];
+                actor('hero', 70, 160, { scale: 1.5, dir: 1 });
+                actor('skinhead', W + 20, 152, { targetX: 185, face: -1, scale: 1.5, delay: 20 });
+                actor('masculinist', W + 40, 166, { targetX: 228, face: -1, scale: 1.5, delay: 60 });
+                actor('manager', W + 60, 156, { targetX: 272, face: -1, scale: 1.5, delay: 100 });
+                state.cast.slice(1).forEach((v) => {
+                    v.waitX = v.targetX;
+                    v.targetX = undefined;
+                });
+            },
+            update() {
+                const [pete, ...villains] = state.cast;
+                villains.forEach((v) => {
+                    if (story.t === v.delay) v.targetX = v.waitX;
+                });
+                const taunts = [[150, 'HÉ HÉ', 0], [190, 'ALPHA !', 1], [230, 'PROFIT !', 2], [330, 'SALE PUNK', 0]];
+                for (const [at, text, i] of taunts) {
+                    if (story.t === at) shout(text, villains[i].x, villains[i].y - 70, '#ffffff');
+                }
+                if (story.t === 280) {
+                    shout('...', pete.x, pete.y - 70, '#ffffff');
+                    setState(pete, 'attack');
+                }
+            },
+        },
+        // le Docteur Mask ricane devant ses serveurs, l'argent et l'IA s'envolent
+        mask: {
+            enter() {
+                state.cast = [];
+                state.cam = 0;
+                loadScene(8);
+                actor('mask', 230, 165, { scale: 2.5, dir: -1 });
+            },
+            update() {
+                const mask = state.cast[0];
+                if (story.t % 100 === 30) {
+                    shout('HA HA HA !', mask.x - 20, mask.y - 120, '#e8203a');
+                    setState(mask, 'attack');
+                    mask.t = 0;
+                }
+                if (story.t % 12 === 0) {
+                    state.fx.push({ text: pick(['$', 'AI', '€', '$$', '01']), x: rand(20, 180), y: rand(70, 140), t: 0, color: pick(['#ffd23f', '#3ef0ff', '#7dff5a']) });
+                }
+            },
+        },
+        // Pete monte sur son skate et part en mission
+        go: {
+            enter() {
+                state.cast = [];
+                state.cam = 0;
+                loadScene(0);
+                actor('hero', 90, 160, { scale: 1.5, dir: 1 });
+            },
+            update() {
+                // Pete attend en garde : il partira en skate sur son cri de guerre (voir story.php)
+            },
+        },
+        // FIN : le Docteur Mask explose en chaîne
+        boom: {
+            enter() {
+                const boss = state.boss;
+                actor('mask', boss ? boss.x : state.cam + 220, boss ? boss.y : 160, { scale: 3, dir: -1 });
+                window.Sfx?.stopMusic();
+            },
+            update() {
+                const mask = state.cast[0];
+                if (!mask) return; // il a explosé
+                mask.x += Math.sin(story.t) * 1.2; // il tremble
+                if (story.t % 6 === 0) setState(mask, mask.state === 'hurt' ? 'idle' : 'hurt');
+                if (story.t % 7 === 0 && story.t < 200) {
+                    const x = mask.x + rand(-30, 30);
+                    const y = mask.y - rand(0, 60);
+                    state.explosions.push({ x, y, t: 0 });
+                    state.shake = 6;
+                    if (story.t % 21 === 0) sfx('explosion');
+                }
+                if (story.t === 200) {
+                    state.flash = 30;
+                    state.cast = [];
+                    sfx('bossDeath', 3);
+                }
+            },
+        },
+        // FIN : la ville libérée, les arbres poussent, les gens sortent en souriant
+        peace: {
+            enter() {
+                if (state.mode === 'story' && state.level === PEACE_LEVEL) return; // déjà en place
+                state.level = PEACE_LEVEL;
+                state.cam = 0;
+                state.explosions = [];
+                state.particles = [];
+                state.citizens = [];
+                loadScene('peace');
+                window.Sfx?.playMusic(data.levels[data.story.endingTrack - 1]?.audio);
+                state.cast = [];
+                actor('hero', 150, 160, { scale: 1.5, dir: 1 });
+            },
+            update() {
+                const pete = state.cast[0];
+                if (story.t % 45 === 0 && state.citizens.length < 12) {
+                    const fromLeft = Math.random() < 0.5;
+                    state.citizens.push({
+                        x: fromLeft ? -10 : W + 10, y: rand(floor.min, floor.max), vx: (fromLeft ? 1 : -1) * rand(0.4, 0.8),
+                        t: rand(0, 30), image: pick(citizenImages),
+                    });
+                }
+                // ils s'arrêtent en ville et sautillent sur place
+                for (const c of state.citizens) {
+                    if ((c.vx > 0 && c.x > rand(30, 300)) || (c.vx < 0 && c.x < rand(20, 290))) c.vx *= 0.97;
+                }
+                if (story.t % 70 === 0) state.birds.push({ x: -10, y: rand(20, 70), vx: rand(0.6, 1.2), t: 0 });
+                if (story.t % 150 === 75) {
+                    setState(pete, 'jump');
+                    pete.vz = 3;
+                    pete.z = 0.1;
+                }
+            },
+        },
+        // FIN : le générique débile qui défile
+        credits: {
+            enter() {
+                const lines = data.story.credits.map(([name, job]) => (
+                    `<div class="hud__credit"><span class="hud__credit-name">${name}</span><span class="hud__credit-job">${job}</span></div>`
+                )).join('');
+                const links = data.links.map((l) => `<a href="${l.url}" target="_blank" rel="noopener">${l.name}</a>`).join(' · ');
+                hud.credits.innerHTML = `<div class="hud__credits-roll">${lines}`
+                    + `<div class="hud__credit hud__credit--end"><span class="hud__track">THANKS FOR PLAYING</span>`
+                    + `<span class="hud__links">${links}</span><span class="hud__small">SCORE ${pad(state.score)}</span>`
+                    + `<span class="blink-text">PRESS START</span></div></div>`;
+                hud.credits.hidden = false;
+            },
+            update() {
+                directors.peace.update();
+                if (story.t > 120 && (pressed.has('Enter') || pressed.has('Space'))) goHome();
+            },
+        },
+    };
+
+    function startEnding() {
+        const boss = state.boss;
+        startStory(data.story.ending, goHome);
+        state.boss = boss; // pour faire exploser le Docteur Mask là où il est tombé
     }
 
     // -----------------------------------------------------------------------
@@ -431,6 +835,11 @@
     function levelClear() {
         const bonus = state.player.hp * 10 + 1000;
         state.score += bonus;
+        // le Docteur Mask est vaincu : place à la scène de fin
+        if (state.levelIndex === data.levels.length - 1) {
+            startEnding();
+            return;
+        }
         setMode('clear');
         hud.go.hidden = true;
         message(`MISSION COMPLETE!<br><br><span class="hud__small">BONUS ${pad(bonus)}</span>`);
@@ -438,34 +847,7 @@
     }
 
     function nextLevel() {
-        if (state.levelIndex + 1 >= data.levels.length) {
-            setMode('ending');
-            return;
-        }
         startLevel(state.levelIndex + 1);
-    }
-
-    function updateEnding() {
-        const lineDuration = 200;
-        const step = Math.floor(state.modeTimer / lineDuration);
-
-        if (state.modeTimer % lineDuration === 1) {
-            if (step < data.ending.length) {
-                message(`<span class="hud__lyrics">${data.ending[step]}</span>`);
-            } else if (step === data.ending.length) {
-                const links = data.links.map((l) => `<a href="${l.url}" target="_blank" rel="noopener">${l.name}</a>`).join(' · ');
-                message(
-                    `THANKS FOR PLAYING<br><br><span class="hud__track">VIGILANTE</span><br>`
-                    + `<span class="hud__small">BEHIND THE MASK</span><br><br>`
-                    + `<span class="hud__links">${links}</span><br><br>`
-                    + `<span class="hud__small">SCORE ${pad(state.score)}</span><br><span class="blink-text">PRESS START</span>`
-                );
-            }
-        }
-        if (step >= data.ending.length && pressed.has('Enter')) {
-            state.player = null;
-            setMode('title');
-        }
     }
 
     // -----------------------------------------------------------------------
@@ -476,10 +858,10 @@
         p.invuln = Math.max(0, p.invuln - 1);
         p.skateCooldown = Math.max(0, p.skateCooldown - 1);
 
-        // l'arme ramassée ne dure qu'un temps, ensuite on reprend le jo
+        // l'arme ramassée ne dure qu'un temps, ensuite on reprend son katana
         if (p.weapon && state.tick >= p.weaponUntil) {
             p.weapon = null;
-            shout('JO!', p.x, p.y - 48, '#ffffff');
+            shout('KATANA!', p.x, p.y - 48, '#ffffff');
             sfx('select');
         }
 
@@ -529,7 +911,7 @@
 
         if (p.state === 'attack') {
             p.t++;
-            if (p.t === HERO_ATTACK.hitFrom) sfx('whoosh');
+            if (p.t === HERO_ATTACK.hitFrom) sfx(p.weapon ? 'whoosh' : 'slash'); // shing ! (le katana)
             if (p.t >= HERO_ATTACK.hitFrom && p.t <= HERO_ATTACK.hitTo) {
                 const weapon = data.weapons[p.weapon ?? 'staff'];
                 heroHits(p, 4, weapon.reach, weapon.knockback, weapon.damage);
@@ -539,7 +921,7 @@
         }
 
         if (p.state === 'skate') {
-            // attaque en glisse : on fonce, jo en avant, en renversant tout le monde
+            // attaque en glisse : on fonce, katana en avant, en renversant tout le monde
             p.t++;
             p.x += p.dir * SKATE.speed * (p.t < SKATE.duration - 8 ? 1 : 0.5);
             const dy = (keys.has('ArrowDown') ? 1 : 0) - (keys.has('ArrowUp') ? 1 : 0);
@@ -1235,7 +1617,15 @@
 
         switch (state.mode) {
             case 'title':
-                updateTitle();
+                updateHome();
+                break;
+
+            case 'select':
+                updateSelect();
+                break;
+
+            case 'story':
+                updateStory();
                 break;
 
             case 'intro':
@@ -1277,14 +1667,9 @@
                 }
                 break;
 
-            case 'ending':
-                state.player.anim++;
-                setState(state.player, 'idle');
-                updateEnding();
-                break;
         }
 
-        if (!['title', 'loading'].includes(state.mode)) updateApocalypse();
+        if (!['title', 'select', 'loading'].includes(state.mode)) updateApocalypse();
         for (const s of state.sparks) s.t++;
         state.sparks = state.sparks.filter((s) => s.t < 10);
         for (const t of state.texts) t.t++;
@@ -1375,7 +1760,7 @@
         ctx.drawImage(image, -ANCHOR.x, -ANCHOR.y);
         ctx.restore();
 
-        // traînée du coup de jo (et de la glisse en skate)
+        // traînée du coup de katana (et de la glisse en skate)
         const swinging = f.type === 'hero' && f.state === 'attack' && f.t >= HERO_ATTACK.hitFrom && f.t <= HERO_ATTACK.hitTo + 2;
         const skating = f.state === 'skate' || f.state === 'charge' || f.state === 'lunge';
         if (swinging || skating) {
@@ -1389,6 +1774,81 @@
                 ctx.fillRect(start, y + offset + (skating ? 14 : 0), length, 1);
             }
         }
+    }
+
+    /** Plan du Docteur Mask : un mur de serveurs qui clignotent et un écran géant "AI". */
+    function drawStoryBackdrop() {
+        if (story.steps[story.index]?.scene !== 'mask') return;
+        const leds = ['#3ef0ff', '#7dff5a', '#e8203a', '#ffd23f'];
+        for (let col = 0; col < 8; col++) {
+            const x = 96 + col * 27;
+            ctx.fillStyle = '#3a3f4a';
+            ctx.fillRect(x - 1, 39, 24, 103);
+            ctx.fillStyle = '#0b0e14';
+            ctx.fillRect(x, 40, 22, 101);
+            for (let row = 0; row < 24; row++) {
+                ctx.fillStyle = '#1a1f2a';
+                ctx.fillRect(x + 1, 42 + row * 4, 20, 2);
+                const blink = (col * 7 + row * 3 + Math.floor(state.tick / 6)) % 5;
+                if (blink < 2) {
+                    ctx.fillStyle = leds[(col + row) % leds.length];
+                    ctx.fillRect(x + 3 + ((row * 5 + col) % 15), 42 + row * 4, 2, 1);
+                }
+            }
+        }
+        // écran géant
+        ctx.fillStyle = '#0c0a10';
+        ctx.fillRect(14, 64, 72, 44);
+        ctx.fillStyle = state.tick % 40 < 34 ? '#e8203a' : '#ffffff';
+        ctx.fillRect(17, 67, 66, 38);
+        ctx.font = '16px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#0c0a10';
+        ctx.fillText('AI', 50, 94);
+    }
+
+    /** Symboles qui s'envolent, citoyens qui sautillent avec des cœurs, oiseaux. */
+    function drawStoryExtras() {
+        ctx.font = '8px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        for (const f of state.fx) {
+            ctx.globalAlpha = Math.max(0, 1 - f.t / 90);
+            ctx.fillStyle = f.color;
+            ctx.fillText(f.text, Math.round(f.x), Math.round(f.y));
+        }
+        ctx.globalAlpha = 1;
+
+        for (const c of state.citizens) {
+            const hop = Math.abs(Math.sin(c.t / 6)) * 5;
+            drawShadow(c.x, c.y, 6);
+            ctx.save();
+            ctx.translate(Math.round(c.x), Math.round(c.y - hop));
+            if (c.vx < 0) ctx.scale(-1, 1);
+            ctx.drawImage(c.image, -Math.round(c.image.width / 2), -c.image.height + 1);
+            ctx.restore();
+            if (Math.floor(c.t / 30) % 2) drawHeart(c.x - 2, c.y - c.image.height - 6 - hop);
+        }
+
+        ctx.fillStyle = '#0c0a10';
+        for (const bird of state.birds) {
+            const x = Math.round(bird.x);
+            const y = Math.round(bird.y + Math.sin(bird.t / 10) * 3);
+            const up = Math.floor(bird.t / 8) % 2;
+            ctx.fillRect(x - 3, y - up, 2, 1);
+            ctx.fillRect(x - 1, y + 1 - up * 0, 3, 1);
+            ctx.fillRect(x + 2, y - up, 2, 1);
+        }
+    }
+
+    function drawHeart(x, y) {
+        ctx.fillStyle = '#ff3ea5';
+        x = Math.round(x);
+        y = Math.round(y);
+        ctx.fillRect(x, y, 2, 1);
+        ctx.fillRect(x + 3, y, 2, 1);
+        ctx.fillRect(x, y + 1, 5, 1);
+        ctx.fillRect(x + 1, y + 2, 3, 1);
+        ctx.fillRect(x + 2, y + 3, 1, 1);
     }
 
     /** Dessine une image centrée, éventuellement en rotation (armes qui volent). */
@@ -1512,7 +1972,9 @@
             drawSpinning(image, item.x, item.y - item.z - image.height / 2 - 1 - bob, item.z > 0 ? item.t * 0.35 : 0);
         }
 
-        const actors = [...state.enemies, state.player].filter(Boolean).sort((a, b) => a.y - b.y);
+        if (state.mode === 'story') drawStoryBackdrop();
+
+        const actors = [...state.enemies, ...state.cast, state.player].filter(Boolean).sort((a, b) => a.y - b.y);
         actors.forEach((a) => drawShadow(a.x, a.y, 10 * a.scale));
         actors.forEach(drawFighter);
 
@@ -1523,6 +1985,7 @@
         }
 
         state.explosions.forEach(drawExplosion);
+        if (state.mode === 'story') drawStoryExtras();
         for (const note of state.notes) {
             if (note.t > 50 && note.t % 4 < 2) continue; // clignotent avant de disparaître
             ctx.drawImage(note.image, Math.round(note.x), Math.round(note.y));

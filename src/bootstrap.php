@@ -86,3 +86,15 @@ function levelScene(array $album, array $levelConfig, array $props, int $index):
 
     return (new Scene($config['theme'], levelTags($track, $config), $props))->render();
 }
+
+/** La ville libérée, pour la fin du jeu. */
+function peaceScene(array $props): string
+{
+    $theme = [
+        'seed' => 2026, 'sky' => 'paper', 'celestial' => 'sun', 'accent' => '#ffc62a', 'chaos' => 0, 'peace' => true,
+        'signs' => ['LOVE', 'GRATUIT', 'JARDIN', 'CAFÉ', 'LIBRE'],
+    ];
+    $tags = ['MERCI PETE', 'LIBRES !', 'BYE BYE IA', 'TOUT EST GRATUIT', 'PEACE'];
+
+    return (new Scene($theme, $tags, $props))->render();
+}

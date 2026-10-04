@@ -12,7 +12,7 @@ Au clavier, ou sur mobile avec le stick et les boutons dessinés sur la borne (p
 | Touche | Action |
 |---|---|
 | ← → ↑ ↓ | marcher |
-| Espace | coup de jo |
+| Espace | coup de katana |
 | B | coup de pied sauté |
 | V | lancer un vinyle (il explose en notes de musique) |
 | C | attaque en skate |

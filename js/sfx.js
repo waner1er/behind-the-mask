@@ -240,6 +240,18 @@ window.Sfx = (() => {
             const chord = [523, 659, 784, 1047].sort(() => Math.random() - 0.5);
             chord.forEach((f, i) => tone({ type: 'square', from: f, duration: 0.14, volume: 0.12, delay: 0.25 + i * 0.07 }));
         },
+        // coup de katana : "shing" métallique
+        slash: () => {
+            noise({ duration: 0.12, volume: 0.35, filter: 'highpass', from: 2500, to: 6000 });
+            tone({ type: 'triangle', from: 2400, to: 1800, duration: 0.18, volume: 0.1 });
+            tone({ type: 'sine', from: 3600, to: 3200, duration: 0.14, volume: 0.06 });
+        },
+        // grillons pendant un silence gênant : "cri-cri... cri-cri..."
+        cricket: () => {
+            [0, 0.12, 0.9, 1.02, 1.8, 1.92].forEach((delay) => tone({ type: 'square', from: 4200, to: 4000, duration: 0.05, volume: 0.04, delay }));
+        },
+        // petit bip de la machine à écrire (boîte de dialogue)
+        type: () => tone({ type: 'square', from: 880, to: 860, duration: 0.025, volume: 0.05 }),
         // coup de pied sauté : souffle + petit cri "HYA!"
         kick: () => {
             noise({ duration: 0.18, volume: 0.35, filter: 'bandpass', from: 400, to: 2200, q: 1.2 });
