@@ -1,0 +1,4 @@
+# Les WAV originaux sont trop lourds : le jeu utilise les copies MP3
+*.wav
+node_modules/
+.DS_Store

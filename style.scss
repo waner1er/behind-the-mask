@@ -1,0 +1,593 @@
+@use "sass:color";
+
+// ---------------------------------------------------------------------------
+// Variables : noir, blanc papier et rouge, comme la pochette
+// ---------------------------------------------------------------------------
+$pixel: "Press Start 2P", monospace;
+$marker: "Permanent Marker", cursive;
+
+$ink: #0e0d0c;
+$paper: #ece8dc;
+$red: #e8203a;
+$grey: #5e5a52;
+
+$cabinet: #141312;
+$gutter: var(--gutter);
+
+// ---------------------------------------------------------------------------
+// Base
+// ---------------------------------------------------------------------------
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    background:
+        radial-gradient(ellipse at 50% -10%, rgba($red, 0.22), transparent 60%),
+        radial-gradient(circle, rgba($paper, 0.05) 1px, transparent 1.5px) 0 0 / 6px 6px,
+        $ink;
+    color: $paper;
+    font-family: $pixel;
+}
+
+// ---------------------------------------------------------------------------
+// Borne
+// ---------------------------------------------------------------------------
+// La borne doit tenir entière dans la fenêtre, sans scroll :
+// on fixe la hauteur de chaque partie, et la largeur de l'écran (16/9)
+// est calculée à partir de la hauteur qui reste.
+.cabinet {
+    --gutter: 20px;
+    --gap: 12px;
+    --bezel-pad: clamp(8px, 1.6vh, 18px);
+    --logo-h: clamp(64px, 16vh, 160px);
+    --marquee-h: calc(var(--logo-h) + 20px);
+    --panel-h: 78px;
+    --chrome-h: calc(24px + var(--marquee-h) + 4px + var(--panel-h) + 3 * var(--gap) + 2 * var(--bezel-pad));
+
+    position: relative;
+    width: min(1100px, 100%, calc((100dvh - var(--chrome-h)) * 16 / 9 + 2 * var(--gutter) + 2 * var(--bezel-pad)));
+    padding: 0 $gutter var(--gap);
+    background: linear-gradient(90deg, #000, $cabinet 6%, $cabinet 94%, #000);
+    border-radius: 20px 20px 8px 8px;
+    box-shadow:
+        0 0 0 3px #000,
+        0 0 0 5px $paper,
+        0 40px 80px rgba(0, 0, 0, 0.8),
+        0 0 140px rgba($red, 0.15);
+
+    // bandes rouges sur les flancs
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        top: 24px;
+        bottom: 24px;
+        width: 4px;
+        background: $red;
+        box-shadow: 0 0 10px $red;
+    }
+
+    &::before {
+        left: 4px;
+    }
+
+    &::after {
+        right: 4px;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Fronton : le logo de l'album
+// ---------------------------------------------------------------------------
+.marquee {
+    position: relative;
+    overflow: hidden;
+    height: var(--marquee-h);
+    margin: 0 calc(-1 * #{$gutter}) var(--gap);
+    padding: 10px 16px;
+    text-align: center;
+    border-radius: 20px 20px 0 0;
+    border-bottom: 4px solid $paper;
+    background:
+        radial-gradient(circle, rgba($paper, 0.12) 1px, transparent 1.5px) 0 0 / 5px 5px,
+        $ink;
+
+    &__title {
+        position: relative;
+        width: fit-content;
+        margin: 0 auto;
+        line-height: 1;
+        font-weight: normal;
+    }
+
+    &__logo {
+        display: block;
+        height: var(--logo-h);
+        width: auto;
+        filter:
+            drop-shadow(3px 3px 0 #000)
+            drop-shadow(0 0 18px rgba($red, 0.4));
+        animation: neon-title 6s infinite;
+    }
+
+    &__copyright {
+        position: absolute;
+        right: 18px;
+        bottom: 8px;
+        margin: 0;
+        font-size: 0.42rem;
+        letter-spacing: 0.2em;
+        color: color.adjust($paper, $lightness: -35%);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Écran CRT : décor SVG + canvas des personnages superposés
+// ---------------------------------------------------------------------------
+.bezel {
+    padding: var(--bezel-pad);
+    background: #050505;
+    border-radius: 14px;
+    box-shadow:
+        inset 0 0 0 2px #2a2826,
+        inset 0 0 40px #000;
+}
+
+.screen {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 3% / 5%;
+    container-type: inline-size;
+    outline: none;
+    box-shadow: 0 0 40px rgba($red, 0.18);
+
+    &__scene,
+    &__actors {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    &__actors {
+        image-rendering: pixelated;
+    }
+
+    // lignes de balayage + vignettage
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        pointer-events: none;
+        background:
+            repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0 1px, transparent 1px 3px),
+            radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
+        animation: crt-flicker 0.15s infinite;
+    }
+
+    // reflet sur la vitre
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+        background: radial-gradient(ellipse at 25% 0%, rgba(255, 255, 255, 0.08), transparent 45%);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Petites animations du décor
+// ---------------------------------------------------------------------------
+.neon {
+    font-family: $pixel;
+    filter: drop-shadow(0 0 1.5px currentColor);
+
+    &--flicker {
+        animation: neon-flicker 5s infinite;
+    }
+}
+
+.graffiti {
+    font-family: $pixel;
+    opacity: 0.85;
+}
+
+.blink {
+    animation: blink 1.6s steps(1) infinite;
+}
+
+.lamp-light--flicker {
+    animation: neon-flicker 7s infinite;
+}
+
+// incendies : deux images qui alternent
+.fire__a {
+    animation: blink 0.3s steps(1) infinite;
+}
+
+.fire__b {
+    animation: blink 0.3s steps(1) infinite reverse;
+}
+
+// colonnes de fumée qui ondulent
+.smoke {
+    animation: smoke 5s ease-in-out infinite alternate;
+}
+
+// ---------------------------------------------------------------------------
+// HUD (tailles relatives à la largeur de l'écran grâce aux unités cqw)
+// ---------------------------------------------------------------------------
+.hud {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 2.4cqw 3cqw;
+    font-size: 1.8cqw;
+    line-height: 1.6;
+    color: #fff;
+    text-shadow:
+        0.25cqw 0.25cqw 0 #000,
+        -0.15cqw -0.15cqw 0 #000,
+        0.15cqw -0.15cqw 0 #000,
+        -0.15cqw 0.15cqw 0 #000;
+    pointer-events: none;
+
+    &__player,
+    &__enemy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6cqw;
+        width: 28%;
+    }
+
+    &__enemy {
+        align-items: flex-end;
+
+        &[hidden] {
+            display: flex;
+            visibility: hidden;
+        }
+    }
+
+    &__row {
+        display: flex;
+        gap: 1.5cqw;
+    }
+
+    &__center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    &__label {
+        color: $paper;
+
+        &--red {
+            color: $red;
+        }
+    }
+
+    &__bar {
+        width: 100%;
+        height: 1.6cqw;
+        padding: 0.3cqw;
+        background: #000;
+        border: 0.3cqw solid $paper;
+
+        &--enemy .hud__fill {
+            margin-left: auto;
+            background: $red;
+        }
+    }
+
+    &__fill {
+        height: 100%;
+        background: linear-gradient(#fff36b, #f2b51e);
+        transition: width 0.15s steps(4);
+    }
+
+    &__lives {
+        color: $red;
+    }
+
+    &__message {
+        position: absolute;
+        top: 30%;
+        right: 4cqw;
+        left: 4cqw;
+        margin: 0;
+        text-align: center;
+        font-size: 2.4cqw;
+        line-height: 1.5;
+        color: #fff;
+        text-shadow:
+            0.3cqw 0.3cqw 0 #000,
+            -0.2cqw -0.2cqw 0 #000;
+    }
+
+    &__small {
+        font-size: 1.7cqw;
+        color: color.adjust($paper, $lightness: -12%);
+    }
+
+    &__track {
+        font-size: 3.2cqw;
+        color: var(--accent, #{$red});
+    }
+
+    &__lyrics {
+        font-family: $marker;
+        font-size: 3.4cqw;
+        line-height: 1.3;
+        color: $paper;
+    }
+
+    &__warning {
+        font-size: 5cqw;
+        color: var(--accent, #{$red});
+        animation: blink 0.4s steps(1) infinite;
+    }
+
+    &__links {
+        font-size: 1.6cqw;
+
+        a {
+            color: var(--accent, #{$red});
+            pointer-events: auto;
+        }
+    }
+
+    &__mute {
+        position: absolute;
+        right: 3cqw;
+        bottom: 2.4cqw;
+        margin: 0;
+        font-size: 1.6cqw;
+        color: color.adjust($paper, $lightness: -20%);
+    }
+
+    &__go {
+        position: absolute;
+        top: 30%;
+        right: 4cqw;
+        margin: 0;
+        font-size: 3.6cqw;
+        color: var(--accent, #{$red});
+        animation: blink 0.6s steps(1) infinite;
+    }
+}
+
+.blink-text {
+    color: var(--accent, #{$red});
+    animation: blink 1s steps(1) infinite;
+}
+
+// ---------------------------------------------------------------------------
+// Panneau de contrôle
+// ---------------------------------------------------------------------------
+.panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    height: var(--panel-h);
+    margin: var(--gap) calc(-1 * #{$gutter}) 0;
+    padding: 0 clamp(20px, 4vw, 48px);
+    background: linear-gradient(180deg, #2a2826, $cabinet);
+    border-top: 4px solid #000;
+    border-bottom: 4px solid #000;
+
+    &__help {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: clamp(0.4rem, 1vw, 0.52rem);
+        color: color.adjust($paper, $lightness: -15%);
+    }
+
+    &__buttons {
+        display: flex;
+        gap: clamp(12px, 2vw, 22px);
+    }
+}
+
+kbd {
+    display: inline-block;
+    min-width: 2.2em;
+    margin-right: 4px;
+    padding: 3px 5px;
+    font-family: $pixel;
+    text-align: center;
+    color: $ink;
+    background: $paper;
+    border-radius: 3px;
+    box-shadow: 0 3px 0 $grey;
+}
+
+.joystick {
+    --tilt-x: 0deg;
+    --tilt-y: 0px;
+    position: relative;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    margin-top: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #222 30%, #0a0a0a 70%);
+    box-shadow: inset 0 4px 8px #000, 0 2px 0 #3a3836;
+
+    // le manche suit les flèches du clavier
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transition: transform 0.06s;
+    }
+
+    &::before {
+        bottom: 50%;
+        width: 6px;
+        height: 30px;
+        margin-left: -3px;
+        background: linear-gradient(90deg, #888, #ddd, #777);
+        border-radius: 4px;
+        transform-origin: bottom center;
+        transform: translateY(var(--tilt-y)) rotate(var(--tilt-x));
+    }
+
+    &::after {
+        top: -24px;
+        width: 26px;
+        height: 26px;
+        margin-left: -13px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #ff8a9a, $red 45%, #7a0a18);
+        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.6);
+        transform-origin: 50% 48px;
+        transform: translateY(var(--tilt-y)) rotate(var(--tilt-x));
+    }
+}
+
+@mixin arcade-button($color) {
+    background: radial-gradient(circle at 35% 30%, color.adjust($color, $lightness: 20%), $color 50%, color.adjust($color, $lightness: -25%));
+    box-shadow:
+        0 6px 0 color.adjust($color, $lightness: -35%),
+        0 10px 14px rgba(0, 0, 0, 0.6);
+}
+
+// bouton + nom de la touche écrit dessous
+.arcade-btn-wrap {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    font-size: 0.42rem;
+    color: color.adjust($paper, $lightness: -10%);
+}
+
+.arcade-btn {
+    width: clamp(34px, 4.5vw, 46px);
+    aspect-ratio: 1;
+    border: 3px solid #000;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.05s;
+
+    @each $name, $color in ("red": $red, "yellow": #ffd23f, "white": $paper, "black": #4a4744) {
+        &--#{$name} {
+            @include arcade-button($color);
+        }
+    }
+
+    &:active,
+    &.is-pressed {
+        transform: translateY(5px);
+        box-shadow: 0 1px 0 #000;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Monnayeur (dans le panneau de contrôle)
+// ---------------------------------------------------------------------------
+.coin-door {
+    display: flex;
+    gap: 10px;
+
+    &__slot {
+        display: grid;
+        place-items: center;
+        gap: 5px;
+        width: 40px;
+        padding: 7px 0 6px;
+        background: #0a0909;
+        border: 2px solid #2a2826;
+        border-radius: 6px;
+        font-size: 0.4rem;
+        color: $red;
+        text-shadow: 0 0 6px $red;
+
+        &::before {
+            content: "";
+            width: 4px;
+            height: 18px;
+            border-radius: 3px;
+            background: $red;
+            box-shadow: 0 0 10px $red, 0 0 20px $red;
+        }
+    }
+}
+
+// Sur mobile, on laisse le panneau passer sur plusieurs lignes (et la page défiler)
+@media (max-width: 640px) {
+    .cabinet {
+        width: 100%;
+    }
+
+    .panel {
+        flex-wrap: wrap;
+        justify-content: center;
+        height: auto;
+        padding: 14px;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Animations
+// ---------------------------------------------------------------------------
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+@keyframes neon-flicker {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% {
+        opacity: 1;
+    }
+
+    20%, 24%, 55% {
+        opacity: 0.25;
+    }
+}
+
+@keyframes neon-title {
+    0%, 92%, 96%, 100% {
+        opacity: 1;
+    }
+
+    94% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes smoke {
+    to {
+        transform: translate(4px, -3px);
+        opacity: 0.7;
+    }
+}
+
+@keyframes crt-flicker {
+    50% {
+        opacity: 0.92;
+    }
+}
