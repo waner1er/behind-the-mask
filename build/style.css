@@ -455,49 +455,33 @@ kbd {
   -webkit-tap-highlight-color: transparent;
 }
 
-.dpad {
-  --arm: 44px;
+.touch-stick {
+  --size: 110px;
+  --kx: 0px;
+  --ky: 0px;
+  position: relative;
   display: none;
-  grid-template-columns: repeat(3, var(--arm));
-  grid-template-rows: repeat(3, var(--arm));
-  grid-template-areas: ". up ." "left center right" ". down .";
-  filter: drop-shadow(0 6px 0 #000) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.6));
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0.35) 56%);
+  border: 3px solid rgba(236, 232, 220, 0.35);
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-.dpad__arm, .dpad__center {
-  display: grid;
-  place-items: center;
-  background: linear-gradient(180deg, #3a3836, #1c1a19);
-  color: rgb(64.0522875817%, 56.7320261438%, 34.7712418301%);
-  font-size: 14px;
+.touch-stick__knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46%;
+  height: 46%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff8a9a, #e8203a 45%, #7a0a18);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+  transform: translate(calc(-50% + var(--kx)), calc(-50% + var(--ky)));
   pointer-events: none;
-}
-.dpad__arm--up {
-  grid-area: up;
-  border-radius: 8px 8px 0 0;
-}
-.dpad__arm--down {
-  grid-area: down;
-  border-radius: 0 0 8px 8px;
-}
-.dpad__arm--left {
-  grid-area: left;
-  border-radius: 8px 0 0 8px;
-}
-.dpad__arm--right {
-  grid-area: right;
-  border-radius: 0 8px 8px 0;
-}
-.dpad__arm.is-pressed {
-  background: linear-gradient(180deg, rgb(75.7197513152%, 7.8096604495%, 16.6379722621%), rgb(39.4595887135%, 4.0698230512%, 8.6704925873%));
-  color: #ece8dc;
-}
-.dpad__center {
-  grid-area: center;
-  background: radial-gradient(circle, #2a2826 40%, #1c1a19 41%);
 }
 
 .rotate-hint {
@@ -516,8 +500,8 @@ kbd {
   .joystick {
     display: none;
   }
-  .dpad {
-    display: grid;
+  .touch-stick {
+    display: block;
   }
   .hud__links a {
     touch-action: auto;
@@ -584,34 +568,33 @@ kbd {
   .panel {
     display: contents;
   }
-  .dpad,
+  .touch-stick,
   .panel__buttons,
   .panel__system {
     position: fixed;
     z-index: 5;
-    opacity: 0.6;
+    opacity: 0.65;
   }
-  .dpad {
-    --arm: min(32px, 9vh);
-    left: max(10px, env(safe-area-inset-left));
-    bottom: 10px;
-    filter: drop-shadow(0 3px 0 #000);
+  .touch-stick {
+    --size: min(120px, 34vh);
+    left: max(14px, env(safe-area-inset-left));
+    bottom: 14px;
   }
   .panel__buttons {
     right: max(10px, env(safe-area-inset-right));
     bottom: 10px;
     display: grid;
     grid-template-columns: repeat(2, auto);
-    gap: 4px 10px;
+    gap: 6px 12px;
   }
   .arcade-btn {
-    width: min(38px, 10vh);
+    width: min(50px, 14vh);
     border-width: 2px;
     box-shadow: 0 3px 0 #000;
   }
   .arcade-btn-wrap {
-    gap: 2px;
-    font-size: 0.38rem;
+    gap: 3px;
+    font-size: 0.45rem;
     text-shadow: 1px 1px 0 #000;
   }
   .panel__system {
@@ -622,8 +605,8 @@ kbd {
     gap: 6px;
   }
   .system-btn {
-    padding: 5px 8px;
-    font-size: 0.38rem;
+    padding: 9px 12px;
+    font-size: 0.5rem;
   }
 }
 @keyframes blink {

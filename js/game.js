@@ -125,7 +125,7 @@
         button.addEventListener('contextmenu', (e) => e.preventDefault()); // appui long sur mobile
     });
 
-    // Croix directionnelle (mobile) et stick dessiné : on pose le doigt et on le fait glisser,
+    // Stick tactile (mobile) et stick dessiné : on pose le doigt et on le fait glisser,
     // la position par rapport au centre devient des flèches. On suit le doigt par son identifiant,
     // même s'il sort du dessin.
     const ARROWS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
@@ -133,10 +133,21 @@
     function directional(pad) {
         let finger = null;
 
+        const knob = pad.querySelector('.touch-stick__knob');
         const steer = (e) => {
             const box = pad.getBoundingClientRect();
             const dx = e.clientX - (box.left + box.width / 2);
             const dy = e.clientY - (box.top + box.height / 2);
+
+            // le bouton du stick suit le pouce, sans sortir du socle
+            if (knob) {
+                const max = box.width / 2 - knob.offsetWidth / 2;
+                const length = Math.hypot(dx, dy) || 1;
+                const ratio = Math.min(1, max / length);
+                pad.style.setProperty('--kx', `${dx * ratio}px`);
+                pad.style.setProperty('--ky', `${dy * ratio}px`);
+            }
+
             const dead = box.width * 0.15; // zone morte au centre
             const wanted = new Set();
             if (dx < -dead) wanted.add('ArrowLeft');
@@ -152,6 +163,8 @@
             if (e.pointerId !== finger) return;
             finger = null;
             ARROWS.forEach((arrow) => keys.delete(arrow));
+            pad.style.setProperty('--kx', '0px');
+            pad.style.setProperty('--ky', '0px');
         };
 
         pad.addEventListener('pointerdown', (e) => {
@@ -167,13 +180,13 @@
         addEventListener('pointercancel', release);
     }
 
-    document.querySelectorAll('[data-joystick], [data-dpad]').forEach(directional);
+    document.querySelectorAll('[data-joystick], [data-touch-stick]').forEach(directional);
 
     // -----------------------------------------------------------------------
     // Mobile : seuls START, la croix et les boutons réagissent au doigt
     // (pas de zoom au double-tap, pas de pincement, pas de défilement)
     // -----------------------------------------------------------------------
-    const CONTROLS = '[data-key], [data-dpad], [data-joystick], a';
+    const CONTROLS = '[data-key], [data-touch-stick], [data-joystick], a';
 
     document.addEventListener('touchstart', (e) => {
         if (!e.target.closest('a')) e.preventDefault();
@@ -1256,7 +1269,7 @@
         const dy = (keys.has('ArrowDown') ? 1 : 0) - (keys.has('ArrowUp') ? 1 : 0);
         joystick.style.setProperty('--tilt-x', `${dx * 20}deg`);
         joystick.style.setProperty('--tilt-y', `${dy * 14}px`);
-        document.querySelectorAll('[data-key], [data-dir]').forEach((b) => b.classList.toggle('is-pressed', keys.has(b.dataset.key ?? b.dataset.dir)));
+        document.querySelectorAll('[data-key]').forEach((b) => b.classList.toggle('is-pressed', keys.has(b.dataset.key)));
     }
 
     // -----------------------------------------------------------------------

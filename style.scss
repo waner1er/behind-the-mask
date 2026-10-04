@@ -573,63 +573,35 @@ kbd {
 }
 
 // ---------------------------------------------------------------------------
-// Croix directionnelle (affichée seulement sur écran tactile)
+// Stick tactile (affiché seulement sur écran tactile) : un socle et un bouton qui suit le pouce
 // ---------------------------------------------------------------------------
-.dpad {
-    --arm: 44px;
+.touch-stick {
+    --size: 110px;
+    --kx: 0px;
+    --ky: 0px;
+    position: relative;
     display: none;
-    grid-template-columns: repeat(3, var(--arm));
-    grid-template-rows: repeat(3, var(--arm));
-    grid-template-areas:
-        ". up ."
-        "left center right"
-        ". down .";
-    filter: drop-shadow(0 6px 0 #000) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.6));
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0.35) 56%);
+    border: 3px solid rgba($paper, 0.35);
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
 
-    &__arm,
-    &__center {
-        display: grid;
-        place-items: center;
-        background: linear-gradient(180deg, #3a3836, #1c1a19);
-        color: color.adjust($paper, $lightness: -40%);
-        font-size: 14px;
-        pointer-events: none; // c'est la croix entière qui écoute le doigt
-    }
-
-    &__arm {
-        &--up {
-            grid-area: up;
-            border-radius: 8px 8px 0 0;
-        }
-
-        &--down {
-            grid-area: down;
-            border-radius: 0 0 8px 8px;
-        }
-
-        &--left {
-            grid-area: left;
-            border-radius: 8px 0 0 8px;
-        }
-
-        &--right {
-            grid-area: right;
-            border-radius: 0 8px 8px 0;
-        }
-
-        &.is-pressed {
-            background: linear-gradient(180deg, color.adjust($red, $lightness: -10%), color.adjust($red, $lightness: -30%));
-            color: $paper;
-        }
-    }
-
-    &__center {
-        grid-area: center;
-        background: radial-gradient(circle, #2a2826 40%, #1c1a19 41%);
+    &__knob {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 46%;
+        height: 46%;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #ff8a9a, $red 45%, #7a0a18);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        transform: translate(calc(-50% + var(--kx)), calc(-50% + var(--ky)));
+        pointer-events: none; // c'est le socle entier qui écoute le doigt
     }
 }
 
@@ -656,8 +628,8 @@ kbd {
         display: none;
     }
 
-    .dpad {
-        display: grid;
+    .touch-stick {
+        display: block;
     }
 
     .hud__links a {
@@ -742,19 +714,18 @@ kbd {
         display: contents;
     }
 
-    .dpad,
+    .touch-stick,
     .panel__buttons,
     .panel__system {
         position: fixed;
         z-index: 5;
-        opacity: 0.6;
+        opacity: 0.65;
     }
 
-    .dpad {
-        --arm: min(32px, 9vh);
-        left: max(10px, env(safe-area-inset-left));
-        bottom: 10px;
-        filter: drop-shadow(0 3px 0 #000);
+    .touch-stick {
+        --size: min(120px, 34vh);
+        left: max(14px, env(safe-area-inset-left));
+        bottom: 14px;
     }
 
     .panel__buttons {
@@ -762,18 +733,18 @@ kbd {
         bottom: 10px;
         display: grid;
         grid-template-columns: repeat(2, auto);
-        gap: 4px 10px;
+        gap: 6px 12px;
     }
 
     .arcade-btn {
-        width: min(38px, 10vh);
+        width: min(50px, 14vh);
         border-width: 2px;
         box-shadow: 0 3px 0 #000;
     }
 
     .arcade-btn-wrap {
-        gap: 2px;
-        font-size: 0.38rem;
+        gap: 3px;
+        font-size: 0.45rem;
         text-shadow: 1px 1px 0 #000;
     }
 
@@ -786,8 +757,8 @@ kbd {
     }
 
     .system-btn {
-        padding: 5px 8px;
-        font-size: 0.38rem;
+        padding: 9px 12px;
+        font-size: 0.5rem;
     }
 }
 

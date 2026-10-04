@@ -107,14 +107,10 @@ $game = [
         </div>
 
         <div class="panel">
-            <!-- ordinateur : le stick suit les flèches du clavier ; mobile : croix directionnelle -->
+            <!-- ordinateur : le stick suit les flèches du clavier ; mobile : stick tactile -->
             <div class="joystick" data-joystick aria-label="Joystick"></div>
-            <div class="dpad" data-dpad aria-label="Croix directionnelle">
-                <span class="dpad__arm dpad__arm--up" data-dir="ArrowUp">▲</span>
-                <span class="dpad__arm dpad__arm--left" data-dir="ArrowLeft">◀</span>
-                <span class="dpad__center"></span>
-                <span class="dpad__arm dpad__arm--right" data-dir="ArrowRight">▶</span>
-                <span class="dpad__arm dpad__arm--down" data-dir="ArrowDown">▼</span>
+            <div class="touch-stick" data-touch-stick aria-label="Stick">
+                <span class="touch-stick__knob"></span>
             </div>
             <ul class="panel__help">
                 <li><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> marcher · <kbd>ENTRÉE</kbd> start</li>
