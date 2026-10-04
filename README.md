@@ -22,23 +22,33 @@ Au clavier, ou sur mobile avec le stick et les boutons dessinés sur la borne (p
 
 ## Comment c'est fait
 
-- **PHP** génère tout le pixel art : les sprites sont décrits en texte (1 caractère = 1 pixel) dans `src/sprites/`, le décor est procédural (`src/Scene.php`), les niveaux viennent des paroles de l'album (`medias/audio/…/paroles.md`, lues par `src/Album.php`).
-- **JavaScript** (`js/game.js`) fait tourner le jeu à 60 images/s ; `js/sfx.js` synthétise les bruitages 16 bits et joue la musique.
+- **PHP** (`src/`, namespace `Vigilante\`) génère tout le pixel art : les sprites sont décrits en texte (1 caractère = 1 pixel), les décors sont procéduraux (SVG), les niveaux viennent des paroles de l'album (`medias/audio/…/paroles.md`) et de `config/`.
+- **JavaScript** (`js/`, modules ES) fait tourner le jeu à 60 images/s et synthétise les bruitages 16 bits.
 - **SCSS** (`style.scss` → `build/style.css`) dessine la borne.
+
+Documentation : [architecture](docs/architecture.md) · [référence PHP](docs/php.md) · [référence JavaScript](docs/javascript.md) · [modifier le contenu](docs/content.md) · [développer, tester, publier](docs/workflow.md).
 
 ## Lancer en local
 
 ```bash
-php -S localhost:8000          # le jeu, généré à la volée par PHP
-sass --watch style.scss build/style.css
+composer install && npm install
+composer serve                 # http://localhost:8000, généré à la volée par PHP
+npm run css:watch              # styles de la borne
+```
+
+## Vérifier
+
+```bash
+composer check                 # PSR-12, PHPStan, PHPUnit (dont snapshots des décors et sprites)
+npm run test:e2e               # le jeu en entier dans Chrome headless
 ```
 
 ## Publier (GitHub Pages)
 
-GitHub Pages n'exécute pas PHP : on génère une version statique avant de pousser.
+GitHub Pages n'exécute pas PHP : on génère une version statique, qu'on commite.
 
 ```bash
-php tools/build.php            # écrit index.html et scenes/level-N.html
+composer build                 # écrit index.html et scenes/level-N.html
 ```
 
 Musique et paroles © 2026 Vigilante.

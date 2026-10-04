@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vigilante\Album;
 
+/** L'album lu depuis paroles.md : un niveau du jeu par morceau. */
 final readonly class Album
 {
     /**
