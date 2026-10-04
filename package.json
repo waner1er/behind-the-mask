@@ -1,0 +1,16 @@
+{
+    "name": "behind-the-mask",
+    "private": true,
+    "type": "module",
+    "description": "Outils front : compilation du SCSS, vérification des modules JS, tests de bout en bout.",
+    "scripts": {
+        "css": "sass style.scss build/style.css",
+        "css:watch": "sass --watch style.scss build/style.css",
+        "lint:js": "for f in $(find js -name '*.js'); do node --check \"$f\" || exit 1; done",
+        "test:e2e": "node --test --test-concurrency=1 \"tests/e2e/*.test.mjs\""
+    },
+    "devDependencies": {
+        "playwright-core": "^1.55.0",
+        "sass": "^1.80.0"
+    }
+}
