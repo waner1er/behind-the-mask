@@ -51,7 +51,7 @@ $game = [
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?= $band ?> - <?= $title ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -104,7 +104,8 @@ $game = [
         </div>
 
         <div class="panel">
-            <div class="joystick" data-joystick aria-hidden="true"></div>
+            <!-- sur mobile, on fait glisser le doigt sur le stick -->
+            <div class="joystick" data-joystick aria-label="Joystick"></div>
             <ul class="panel__help">
                 <li><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> marcher · <kbd>ENTRÉE</kbd> start</li>
                 <li><kbd>ESPACE</kbd> coup de jo · <kbd>B</kbd> coup de pied sauté</li>
@@ -117,6 +118,10 @@ $game = [
                         <span><?= $label ?></span>
                     </label>
                 <?php endforeach; ?>
+            </div>
+            <div class="panel__system">
+                <button class="system-btn" type="button" data-key="Enter">START</button>
+                <button class="system-btn" type="button" data-key="KeyM">♪</button>
             </div>
             <div class="coin-door">
                 <?php for ($i = 0; $i < 2; $i++): ?>

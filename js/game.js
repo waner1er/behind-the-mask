@@ -100,11 +100,56 @@
     addEventListener('keyup', (e) => keys.delete(e.code));
     addEventListener('blur', () => keys.clear());
 
+    // le son ne peut démarrer que pendant un geste de l'utilisateur (surtout sur mobile)
+    ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, () => window.Sfx?.unlock(), { capture: true }));
+
+    // Boutons de la borne : au doigt ou à la souris
     document.querySelectorAll('[data-key]').forEach((button) => {
-        button.addEventListener('pointerdown', () => press(button.dataset.key));
-        button.addEventListener('pointerup', () => keys.delete(button.dataset.key));
-        button.addEventListener('pointerleave', () => keys.delete(button.dataset.key));
+        const release = () => keys.delete(button.dataset.key);
+        button.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            button.setPointerCapture(e.pointerId);
+            press(button.dataset.key);
+        });
+        button.addEventListener('pointerup', release);
+        button.addEventListener('pointercancel', release);
+        button.addEventListener('contextmenu', (e) => e.preventDefault()); // appui long sur mobile
     });
+
+    // Joystick tactile : on fait glisser le doigt, la direction devient des flèches
+    const stick = document.querySelector('[data-joystick]');
+    const ARROWS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+
+    function steer(e) {
+        const box = stick.getBoundingClientRect();
+        const dx = e.clientX - (box.left + box.width / 2);
+        const dy = e.clientY - (box.top + box.height / 2);
+        const dead = box.width * 0.18; // zone morte au centre
+        const wanted = new Set();
+        if (dx < -dead) wanted.add('ArrowLeft');
+        if (dx > dead) wanted.add('ArrowRight');
+        if (dy < -dead) wanted.add('ArrowUp');
+        if (dy > dead) wanted.add('ArrowDown');
+        for (const arrow of ARROWS) {
+            if (wanted.has(arrow)) press(arrow);
+            else keys.delete(arrow);
+        }
+    }
+
+    function releaseStick() {
+        ARROWS.forEach((arrow) => keys.delete(arrow));
+    }
+
+    stick.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        stick.setPointerCapture(e.pointerId);
+        steer(e);
+    });
+    stick.addEventListener('pointermove', (e) => {
+        if (stick.hasPointerCapture(e.pointerId)) steer(e);
+    });
+    stick.addEventListener('pointerup', releaseStick);
+    stick.addEventListener('pointercancel', releaseStick);
 
     // -----------------------------------------------------------------------
     // Son : la musique du niveau + petits bips 8-bit (Web Audio API)
@@ -240,7 +285,7 @@
             `<span class="hud__small">SELECT TRACK</span><br>`
             + `<span class="hud__track">◀ ${pad(level.number, 2)} ${level.title} ▶</span>`
             + (level.feat ? `<br><span class="hud__small">FEAT. ${level.feat}</span>` : '')
-            + `<br><br><span class="blink-text">INSERT COIN · PRESS ENTER</span>`
+            + `<br><br><span class="blink-text">INSERT COIN · PRESS START</span>`
         );
         hud.level.textContent = 'HI-SCORE';
     }
@@ -332,7 +377,7 @@
                     `THANKS FOR PLAYING<br><br><span class="hud__track">VIGILANTE</span><br>`
                     + `<span class="hud__small">BEHIND THE MASK</span><br><br>`
                     + `<span class="hud__links">${links}</span><br><br>`
-                    + `<span class="hud__small">SCORE ${pad(state.score)}</span><br><span class="blink-text">PRESS ENTER</span>`
+                    + `<span class="hud__small">SCORE ${pad(state.score)}</span><br><span class="blink-text">PRESS START</span>`
                 );
             }
         }
@@ -642,7 +687,7 @@
             // on coupe la musique du niveau et on joue le jingle d'échec
             window.Sfx?.stopMusic();
             sfx('gameOver');
-            message('IF YOU KILL A MONSTER<br>YOU CAN BECOME A MONSTER<br><br><span class="blink-text">GAME OVER · ENTER TO CONTINUE</span>');
+            message('IF YOU KILL A MONSTER<br>YOU CAN BECOME A MONSTER<br><br><span class="blink-text">GAME OVER · START TO CONTINUE</span>');
             return;
         }
         Object.assign(p, { hp: p.maxHp, invuln: 120, vx: 0 });

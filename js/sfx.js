@@ -330,6 +330,10 @@ window.Sfx = (() => {
             if (url && init()) loadTrack(url).catch(() => {});
         },
         stopMusic: () => ctx && stopMusic(),
+        /** À appeler pendant un geste de l'utilisateur (iOS/Android n'autorisent le son qu'à ce moment-là). */
+        unlock() {
+            if (init() && ctx.state === 'suspended') ctx.resume();
+        },
         /** Morceau en cours de lecture (null si rien ou en chargement). */
         get playing() {
             return music?.source ? music.url : null;

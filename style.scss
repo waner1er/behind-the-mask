@@ -536,17 +536,198 @@ kbd {
     }
 }
 
-// Sur mobile, on laisse le panneau passer sur plusieurs lignes (et la page défiler)
-@media (max-width: 640px) {
+// Boutons START et musique
+.panel__system {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.system-btn {
+    padding: 6px 10px;
+    font-family: $pixel;
+    font-size: 0.45rem;
+    color: $ink;
+    background: $paper;
+    border: 2px solid #000;
+    border-radius: 6px;
+    box-shadow: 0 3px 0 $grey;
+    cursor: pointer;
+
+    &:active,
+    &.is-pressed {
+        transform: translateY(2px);
+        box-shadow: 0 1px 0 $grey;
+    }
+}
+
+// Au doigt : pas de zoom, pas de sélection, pas de défilement sur les commandes
+.joystick,
+.arcade-btn,
+.arcade-btn-wrap,
+.system-btn {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+// ---------------------------------------------------------------------------
+// Mobile : on joue avec le stick dessiné et les boutons de la borne
+// ---------------------------------------------------------------------------
+
+// Téléphone en portrait : écran en haut, commandes en dessous
+@media (max-width: 760px) and (orientation: portrait) {
+    body {
+        place-items: start stretch;
+        padding: 0;
+    }
+
     .cabinet {
+        --logo-h: min(24vw, 120px);
+        --gutter: 10px;
+        display: flex;
+        flex-direction: column;
         width: 100%;
+        min-height: 100dvh;
+        border-radius: 0;
+        box-shadow: none;
+
+        &::before,
+        &::after {
+            display: none;
+        }
+    }
+
+    .marquee {
+        border-radius: 0;
+
+        &__copyright {
+            display: none;
+        }
     }
 
     .panel {
-        flex-wrap: wrap;
-        justify-content: center;
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: 1fr auto;
+        align-items: center;
+        gap: 12px 8px;
         height: auto;
-        padding: 14px;
+        padding: 16px 20px 24px;
+    }
+
+    .panel__help,
+    .coin-door {
+        display: none;
+    }
+
+    .joystick {
+        grid-row: 1 / 3;
+        justify-self: center;
+        transform: scale(2.4);
+        margin: 40px 0 0;
+    }
+
+    .panel__buttons {
+        display: grid;
+        grid-template-columns: repeat(2, auto);
+        gap: 14px 18px;
+    }
+
+    .arcade-btn {
+        width: 62px;
+    }
+
+    .arcade-btn-wrap {
+        font-size: 0.55rem;
+    }
+
+    .panel__system {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .system-btn {
+        padding: 10px 14px;
+        font-size: 0.55rem;
+    }
+}
+
+// Téléphone en paysage : écran au centre, stick à gauche, boutons à droite
+@media (orientation: landscape) and (max-height: 520px) {
+    body {
+        padding: 0;
+    }
+
+    .cabinet {
+        --bezel-pad: 6px;
+        display: grid;
+        grid-template-columns: minmax(140px, 1fr) auto minmax(140px, 1fr);
+        grid-template-rows: 1fr auto;
+        align-items: center;
+        width: 100%;
+        height: 100dvh;
+        padding: 8px max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left));
+        border-radius: 0;
+        box-shadow: none;
+
+        &::before,
+        &::after {
+            display: none;
+        }
+    }
+
+    .marquee,
+    .panel__help,
+    .coin-door {
+        display: none;
+    }
+
+    // l'écran prend la place qui reste entre les deux colonnes de commandes
+    .bezel {
+        grid-column: 2;
+        grid-row: 1 / 3;
+        height: min(calc(100dvh - 16px), calc((100vw - 300px) * 9 / 16 + 12px));
+    }
+
+    .screen {
+        height: 100%;
+        width: auto;
+    }
+
+    // le panneau s'efface : ses éléments se placent directement dans la grille
+    .panel {
+        display: contents;
+    }
+
+    .joystick {
+        grid-column: 1;
+        grid-row: 1 / 3;
+        justify-self: center;
+        transform: scale(1.8);
+        margin-top: 20px;
+    }
+
+    .panel__buttons {
+        grid-column: 3;
+        grid-row: 1;
+        justify-self: center;
+        display: grid;
+        grid-template-columns: repeat(2, auto);
+        gap: 8px 14px;
+    }
+
+    .arcade-btn {
+        width: 46px;
+    }
+
+    .panel__system {
+        grid-column: 3;
+        grid-row: 2;
+        flex-direction: row;
+        justify-content: center;
     }
 }
 

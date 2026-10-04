@@ -423,15 +423,161 @@ kbd {
   box-shadow: 0 0 10px #e8203a, 0 0 20px #e8203a;
 }
 
-@media (max-width: 640px) {
+.panel__system {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.system-btn {
+  padding: 6px 10px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.45rem;
+  color: #0e0d0c;
+  background: #ece8dc;
+  border: 2px solid #000;
+  border-radius: 6px;
+  box-shadow: 0 3px 0 #5e5a52;
+  cursor: pointer;
+}
+.system-btn:active, .system-btn.is-pressed {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #5e5a52;
+}
+
+.joystick,
+.arcade-btn,
+.arcade-btn-wrap,
+.system-btn {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  body {
+    place-items: start stretch;
+    padding: 0;
+  }
   .cabinet {
+    --logo-h: min(24vw, 120px);
+    --gutter: 10px;
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    min-height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .cabinet::before, .cabinet::after {
+    display: none;
+  }
+  .marquee {
+    border-radius: 0;
+  }
+  .marquee__copyright {
+    display: none;
   }
   .panel {
-    flex-wrap: wrap;
-    justify-content: center;
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    gap: 12px 8px;
     height: auto;
-    padding: 14px;
+    padding: 16px 20px 24px;
+  }
+  .panel__help,
+  .coin-door {
+    display: none;
+  }
+  .joystick {
+    grid-row: 1/3;
+    justify-self: center;
+    transform: scale(2.4);
+    margin: 40px 0 0;
+  }
+  .panel__buttons {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 14px 18px;
+  }
+  .arcade-btn {
+    width: 62px;
+  }
+  .arcade-btn-wrap {
+    font-size: 0.55rem;
+  }
+  .panel__system {
+    flex-direction: row;
+    justify-content: center;
+  }
+  .system-btn {
+    padding: 10px 14px;
+    font-size: 0.55rem;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  body {
+    padding: 0;
+  }
+  .cabinet {
+    --bezel-pad: 6px;
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) auto minmax(140px, 1fr);
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    width: 100%;
+    height: 100dvh;
+    padding: 8px max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left));
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .cabinet::before, .cabinet::after {
+    display: none;
+  }
+  .marquee,
+  .panel__help,
+  .coin-door {
+    display: none;
+  }
+  .bezel {
+    grid-column: 2;
+    grid-row: 1/3;
+    height: min(100dvh - 16px, (100vw - 300px) * 9 / 16 + 12px);
+  }
+  .screen {
+    height: 100%;
+    width: auto;
+  }
+  .panel {
+    display: contents;
+  }
+  .joystick {
+    grid-column: 1;
+    grid-row: 1/3;
+    justify-self: center;
+    transform: scale(1.8);
+    margin-top: 20px;
+  }
+  .panel__buttons {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: center;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 8px 14px;
+  }
+  .arcade-btn {
+    width: 46px;
+  }
+  .panel__system {
+    grid-column: 3;
+    grid-row: 2;
+    flex-direction: row;
+    justify-content: center;
   }
 }
 @keyframes blink {

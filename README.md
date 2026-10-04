@@ -7,6 +7,8 @@ Un niveau par morceau, le morceau en musique de fond et un boss dédié à la fi
 
 ## Commandes
 
+Au clavier, ou sur mobile avec le stick et les boutons dessinés sur la borne (portrait ou paysage).
+
 | Touche | Action |
 |---|---|
 | ← → ↑ ↓ | marcher |
