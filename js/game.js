@@ -292,6 +292,7 @@
         locked: false,
         waveIndex: 0,
         score: 0,
+        kills: 0, // ennemis mis K.O. : un cœur tous les 10
         hiscore: loadHiscore(),
         lives: 3,
         player: null,
@@ -414,6 +415,7 @@
         }
         if (pressed.has('Enter') || pressed.has('Space')) {
             state.score = 0;
+            state.kills = 0;
             state.lives = 3;
             sfx('start');
             hud.root.classList.remove('hud--home');
@@ -1081,6 +1083,10 @@
                 spawnPickup('beer', e.x, e.y, { fly: true });
             }
             if (Math.random() < 0.07) spawnPickup('vinyls', e.x, e.y, { fly: true });
+
+            // tous les 10 ennemis mis K.O., un cœur tombe : il rend la moitié de la vie
+            state.kills++;
+            if (state.kills % 10 === 0) spawnPickup('life', e.x, e.y, { fly: true });
         }
     }
 
@@ -1093,14 +1099,18 @@
                 item.vz -= 0.18;
                 if (item.z <= 0) Object.assign(item, { z: 0, vz: 0, vx: 0 });
             }
-            return item.t < 600;
+            return item.t < (item.kind === 'life' ? 1800 : 600); // un cœur reste 30 s
         });
     }
 
     function collectPickups(p) {
         state.pickups = state.pickups.filter((item) => {
             if (item.z === 0 && Math.abs(item.x - p.x) < 10 && Math.abs(item.y - p.y) < 6) {
-                if (item.kind === 'vinyls') {
+                if (item.kind === 'life') {
+                    const heal = Math.round(p.maxHp / 2);
+                    p.hp = Math.min(p.maxHp, p.hp + heal);
+                    shout('+50% VIE !', p.x, p.y - 48, '#ff3ea5');
+                } else if (item.kind === 'vinyls') {
                     p.vinyls = Math.min(VINYL.max, p.vinyls + VINYL.perCrate);
                     shout(`VINYL x${VINYL.perCrate}!`, p.x, p.y - 48, '#ffd23f');
                 } else if (item.kind === 'weapon') {
@@ -1662,6 +1672,7 @@
                 if (pressed.has('Enter')) {
                     // continue : on recommence le niveau, le score repart à zéro
                     state.score = 0;
+                    state.kills = 0;
                     state.lives = 3;
                     startLevel(state.levelIndex);
                 }
@@ -1965,7 +1976,8 @@
         }
 
         for (const item of state.pickups) {
-            if (item.t > 480 && item.t % 6 < 3) continue;
+            const lifetime = item.kind === 'life' ? 1800 : 600;
+            if (item.t > lifetime - 120 && item.t % 6 < 3) continue; // clignote avant de disparaître
             const image = item.kind === 'weapon' ? weaponIcons[item.weapon] : items[item.kind];
             const bob = item.z > 0 ? 0 : Math.floor(item.t / 20) % 2;
             drawShadow(item.x, item.y, Math.max(4, image.width / 2));
