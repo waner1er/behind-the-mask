@@ -573,90 +573,130 @@ kbd {
 }
 
 // ---------------------------------------------------------------------------
-// Mobile : on joue avec le stick dessiné et les boutons de la borne
+// Croix directionnelle (affichée seulement sur écran tactile)
 // ---------------------------------------------------------------------------
+.dpad {
+    --arm: 44px;
+    display: none;
+    grid-template-columns: repeat(3, var(--arm));
+    grid-template-rows: repeat(3, var(--arm));
+    grid-template-areas:
+        ". up ."
+        "left center right"
+        ". down .";
+    filter: drop-shadow(0 6px 0 #000) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.6));
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 
-// Téléphone en portrait : écran en haut, commandes en dessous
-@media (max-width: 760px) and (orientation: portrait) {
-    body {
-        place-items: start stretch;
-        padding: 0;
+    &__arm,
+    &__center {
+        display: grid;
+        place-items: center;
+        background: linear-gradient(180deg, #3a3836, #1c1a19);
+        color: color.adjust($paper, $lightness: -40%);
+        font-size: 14px;
+        pointer-events: none; // c'est la croix entière qui écoute le doigt
     }
 
-    .cabinet {
-        --logo-h: min(24vw, 120px);
-        --gutter: 10px;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        min-height: 100dvh;
-        border-radius: 0;
-        box-shadow: none;
+    &__arm {
+        &--up {
+            grid-area: up;
+            border-radius: 8px 8px 0 0;
+        }
 
-        &::before,
-        &::after {
-            display: none;
+        &--down {
+            grid-area: down;
+            border-radius: 0 0 8px 8px;
+        }
+
+        &--left {
+            grid-area: left;
+            border-radius: 8px 0 0 8px;
+        }
+
+        &--right {
+            grid-area: right;
+            border-radius: 0 8px 8px 0;
+        }
+
+        &.is-pressed {
+            background: linear-gradient(180deg, color.adjust($red, $lightness: -10%), color.adjust($red, $lightness: -30%));
+            color: $paper;
         }
     }
 
-    .marquee {
-        border-radius: 0;
-
-        &__copyright {
-            display: none;
-        }
-    }
-
-    .panel {
-        flex: 1;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        grid-template-rows: 1fr auto;
-        align-items: center;
-        gap: 12px 8px;
-        height: auto;
-        padding: 16px 20px 24px;
-    }
-
-    .panel__help,
-    .coin-door {
-        display: none;
-    }
-
-    .joystick {
-        grid-row: 1 / 3;
-        justify-self: center;
-        transform: scale(2.4);
-        margin: 40px 0 0;
-    }
-
-    .panel__buttons {
-        display: grid;
-        grid-template-columns: repeat(2, auto);
-        gap: 14px 18px;
-    }
-
-    .arcade-btn {
-        width: 62px;
-    }
-
-    .arcade-btn-wrap {
-        font-size: 0.55rem;
-    }
-
-    .panel__system {
-        flex-direction: row;
-        justify-content: center;
-    }
-
-    .system-btn {
-        padding: 10px 14px;
-        font-size: 0.55rem;
+    &__center {
+        grid-area: center;
+        background: radial-gradient(circle, #2a2826 40%, #1c1a19 41%);
     }
 }
 
-// Téléphone en paysage : écran au centre, stick à gauche, boutons à droite
-@media (orientation: landscape) and (max-height: 520px) {
+// Message "tourne ton téléphone", caché par défaut
+.rotate-hint {
+    display: none;
+}
+
+// ---------------------------------------------------------------------------
+// Écran tactile : croix + boutons, uniquement en paysage
+// ---------------------------------------------------------------------------
+@media (pointer: coarse) {
+    // rien d'autre que les commandes ne réagit au doigt : pas de zoom, pas de défilement
+    html,
+    body {
+        touch-action: none;
+        overscroll-behavior: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    .joystick {
+        display: none;
+    }
+
+    .dpad {
+        display: grid;
+    }
+
+    .hud__links a {
+        touch-action: auto;
+    }
+}
+
+// Portrait : on demande de tourner le téléphone
+@media (pointer: coarse) and (orientation: portrait) {
+    .cabinet {
+        visibility: hidden;
+    }
+
+    .rotate-hint {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-content: center;
+        gap: 24px;
+        text-align: center;
+        font-size: 0.8rem;
+        line-height: 1.8;
+        color: $paper;
+        background: $ink;
+
+        p {
+            margin: 0;
+        }
+
+        &__icon {
+            font-size: 64px;
+            animation: rotate-phone 2s ease-in-out infinite;
+        }
+    }
+}
+
+// Paysage : écran au centre, croix à gauche, boutons à droite
+@media (pointer: coarse) and (orientation: landscape) {
     body {
         padding: 0;
     }
@@ -664,7 +704,7 @@ kbd {
     .cabinet {
         --bezel-pad: 6px;
         display: grid;
-        grid-template-columns: minmax(140px, 1fr) auto minmax(140px, 1fr);
+        grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr);
         grid-template-rows: 1fr auto;
         align-items: center;
         width: 100%;
@@ -689,7 +729,7 @@ kbd {
     .bezel {
         grid-column: 2;
         grid-row: 1 / 3;
-        height: min(calc(100dvh - 16px), calc((100vw - 300px) * 9 / 16 + 12px));
+        height: min(calc(100dvh - 16px), calc((100vw - 320px) * 9 / 16 + 12px));
     }
 
     .screen {
@@ -702,12 +742,11 @@ kbd {
         display: contents;
     }
 
-    .joystick {
+    .dpad {
+        --arm: min(44px, 13vh);
         grid-column: 1;
         grid-row: 1 / 3;
         justify-self: center;
-        transform: scale(1.8);
-        margin-top: 20px;
     }
 
     .panel__buttons {
@@ -720,7 +759,7 @@ kbd {
     }
 
     .arcade-btn {
-        width: 46px;
+        width: min(48px, 14vh);
     }
 
     .panel__system {
@@ -764,6 +803,16 @@ kbd {
     to {
         transform: translate(4px, -3px);
         opacity: 0.7;
+    }
+}
+
+@keyframes rotate-phone {
+    0%, 20% {
+        transform: rotate(0deg);
+    }
+
+    50%, 80% {
+        transform: rotate(-90deg);
     }
 }
 

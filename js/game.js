@@ -125,48 +125,76 @@
         button.addEventListener('contextmenu', (e) => e.preventDefault()); // appui long sur mobile
     });
 
-    // Joystick tactile : on pose le doigt et on le fait glisser, la direction devient des flèches.
-    // On suit le doigt par son identifiant, même s'il sort du dessin du stick.
-    const stick = document.querySelector('[data-joystick]');
+    // Croix directionnelle (mobile) et stick dessiné : on pose le doigt et on le fait glisser,
+    // la position par rapport au centre devient des flèches. On suit le doigt par son identifiant,
+    // même s'il sort du dessin.
     const ARROWS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-    let stickFinger = null;
 
-    function steer(e) {
-        const box = stick.getBoundingClientRect();
-        const dx = e.clientX - (box.left + box.width / 2);
-        const dy = e.clientY - (box.top + box.height / 2);
-        const dead = box.width * 0.15; // zone morte au centre
-        const wanted = new Set();
-        if (dx < -dead) wanted.add('ArrowLeft');
-        if (dx > dead) wanted.add('ArrowRight');
-        if (dy < -dead) wanted.add('ArrowUp');
-        if (dy > dead) wanted.add('ArrowDown');
-        for (const arrow of ARROWS) {
-            if (wanted.has(arrow)) press(arrow);
-            else keys.delete(arrow);
-        }
+    function directional(pad) {
+        let finger = null;
+
+        const steer = (e) => {
+            const box = pad.getBoundingClientRect();
+            const dx = e.clientX - (box.left + box.width / 2);
+            const dy = e.clientY - (box.top + box.height / 2);
+            const dead = box.width * 0.15; // zone morte au centre
+            const wanted = new Set();
+            if (dx < -dead) wanted.add('ArrowLeft');
+            if (dx > dead) wanted.add('ArrowRight');
+            if (dy < -dead) wanted.add('ArrowUp');
+            if (dy > dead) wanted.add('ArrowDown');
+            for (const arrow of ARROWS) {
+                if (wanted.has(arrow)) press(arrow);
+                else keys.delete(arrow);
+            }
+        };
+        const release = (e) => {
+            if (e.pointerId !== finger) return;
+            finger = null;
+            ARROWS.forEach((arrow) => keys.delete(arrow));
+        };
+
+        pad.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            finger = e.pointerId;
+            capture(pad, e);
+            steer(e);
+        });
+        addEventListener('pointermove', (e) => {
+            if (e.pointerId === finger) steer(e);
+        }, { passive: true });
+        addEventListener('pointerup', release);
+        addEventListener('pointercancel', release);
     }
 
-    function releaseStick(e) {
-        if (e.pointerId !== stickFinger) return;
-        stickFinger = null;
-        ARROWS.forEach((arrow) => keys.delete(arrow));
-    }
+    document.querySelectorAll('[data-joystick], [data-dpad]').forEach(directional);
 
-    stick.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        stickFinger = e.pointerId;
-        capture(stick, e);
-        steer(e);
+    // -----------------------------------------------------------------------
+    // Mobile : seuls START, la croix et les boutons réagissent au doigt
+    // (pas de zoom au double-tap, pas de pincement, pas de défilement)
+    // -----------------------------------------------------------------------
+    const CONTROLS = '[data-key], [data-dpad], [data-joystick], a';
+
+    document.addEventListener('touchstart', (e) => {
+        if (!e.target.closest('a')) e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    document.addEventListener('dblclick', (e) => e.preventDefault());
+    document.addEventListener('gesturestart', (e) => e.preventDefault()); // pincement sur iPhone
+    document.addEventListener('contextmenu', (e) => {
+        if (!e.target.closest(CONTROLS)) e.preventDefault();
     });
-    addEventListener('pointermove', (e) => {
-        if (e.pointerId === stickFinger) steer(e);
-    }, { passive: true });
-    addEventListener('pointerup', releaseStick);
-    addEventListener('pointercancel', releaseStick);
-    // empêche le navigateur de faire défiler / zoomer quand on touche les commandes
-    document.querySelectorAll('[data-joystick], [data-key]').forEach((el) => {
-        el.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+
+    // Au premier appui sur mobile : plein écran et paysage (là où le navigateur l'accepte)
+    const isTouch = matchMedia('(pointer: coarse)').matches;
+    let landscapeAsked = false;
+    addEventListener('pointerdown', () => {
+        if (!isTouch || landscapeAsked) return;
+        landscapeAsked = true;
+        const root = document.documentElement;
+        Promise.resolve(root.requestFullscreen?.({ navigationUI: 'hide' }))
+            .then(() => screen.orientation?.lock?.('landscape'))
+            .catch(() => {});
     });
 
     // -----------------------------------------------------------------------
@@ -1228,7 +1256,7 @@
         const dy = (keys.has('ArrowDown') ? 1 : 0) - (keys.has('ArrowUp') ? 1 : 0);
         joystick.style.setProperty('--tilt-x', `${dx * 20}deg`);
         joystick.style.setProperty('--tilt-y', `${dy * 14}px`);
-        document.querySelectorAll('[data-key]').forEach((b) => b.classList.toggle('is-pressed', keys.has(b.dataset.key)));
+        document.querySelectorAll('[data-key], [data-dir]').forEach((b) => b.classList.toggle('is-pressed', keys.has(b.dataset.key ?? b.dataset.dir)));
     }
 
     // -----------------------------------------------------------------------

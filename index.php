@@ -51,7 +51,7 @@ $game = [
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title><?= $band ?> - <?= $title ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -104,8 +104,15 @@ $game = [
         </div>
 
         <div class="panel">
-            <!-- sur mobile, on fait glisser le doigt sur le stick -->
+            <!-- ordinateur : le stick suit les flèches du clavier ; mobile : croix directionnelle -->
             <div class="joystick" data-joystick aria-label="Joystick"></div>
+            <div class="dpad" data-dpad aria-label="Croix directionnelle">
+                <span class="dpad__arm dpad__arm--up" data-dir="ArrowUp">▲</span>
+                <span class="dpad__arm dpad__arm--left" data-dir="ArrowLeft">◀</span>
+                <span class="dpad__center"></span>
+                <span class="dpad__arm dpad__arm--right" data-dir="ArrowRight">▶</span>
+                <span class="dpad__arm dpad__arm--down" data-dir="ArrowDown">▼</span>
+            </div>
             <ul class="panel__help">
                 <li><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> marcher · <kbd>ENTRÉE</kbd> start</li>
                 <li><kbd>ESPACE</kbd> coup de jo · <kbd>B</kbd> coup de pied sauté</li>
@@ -129,6 +136,12 @@ $game = [
                 <?php endfor; ?>
             </div>
         </div>
+    </div>
+
+    <!-- mobile en portrait : on demande de tourner le téléphone -->
+    <div class="rotate-hint" aria-hidden="true">
+        <span class="rotate-hint__icon">📱</span>
+        <p>TOURNE TON TÉLÉPHONE<br>EN MODE PAYSAGE</p>
     </div>
 
     <script type="application/json" id="game-data"><?= json_encode($game, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?></script>
