@@ -2,3 +2,7 @@
 *.wav
 node_modules/
 .DS_Store
+
+# Dépendances Composer (composer install)
+vendor/
+.phpunit.cache/
