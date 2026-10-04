@@ -26,7 +26,7 @@ export class Campaign {
         Object.assign(state, {
             levelIndex: index, level, cam: 0, locked: false, waveIndex: 0,
             enemies: [], projectiles: [], pickups: [], explosions: [], notes: [], particles: [], flashes: [],
-            sparks: [], texts: [], boss: null, lastEnemy: null, toughGuys: [],
+            sparks: [], texts: [], boss: null, lastEnemy: null, toughGuys: [], cast: [],
         });
         game.hostages.place(level, data.floor);
         game.boxes.place(level, data.floor);

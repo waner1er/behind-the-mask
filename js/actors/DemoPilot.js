@@ -50,7 +50,7 @@ export class DemoPilot {
             return;
         }
 
-        const target = this.#chooseTarget(p, alive, onScreen);
+        const target = this.#chooseTarget(p, alive);
         if (!target) {
             input.held.add('ArrowRight'); // rien à l'écran : on avance
             return;
@@ -75,15 +75,15 @@ export class DemoPilot {
      * Garde la même cible tant qu'elle est debout (sinon Pete zappe d'un ennemi à l'autre),
      * sinon l'ennemi le plus proche, la caisse « ? » ou un bonus utile.
      */
-    #chooseTarget(p, alive, onScreen) {
+    #chooseTarget(p, alive) {
         const { state } = this;
+        const W = this.game.data.width;
         const nearest = alive.find((e) => e.id === this.targetId)
             ?? alive.sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x))[0];
         this.targetId = nearest?.id;
 
         if (nearest) {
             // à portée de katana, même face aux très gros boss ; si la place est hors de l'écran, on passe de l'autre côté
-            const W = this.game.data.width;
             const spacing = 20 + (nearest.scale - 1) * 10;
             const fits = (x) => x >= state.cam + 10 && x <= state.cam + W - 10;
             let side = Math.sign(p.x - nearest.x) || -1;
@@ -91,10 +91,12 @@ export class DemoPilot {
             return { x: nearest.x + side * spacing, y: nearest.y, face: nearest.x, scale: nearest.scale, strike: true };
         }
 
-        const box = state.boxes.find((b) => b.hp > 0 && onScreen(b.x));
+        // la caméra ne recule jamais : ce qui est resté derrière le bord gauche est perdu
+        const reachable = (x) => x > state.cam && x < state.cam + W;
+        const box = state.boxes.find((b) => b.hp > 0 && reachable(b.x));
         if (box) return { x: box.x - 22, y: box.y, face: box.x, scale: 1, strike: true };
 
-        const pickup = state.pickups.find((it) => it.z === 0 && onScreen(it.x) && ['wod', 'life', 'vinyls'].includes(it.kind));
+        const pickup = state.pickups.find((it) => it.z === 0 && reachable(it.x) && ['wod', 'life', 'vinyls'].includes(it.kind));
         return pickup ? { x: pickup.x, y: pickup.y, strike: false } : null;
     }
 
