@@ -5,6 +5,9 @@ $band = "Vigilante";
 $title = "Behind the Mask";
 $year = $album['year'] ?: 2026;
 
+// numéro de version des fichiers : force le navigateur à recharger après chaque mise à jour
+$version = fn(string $file) => $file . '?v=' . filemtime(__DIR__ . '/' . $file);
+
 // Configuration envoyée au JavaScript en JSON
 $game = [
     'width' => Scene::WIDTH,
@@ -56,7 +59,7 @@ $game = [
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="build/style.css">
+    <link rel="stylesheet" href="<?= $version('build/style.css') ?>">
 </head>
 
 <body>
@@ -145,8 +148,8 @@ $game = [
     </div>
 
     <script type="application/json" id="game-data"><?= json_encode($game, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) ?></script>
-    <script src="js/sfx.js"></script>
-    <script src="js/game.js"></script>
+    <script src="<?= $version('js/sfx.js') ?>"></script>
+    <script src="<?= $version('js/game.js') ?>"></script>
 </body>
 
 </html>
