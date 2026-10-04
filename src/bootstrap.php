@@ -55,6 +55,14 @@ function levelWaves(int $number, array $boss): array
     return $waves;
 }
 
+/** Position de la caisse mystère : différente dans chaque niveau (x dans le niveau, y = profondeur). */
+function wodBoxPosition(int $number): array
+{
+    mt_srand($number * 131 + 7);
+
+    return ['x' => mt_rand(140, LEVEL_LENGTH - Scene::WIDTH - 40), 'y' => mt_rand(2, 26)];
+}
+
 $levels = [];
 foreach ($album['tracks'] as $track) {
     $config = $levelConfig[$track['number']] ?? $levelConfig[1];
@@ -73,8 +81,8 @@ foreach ($album['tracks'] as $track) {
         'chaos' => $config['theme']['chaos'] ?? 0,
         'boss' => $config['boss'],
         'waves' => levelWaves($track['number'], $config['boss']),
-        // caisse mystère avec le Wall of Death (une par niveau, cachée quelque part)
-        'wodBox' => 560 + $track['number'] * 37,
+        // caisse mystère avec le Wall of Death : une par niveau, à un endroit différent à chaque fois
+        'wodBox' => wodBoxPosition($track['number']),
         // otages à libérer (position x dans le niveau)
         'pows' => [480 + $track['number'] * 7, 1040 - $track['number'] * 5],
     ];

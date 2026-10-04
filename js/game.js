@@ -109,6 +109,11 @@
     const pressed = new Set(); // touches enfoncées depuis la dernière image
 
     function press(code) {
+        // en démo, n'importe quelle touche ou bouton ramène à l'accueil
+        if (state.demo) {
+            exitDemo();
+            return;
+        }
         if (!keys.has(code)) pressed.add(code);
         keys.add(code);
     }
@@ -279,6 +284,7 @@
     const state = {
         mode: 'title', // title | select | story | loading | intro | playing | clear | gameover
         menu: 0,       // choix du menu d'accueil
+        demo: false,   // mode démo : Pete joue tout seul jusqu'à la fin
         cast: [],      // personnages des scènes animées
         citizens: [],  // gens qui sortent dans la ville libérée
         birds: [],
@@ -371,7 +377,7 @@
     // -----------------------------------------------------------------------
     // Écran d'accueil : JOUER (avec le scénario) ou MORCEAUX (choix du niveau)
     // -----------------------------------------------------------------------
-    const MENU = ['JOUER', 'MORCEAUX'];
+    const MENU = ['JOUER', 'MORCEAUX', 'DÉMO'];
 
     function showHome() {
         const items = MENU.map((label, i) => (i === state.menu
@@ -387,6 +393,7 @@
     }
 
     function goHome() {
+        state.demo = false;
         state.player = null;
         state.enemies = [];
         state.cast = [];
@@ -413,7 +420,7 @@
         walkInPlace();
         if (state.modeTimer === 1) showHome();
         if (pressed.has('ArrowUp') || pressed.has('ArrowDown')) {
-            state.menu = (state.menu + 1) % MENU.length;
+            state.menu = (state.menu + (pressed.has('ArrowUp') ? MENU.length - 1 : 1)) % MENU.length;
             showHome();
             sfx('select');
         }
@@ -424,7 +431,9 @@
             state.lives = 3;
             sfx('start');
             hud.root.classList.remove('hud--home');
-            if (state.menu === 0) {
+            if (state.menu === 2) {
+                startDemo();
+            } else if (state.menu === 0) {
                 startStory(data.story.intro, () => startLevel(0));
                 window.Sfx?.playMusic(data.levels[data.story.introTrack - 1]?.audio);
             } else {
@@ -495,7 +504,7 @@
     function enterStep() {
         const step = story.steps[story.index];
         const samePlan = story.steps[story.index - 1]?.scene === step.scene;
-        Object.assign(story, parsePauses(step.text ?? ''), { pauseLeft: 0, pauseDone: {} });
+        Object.assign(story, parsePauses(step.text ?? ''), { pauseLeft: 0, pauseDone: {}, waited: 0 });
         hud.dialog.hidden = !step.text;
         story.typed = 0;
         story.shown = '';
@@ -558,7 +567,9 @@
             }
         }
 
-        const skip = pressed.has('Enter') || pressed.has('Space') || pressed.has('KeyB');
+        // en démo, les textes défilent tout seuls une fois écrits
+        const demoNext = state.demo && story.typed >= (story.text?.length ?? 0) && story.pauseLeft === 0 && ++story.waited > 90;
+        const skip = demoNext || pressed.has('Enter') || pressed.has('Space') || pressed.has('KeyB');
         if (step.duration) {
             if (story.t >= step.duration) nextStep();
         } else if (skip && step.scene !== 'credits') {
@@ -796,10 +807,113 @@
             },
             update() {
                 directors.peace.update();
+                // en démo : retour à l'accueil à la fin du générique
+                if (state.demo && story.t > 3300) exitDemo();
                 if (story.t > 120 && (pressed.has('Enter') || pressed.has('Space'))) goHome();
             },
         },
     };
+
+    // -----------------------------------------------------------------------
+    // MODE DÉMO : Pete joue tout seul (intro, 9 niveaux, boss, Wall of Death, fin)
+    // Pete est invincible et frappe plus fort, pour aller au bout.
+    // -----------------------------------------------------------------------
+    const DEMO = { damage: 3 };
+
+    function startDemo() {
+        state.demo = true;
+        startStory(data.story.intro, () => startLevel(0));
+        window.Sfx?.playMusic(data.levels[data.story.introTrack - 1]?.audio);
+    }
+
+    function exitDemo() {
+        state.demo = false;
+        keys.clear();
+        pressed.clear();
+        goHome();
+    }
+
+    /** Le "cerveau" de Pete en démo : il simule les touches qu'un joueur appuierait. */
+    function demoPlay() {
+        keys.clear();
+        const p = state.player;
+        if (state.mode !== 'playing' || !p || ['dead', 'hurt'].includes(p.state)) return;
+
+        // les ennemis juste hors champ comptent aussi : Pete se place au bord et frappe
+        const onScreen = (x) => x > state.cam - 60 && x < state.cam + W + 60;
+        const alive = state.enemies.filter((e) => e.state !== 'dead' && e.state !== 'vanish' && onScreen(e.x));
+
+        // sécurité : si plus rien ne bouge pendant 20 secondes, on débloque la situation
+        if (state.score !== state.demoScore) {
+            state.demoScore = state.score;
+            state.demoIdle = 0;
+        } else if (++state.demoIdle > 1200 && state.locked) {
+            state.demoIdle = 0;
+            for (const e of state.enemies) {
+                if (e.state !== 'dead') killEnemy(e, 1);
+            }
+        }
+        const boss = alive.find((e) => e.boss);
+
+        // WALL OF DEATH : sur le boss, ou quand ça grouille
+        if (p.wods > 0 && (boss || alive.length >= 4)) {
+            keys.add('Space');
+            keys.add('KeyV');
+            pressed.add('Space');
+            return;
+        }
+
+        // la cible : on garde la même tant qu'elle est debout (sinon Pete zappe d'un ennemi à l'autre),
+        // sinon l'ennemi le plus proche, sinon la caisse "?", sinon un bonus, sinon on avance
+        const nearest = alive.find((e) => e.id === state.demoTarget)
+            ?? alive.sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x))[0];
+        state.demoTarget = nearest?.id;
+        const box = state.boxes.find((b) => b.hp > 0 && onScreen(b.x));
+        const pickup = state.pickups.find((it) => it.z === 0 && onScreen(it.x) && ['wod', 'life', 'vinyls'].includes(it.kind));
+        let target = null;
+        let strike = false;
+        if (nearest) {
+            // on se place toujours à portée de katana, même face aux très gros boss ;
+            // si la place est hors de l'écran (ennemi collé au bord), on passe de l'autre côté
+            const spacing = 20 + (nearest.scale - 1) * 10;
+            let side = Math.sign(p.x - nearest.x) || -1;
+            const fits = (x) => x >= state.cam + 10 && x <= state.cam + W - 10;
+            if (!fits(nearest.x + side * spacing)) side = -side;
+            target = { x: nearest.x + side * spacing, y: nearest.y, face: nearest.x, scale: nearest.scale };
+            strike = true;
+        } else if (box) {
+            target = { x: box.x - 22, y: box.y, face: box.x, scale: 1 };
+            strike = true;
+        } else if (pickup) {
+            target = { x: pickup.x, y: pickup.y };
+        }
+
+        if (!target) {
+            keys.add('ArrowRight'); // rien à l'écran : on avance
+            return;
+        }
+
+        // on ne peut pas sortir de l'écran : on vise le bord le plus proche
+        target.x = clamp(target.x, state.cam + 10, state.cam + W - 10);
+        const dx = target.x - p.x;
+        const dy = target.y - p.y;
+
+        // à portée du katana : on se tourne vers la cible et on frappe, sans chercher à se replacer
+        // (zone large : se retourner fait bouger Pete d'un pas, il ne doit pas en sortir)
+        const gap = Math.abs(target.face - p.x);
+        const inReach = gap >= 6 && gap <= 34 + ((target.scale ?? 1) - 1) * 12;
+        if (strike && inReach && Math.abs(dy) <= 4) {
+            const facing = Math.sign(target.face - p.x) || 1;
+            if (p.dir !== facing) keys.add(facing > 0 ? 'ArrowRight' : 'ArrowLeft');
+            else if (state.tick % 200 === 0) pressed.add('KeyB'); // un coup de pied sauté de temps en temps
+            else if (alive.length >= 3 && p.vinyls > 0 && state.tick % 150 === 0) pressed.add('KeyV');
+            else if (state.tick % 12 === 0) pressed.add('Space');
+            return;
+        }
+
+        if (Math.abs(dx) > 3) keys.add(dx > 0 ? 'ArrowRight' : 'ArrowLeft');
+        if (Math.abs(dy) > 2) keys.add(dy > 0 ? 'ArrowDown' : 'ArrowUp');
+    }
 
     function startEnding() {
         const boss = state.boss;
@@ -821,12 +935,12 @@
             enemies: [], projectiles: [], pickups: [], explosions: [], notes: [], particles: [], flashes: [],
             sparks: [], texts: [], boss: null, lastEnemy: null,
             pows: level.pows.map((x) => ({ x, y: floor.min + 1, freed: false, t: 0 })),
-            boxes: [{ x: level.wodBox, y: floor.min + 2, hp: 2, shake: 0 }],
+            boxes: [{ x: level.wodBox.x, y: floor.min + level.wodBox.y, hp: 2, shake: 0 }],
             toughGuys: [],
         });
         state.player = createFighter('hero', 70, 158);
         hud.go.hidden = true;
-        hud.level.textContent = `LEVEL ${level.number}`;
+        hud.level.textContent = state.demo ? `DÉMO · LEVEL ${level.number}` : `LEVEL ${level.number}`;
         document.documentElement.style.setProperty('--accent', level.accent);
 
         message(
@@ -1016,6 +1130,7 @@
     }
 
     function heroHits(p, minReach, maxReach, knockback, damage) {
+        if (state.demo) damage *= DEMO.damage;
         for (const e of state.enemies) {
             if (e.state === 'dead' || e.state === 'vanish' || p.hits.has(e.id)) continue;
             // les gros boss sont plus larges : plus faciles à toucher
@@ -1221,6 +1336,7 @@
 
     function damagePlayer(amount, fromX) {
         const p = state.player;
+        if (state.demo) return false; // en démo, Pete ne prend pas de coups
         if (p.invuln || p.state === 'dead' || p.z > 10) return false; // en l'air, on esquive
 
         const dir = p.x > fromX ? 1 : -1;
@@ -1350,7 +1466,8 @@
         // Les plus proches attaquent, les autres tournent autour en attendant leur tour
         const closeRange = (e.cfg.reach ?? 26) * e.scale - 6;
         const distance = rank < attackers ? closeRange : (e.cfg.projectile ? 100 : 56);
-        const targetX = p.x + side * distance;
+        // les ennemis ne se postent jamais hors de l'écran (sinon on ne peut pas les atteindre)
+        const targetX = clamp(p.x + side * distance, state.cam + 14, state.cam + W - 14);
         const targetY = p.y + (rank < attackers ? 0 : (rank % 2 ? -8 : 8));
         const dx = targetX - e.x;
         const dy = targetY - e.y;
@@ -1719,6 +1836,7 @@
     function update() {
         state.tick++;
         state.modeTimer++;
+        if (state.demo) demoPlay();
 
         if (pressed.has('KeyM')) toggleMute();
 
@@ -2169,7 +2287,7 @@
     }
 
     // index.php?debug : l'état du jeu est accessible dans la console (window.game)
-    if (new URLSearchParams(location.search).has('debug')) window.game = { state, startLevel, killEnemy, spawnPickup };
+    if (new URLSearchParams(location.search).has('debug')) window.game = { state, startLevel, killEnemy, spawnPickup, DEMO };
 
     ctx.imageSmoothingEnabled = false;
     document.fonts.load('8px "Press Start 2P"').finally(() => requestAnimationFrame(loop));
