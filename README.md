@@ -14,7 +14,7 @@ Au clavier, ou sur mobile avec le stick et les boutons dessinés sur la borne (p
 | ← → ↑ ↓ | marcher |
 | Espace | coup de jo |
 | B | coup de pied sauté |
-| V | lancer une bombe |
+| V | lancer un vinyle (il explose en notes de musique) |
 | C | attaque en skate |
 | Entrée | start / continuer |
 | M | couper la musique |

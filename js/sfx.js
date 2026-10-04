@@ -233,6 +233,13 @@ window.Sfx = (() => {
             scream({ pitch: 130 / scale, duration: 1.4, volume: 0.45, vowel: 'a', toVowel: 'o', contour: [1, 1.5, 0.4] });
             noise({ duration: 1.2, volume: 0.4, filter: 'lowpass', from: 700, to: 80 });
         },
+        // le vinyle explose : scratch de DJ puis petit accord joué en arpège
+        scratch: () => {
+            noise({ duration: 0.12, volume: 0.5, filter: 'bandpass', from: 700, to: 2600, q: 3 });
+            noise({ duration: 0.14, volume: 0.45, filter: 'bandpass', from: 2400, to: 500, q: 3, delay: 0.12 });
+            const chord = [523, 659, 784, 1047].sort(() => Math.random() - 0.5);
+            chord.forEach((f, i) => tone({ type: 'square', from: f, duration: 0.14, volume: 0.12, delay: 0.25 + i * 0.07 }));
+        },
         // coup de pied sauté : souffle + petit cri "HYA!"
         kick: () => {
             noise({ duration: 0.18, volume: 0.35, filter: 'bandpass', from: 400, to: 2200, q: 1.2 });

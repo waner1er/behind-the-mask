@@ -67,8 +67,23 @@ $items = [
     'phone' => ['PPPP', 'PppP', 'PppP', 'PppP', 'PPPP'],
     'heart' => ['LL.LL', 'LlLLL', 'LLLLL', '.LLL.', '..L..'],
     'beer' => ['.WW.', 'BBBB', 'BbbB', 'BbbB', 'BBBB', 'BBBB'],
-    // caisse de bombes (comme la caisse "B" de Metal Slug)
-    'bombs' => ['ffffffff', 'fFFFFFFf', 'fFRRRFFf', 'fFRFFRFf', 'fFRRRFFf', 'fFRFFRFf', 'fFRRRFFf', 'ffffffff'],
+    // caisse de vinyles (comme la caisse de bombes de Metal Slug)
+    'vinyls' => ['ffffffffff', 'fPPPPPPPPf', 'fPPwPPPPPf', 'fPPPRRPPPf', 'fPPPRRPPPf', 'fPPPPPwPPf', 'ffffffffff', 'fFFFFFFFFf', 'ffffffffff'],
+    // le vinyle qu'on lance : disque noir, sillons qui brillent, étiquette rouge
+    'vinyl' => [
+        '....PPPP....',
+        '..PPPPPPPP..',
+        '.PPwwPPPPPP.',
+        '.PwPPPPPPPP.',
+        'PPPPPRRPPPPP',
+        'PPPPRRRRPPPP',
+        'PPPPRRKRPPPP',
+        'PPPPPRRPPPPP',
+        '.PPPPPPPPwP.',
+        '.PPPPPPPwPP.',
+        '..PPPPPPPP..',
+        '....PPPP....',
+    ],
 ];
 
 $grids = [];

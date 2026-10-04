@@ -29,7 +29,7 @@
     const BOSS_ATTACK = { hitFrom: 18, hitTo: 22, strikeUntil: 30, end: 38 };
     const SKATE = { duration: 34, speed: 3.2, cooldown: 70 };
     const JUMP = { impulse: 3.4, gravity: 0.22, speed: 1.7 };
-    const BOMB = { perCrate: 5, max: 20, radius: 30, damage: 4 };
+    const VINYL = { perCrate: 5, max: 20, radius: 30, damage: 4 };
 
     const rand = (min, max) => min + Math.random() * (max - min);
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -72,6 +72,26 @@
     const items = {};
     for (const [name, grid] of Object.entries(data.items.sprites)) {
         items[name] = gridToCanvas(grid, data.items.palette);
+    }
+
+    // notes de musique (explosion des vinyles) : croche et double croche, en plusieurs couleurs
+    const NOTE_GRIDS = [
+        ['....##.', '....#.#', '....#..', '....#..', '..###..', '.####..', '..##...'],
+        ['.######', '.#....#', '.#....#', '.#....#', '##...##', '##..###', '.....##'],
+    ];
+    const noteImages = [];
+    for (const color of ['#ffd23f', '#e8203a', '#ece8dc', '#3ef0ff', '#ff3ea5']) {
+        for (const grid of NOTE_GRIDS) {
+            // contour noir : on dessine la note décalée en noir, puis en couleur par-dessus
+            const image = document.createElement('canvas');
+            image.width = grid[0].length + 2;
+            image.height = grid.length + 2;
+            const g = image.getContext('2d');
+            const black = gridToCanvas(grid.map((row) => row.replaceAll('#', 'k')), { k: '#0c0a10' });
+            for (const [dx, dy] of [[0, 1], [2, 1], [1, 0], [1, 2]]) g.drawImage(black, dx, dy);
+            g.drawImage(gridToCanvas(grid.map((row) => row.replaceAll('#', 'n')), { n: color }), 1, 1);
+            noteImages.push(image);
+        }
     }
 
     // armes au sol
@@ -273,6 +293,7 @@
         projectiles: [],
         pickups: [],
         explosions: [],
+        notes: [],
         pows: [],
         particles: [],
         flashes: [],
@@ -311,7 +332,7 @@
             special: cfg.every ?? 0, skateCooldown: 0, hits: new Set(), landed: false, boss: false,
             scale: cfg.scale ?? 1,
             weapon: null, weaponUntil: 0, // arme ramassée (héros)
-            z: 0, vz: 0, bombs: 0,         // hauteur du saut, bombes en réserve
+            z: 0, vz: 0, vinyls: 0,        // hauteur du saut, vinyles en réserve
         };
     }
 
@@ -385,7 +406,7 @@
         const level = data.levels[index];
         Object.assign(state, {
             levelIndex: index, level, cam: 0, locked: false, waveIndex: 0,
-            enemies: [], projectiles: [], pickups: [], explosions: [], particles: [], flashes: [],
+            enemies: [], projectiles: [], pickups: [], explosions: [], notes: [], particles: [], flashes: [],
             sparks: [], texts: [], boss: null, lastEnemy: null,
             pows: level.pows.map((x) => ({ x, y: floor.min + 1, freed: false, t: 0 })),
         });
@@ -489,9 +510,9 @@
             return;
         }
 
-        if (p.state === 'bomb') {
+        if (p.state === 'vinyl') {
             p.t++;
-            if (p.t === 6) throwBomb(p);
+            if (p.t === 6) throwVinyl(p);
             if (p.t >= 16) setState(p, 'idle');
             return;
         }
@@ -547,11 +568,11 @@
         }
 
         if (pressed.has('KeyV')) {
-            if (p.bombs > 0) {
-                p.bombs--;
-                setState(p, 'bomb');
+            if (p.vinyls > 0) {
+                p.vinyls--;
+                setState(p, 'vinyl');
             } else {
-                shout('NO BOMB', p.x, p.y - 48, '#ffffff');
+                shout('NO VINYL', p.x, p.y - 48, '#ffffff');
                 sfx('empty');
             }
             return;
@@ -581,10 +602,11 @@
         collectPickups(p);
     }
 
-    function throwBomb(p) {
+    /** Lance un vinyle : il tournoie, retombe à ~80 px et explose en notes de musique. */
+    function throwVinyl(p) {
         state.projectiles.push({
-            sprite: 'grenade', owner: 'hero', x: p.x + p.dir * 10, y: p.y, z: 18,
-            vx: p.dir * 2.8, vy: 0, vz: 1.6, gravity: 0.16, damage: BOMB.damage, spin: true, // retombe à ~80 px
+            sprite: 'vinyl', owner: 'hero', x: p.x + p.dir * 10, y: p.y, z: 18,
+            vx: p.dir * 2.8, vy: 0, vz: 1.6, gravity: 0.16, damage: VINYL.damage, spin: true,
         });
         sfx('throw');
     }
@@ -638,7 +660,7 @@
         shout('THANK YOU!', pow.x, pow.y - 30, '#7dff5a');
         sfx('freed');
         const roll = Math.random();
-        if (roll < 0.5) spawnPickup('bombs', pow.x, pow.y + 6, { fly: true });
+        if (roll < 0.5) spawnPickup('vinyls', pow.x, pow.y + 6, { fly: true });
         else if (roll < 0.75) spawnPickup('beer', pow.x, pow.y + 6, { fly: true });
         else spawnPickup('weapon', pow.x, pow.y + 6, { fly: true, weapon: pick(['bat', 'chain', 'knife', 'dumbbell']) });
     }
@@ -675,7 +697,7 @@
             } else if (Math.random() < 0.15) {
                 spawnPickup('beer', e.x, e.y, { fly: true });
             }
-            if (Math.random() < 0.07) spawnPickup('bombs', e.x, e.y, { fly: true });
+            if (Math.random() < 0.07) spawnPickup('vinyls', e.x, e.y, { fly: true });
         }
     }
 
@@ -695,9 +717,9 @@
     function collectPickups(p) {
         state.pickups = state.pickups.filter((item) => {
             if (item.z === 0 && Math.abs(item.x - p.x) < 10 && Math.abs(item.y - p.y) < 6) {
-                if (item.kind === 'bombs') {
-                    p.bombs = Math.min(BOMB.max, p.bombs + BOMB.perCrate);
-                    shout(`BOMB x${BOMB.perCrate}!`, p.x, p.y - 48, '#ffd23f');
+                if (item.kind === 'vinyls') {
+                    p.vinyls = Math.min(VINYL.max, p.vinyls + VINYL.perCrate);
+                    shout(`VINYL x${VINYL.perCrate}!`, p.x, p.y - 48, '#ffd23f');
                 } else if (item.kind === 'weapon') {
                     p.weapon = item.weapon;
                     p.weaponUntil = state.tick + data.weaponDuration;
@@ -1037,7 +1059,7 @@
             if (shot.z > 0) return true;
 
             // impact au sol
-            if (shot.sprite === 'grenade') {
+            if (shot.sprite === 'grenade' || shot.sprite === 'vinyl') {
                 explode(shot.x, shot.y, shot.owner === 'hero');
             } else if (weaponIcons[shot.sprite]) {
                 // une arme lancée qui rate sa cible reste par terre : à ramasser !
@@ -1056,14 +1078,25 @@
         state.explosions.push({ x, y, t: 0 });
         state.shake = 7;
         sfx('explosion');
+
+        // le vinyle explose en notes de musique
+        if (byHero) {
+            sfx('scratch');
+            for (let i = 0; i < 12; i++) {
+                state.notes.push({
+                    x: x + rand(-6, 6), y: y - rand(8, 20), vx: rand(-1.8, 1.8), vy: -rand(1.2, 3),
+                    t: 0, image: pick(noteImages),
+                });
+            }
+        }
         for (let i = 0; i < 6; i++) state.sparks.push({ x: x + rand(-14, 14), y: y - rand(4, 24), t: -i });
 
         if (byHero) {
             for (const e of state.enemies) {
                 if (e.state === 'dead' || e.state === 'vanish') continue;
-                if (Math.abs(e.x - x) > BOMB.radius + (e.scale - 1) * 10 || Math.abs(e.y - y) > 14) continue;
+                if (Math.abs(e.x - x) > VINYL.radius + (e.scale - 1) * 10 || Math.abs(e.y - y) > 14) continue;
                 const dir = e.x < x ? -1 : 1;
-                e.hp -= BOMB.damage;
+                e.hp -= VINYL.damage;
                 state.score += 50;
                 state.lastEnemy = e;
                 state.lastEnemyUntil = state.tick + 150;
@@ -1076,7 +1109,7 @@
                 }
             }
             for (const pow of state.pows) {
-                if (!pow.freed && Math.abs(pow.x - x) < BOMB.radius && Math.abs(pow.y - y) < 14) freePow(pow);
+                if (!pow.freed && Math.abs(pow.x - x) < VINYL.radius && Math.abs(pow.y - y) < 14) freePow(pow);
             }
         } else {
             const p = state.player;
@@ -1117,6 +1150,13 @@
         state.particles = state.particles.filter((pt) => pt.t < 260 && pt.y > -4 && pt.y < H + 4);
         for (const f of state.flashes) f.t++;
         state.flashes = state.flashes.filter((f) => f.t < 30);
+        for (const note of state.notes) {
+            note.t++;
+            note.x += note.vx + Math.sin(note.t / 6) * 0.4; // elles ondulent en montant
+            note.y += note.vy;
+            note.vy += 0.05;
+        }
+        state.notes = state.notes.filter((note) => note.t < 70);
         for (const ex of state.explosions) ex.t++;
         state.explosions = state.explosions.filter((ex) => ex.t < 30);
     }
@@ -1153,9 +1193,9 @@
     }
 
     function spawnWave(wave) {
-        // de temps en temps, une caisse de bombes traîne par terre (toujours à la 2e vague)
+        // de temps en temps, une caisse de vinyles traîne par terre (toujours à la 2e vague)
         if (state.waveIndex === 1 || Math.random() < 0.4) {
-            spawnPickup('bombs', state.cam + rand(80, W - 60), rand(floor.min, floor.max));
+            spawnPickup('vinyls', state.cam + rand(80, W - 60), rand(floor.min, floor.max));
         }
 
         wave.enemies.forEach((type, i) => {
@@ -1290,7 +1330,7 @@
                 return anims.skate[Math.floor(f.anim / 6) % 2];
             case 'jump':
                 return f.t > 5 ? anims.kick[0] : anims.jump[0];
-            case 'bomb':
+            case 'vinyl':
                 return anims.attack[f.t < 6 ? 0 : 1];
             case 'lunge-wind':
                 return anims.attack[0];
@@ -1482,6 +1522,10 @@
         }
 
         state.explosions.forEach(drawExplosion);
+        for (const note of state.notes) {
+            if (note.t > 50 && note.t % 4 < 2) continue; // clignotent avant de disparaître
+            ctx.drawImage(note.image, Math.round(note.x), Math.round(note.y));
+        }
 
         state.sparks.forEach(drawSpark);
         state.texts.forEach(drawText);
@@ -1505,7 +1549,7 @@
         hud.hiscore.textContent = pad(state.hiscore);
         hud.life.style.width = `${inGame && p ? (p.hp / p.maxHp) * 100 : 100}%`;
         const seconds = p?.weapon ? Math.ceil((p.weaponUntil - state.tick) / 60) : 0;
-        hud.lives.textContent = `♥ x${Math.max(0, state.lives)} · BOMB ${p?.bombs ?? 0}` + (p?.weapon ? ` · ${data.weapons[p.weapon].name} ${seconds}` : '');
+        hud.lives.textContent = `♥ x${Math.max(0, state.lives)} · VINYL ${p?.vinyls ?? 0}` + (p?.weapon ? ` · ${data.weapons[p.weapon].name} ${seconds}` : '');
 
         const boss = state.boss && state.boss.state !== 'dead' ? state.boss : null;
         const enemy = boss ?? state.lastEnemy;
