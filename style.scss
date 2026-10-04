@@ -748,12 +748,13 @@ kbd {
         text-shadow: 1px 1px 0 #000;
     }
 
+    // START et musique en bas au centre, loin des pouces (stick à gauche, boutons à droite)
     .panel__system {
-        top: 50%;
-        right: max(10px, env(safe-area-inset-right));
-        transform: translateY(-50%);
-        flex-direction: column;
-        gap: 6px;
+        left: 50%;
+        bottom: 8px;
+        transform: translateX(-50%);
+        flex-direction: row;
+        gap: 16px;
     }
 
     .system-btn {
