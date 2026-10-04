@@ -103,12 +103,21 @@
     // le son ne peut démarrer que pendant un geste de l'utilisateur (surtout sur mobile)
     ['pointerdown', 'keydown'].forEach((type) => addEventListener(type, () => window.Sfx?.unlock(), { capture: true }));
 
+    // Certains navigateurs mobiles refusent la "capture" du doigt : on l'essaie sans en dépendre
+    const capture = (element, e) => {
+        try {
+            element.setPointerCapture(e.pointerId);
+        } catch {
+            // pas grave, on suit le doigt par son identifiant
+        }
+    };
+
     // Boutons de la borne : au doigt ou à la souris
     document.querySelectorAll('[data-key]').forEach((button) => {
         const release = () => keys.delete(button.dataset.key);
         button.addEventListener('pointerdown', (e) => {
             e.preventDefault();
-            button.setPointerCapture(e.pointerId);
+            capture(button, e);
             press(button.dataset.key);
         });
         button.addEventListener('pointerup', release);
@@ -116,15 +125,17 @@
         button.addEventListener('contextmenu', (e) => e.preventDefault()); // appui long sur mobile
     });
 
-    // Joystick tactile : on fait glisser le doigt, la direction devient des flèches
+    // Joystick tactile : on pose le doigt et on le fait glisser, la direction devient des flèches.
+    // On suit le doigt par son identifiant, même s'il sort du dessin du stick.
     const stick = document.querySelector('[data-joystick]');
     const ARROWS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+    let stickFinger = null;
 
     function steer(e) {
         const box = stick.getBoundingClientRect();
         const dx = e.clientX - (box.left + box.width / 2);
         const dy = e.clientY - (box.top + box.height / 2);
-        const dead = box.width * 0.18; // zone morte au centre
+        const dead = box.width * 0.15; // zone morte au centre
         const wanted = new Set();
         if (dx < -dead) wanted.add('ArrowLeft');
         if (dx > dead) wanted.add('ArrowRight');
@@ -136,20 +147,27 @@
         }
     }
 
-    function releaseStick() {
+    function releaseStick(e) {
+        if (e.pointerId !== stickFinger) return;
+        stickFinger = null;
         ARROWS.forEach((arrow) => keys.delete(arrow));
     }
 
     stick.addEventListener('pointerdown', (e) => {
         e.preventDefault();
-        stick.setPointerCapture(e.pointerId);
+        stickFinger = e.pointerId;
+        capture(stick, e);
         steer(e);
     });
-    stick.addEventListener('pointermove', (e) => {
-        if (stick.hasPointerCapture(e.pointerId)) steer(e);
+    addEventListener('pointermove', (e) => {
+        if (e.pointerId === stickFinger) steer(e);
+    }, { passive: true });
+    addEventListener('pointerup', releaseStick);
+    addEventListener('pointercancel', releaseStick);
+    // empêche le navigateur de faire défiler / zoomer quand on touche les commandes
+    document.querySelectorAll('[data-joystick], [data-key]').forEach((el) => {
+        el.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
     });
-    stick.addEventListener('pointerup', releaseStick);
-    stick.addEventListener('pointercancel', releaseStick);
 
     // -----------------------------------------------------------------------
     // Son : la musique du niveau + petits bips 8-bit (Web Audio API)
