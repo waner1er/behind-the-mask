@@ -69,6 +69,22 @@ $items = [
     'beer' => ['.WW.', 'BBBB', 'BbbB', 'BbbB', 'BBBB', 'BBBB'],
     // gros cœur à ramasser : rend la moitié de la vie
     'life' => ['.RR...RR.', 'RHHR.RRRr', 'RHRRRRRRr', 'RRRRRRRRr', '.RRRRRRr.', '..RRRRr..', '...RRr...', '....r....'],
+    // caisse mystère (une par niveau) : on la casse pour trouver le Wall of Death
+    'wodbox' => [
+        'WWFFFFFFFFWW',
+        'WFfFFFFFFfFW',
+        'FFFFRRRRFFFF',
+        'FFFRRFFRRFFF',
+        'FfFFFFFRRFfF',
+        'FFFFFFRRFFFF',
+        'FFFFFRRFFFFF',
+        'FfFFFFFFFFfF',
+        'FFFFFRRFFFFF',
+        'WFfFFFFFFfFW',
+        'WWFFFFFFFFWW',
+    ],
+    // le Wall of Death à ramasser : un badge rouge "W"
+    'wod' => ['..RRRRR..', '.RRRRRRR.', 'RbRRRRRbR', 'RbRRRRRbR', 'RbRRbRRbR', 'RbRbRbRbR', 'RRbRRRbRR', '.RRRRRRR.', '..RRRRR..'],
     // caisse de vinyles (comme la caisse de bombes de Metal Slug)
     'vinyls' => ['ffffffffff', 'fPPPPPPPPf', 'fPPwPPPPPf', 'fPPPRRPPPf', 'fPPPRRPPPf', 'fPPPPPwPPf', 'ffffffffff', 'fFFFFFFFFf', 'ffffffffff'],
     // le vinyle qu'on lance : disque noir, sillons qui brillent, étiquette rouge

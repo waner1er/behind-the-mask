@@ -613,6 +613,15 @@ $masculinist = $masc([]);
 $knifer = $masc(['C' => '#ececf2', 'c' => '#a8a8b8', 'Q' => '#b0202a', 'I' => '#e04050'], ['weapon' => $weapons['knife']]);
 $gymbro = $masc(['S' => '#c8804e', 's' => '#93562e', 'C' => '#1c1c24', 'c' => '#101016', 'A' => '#3a1a5a', 'a' => '#28103e'], ['weapon' => $weapons['dumbbell']]);
 
+// --- Les gros durs du Wall of Death (des potes hardcore qui chargent avec Pete)
+
+$toughGuys = [
+    'tough1' => $skin(['C' => '#1c1a20', 'c' => '#101014', 'R' => '#1c1a20', 'z' => '#e8203a', 'D' => '#101014',
+        'A' => '#5a5a3a', 'a' => '#3e3e28', 'v' => '#2a2a1a', 'U' => '#101014', 'O' => '#ececf2', 'o' => '#b8b8c8', 'q' => '#8a8a94', 'X' => '#f4f4f4']),
+    'tough2' => $masc(['C' => '#c0203a', 'c' => '#801424', 'Q' => '#101014', 'A' => '#26262e', 'a' => '#18181e', 'v' => '#101014']),
+    'tough3' => $skin(['C' => '#2e6a3a', 'c' => '#1e4a28', 'R' => '#ffd23f', 'A' => '#2a2a32', 'a' => '#1a1a20', 'v' => '#101014'], ['over' => [$beanie]]),
+];
+
 // ---------------------------------------------------------------------------
 // Armes ramassables : le héros peut reprendre l'arme d'un ennemi mis K.O.
 // ---------------------------------------------------------------------------
@@ -1110,4 +1119,4 @@ return [
     'hooligan' => $hooligan,
     'knifer' => $knifer,
     'gymbro' => $gymbro,
-] + $heroArmed + $bosses;
+] + $toughGuys + $heroArmed + $bosses;

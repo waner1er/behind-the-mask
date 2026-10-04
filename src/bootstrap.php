@@ -44,7 +44,7 @@ function levelWaves(int $number, array $boss): array
     $waves = [];
     foreach ([0, 360, 760] as $i => $at) {
         $enemies = [];
-        for ($e = 0, $count = 2 + intdiv($number, 2) + $i; $e < $count; $e++) {
+        for ($e = 0, $count = 2 + intdiv($number, 3) + $i; $e < $count; $e++) {
             $enemies[] = $pool[mt_rand(0, count($pool) - 1)];
         }
         $waves[] = ['at' => $at, 'enemies' => $enemies];
@@ -73,6 +73,8 @@ foreach ($album['tracks'] as $track) {
         'chaos' => $config['theme']['chaos'] ?? 0,
         'boss' => $config['boss'],
         'waves' => levelWaves($track['number'], $config['boss']),
+        // caisse mystère avec le Wall of Death (une par niveau, cachée quelque part)
+        'wodBox' => 560 + $track['number'] * 37,
         // otages à libérer (position x dans le niveau)
         'pows' => [480 + $track['number'] * 7, 1040 - $track['number'] * 5],
     ];

@@ -25,7 +25,7 @@ return [
     // Deux étapes de suite sur le même plan = l'animation continue (elle ne recommence pas).
     'intro' => [
         ['scene' => 'pete', 'text' => "2026. LA VILLE DORT LES YEUX OUVERTS, COLLÉE À SES ÉCRANS. MAIS UN HOMME, LUI, NE DORT JAMAIS."],
-        ['scene' => 'pete', 'text' => "PETE. CEINTURE NOIRE D'AÏKIDO. ENDURANT COMME UN MARATHON. TOLÉRANT COMME UN.......[PAUSE 3] ENFIN, PRESQUE TOLÉRANT."],
+        ['scene' => 'pete', 'text' => "PETE. CEINTURE NOIRE D'AÏKIDO. ENDURANT COMME UN MARATHONIEN. TOLÉRANT COMME UN.......[PAUSE 3] ENFIN, PRESQUE TOLÉRANT."],
         ['scene' => 'villains', 'text' => "LES RACISTES. LES MASCULINISTES. LES PRÉDATEURS DU CAPITAL. ILS POUSSENT PARTOUT, COMME DE LA MAUVAISE HERBE."],
         ['scene' => 'villains', 'text' => "PETE : « VOUS AVEZ DE LA CHANCE. AUJOURD'HUI, JE SUIS DE BONNE HUMEUR. » (IL NE L'ÉTAIT PAS.)"],
         ['scene' => 'mask', 'text' => "PENDANT CE TEMPS, TOUT EN HAUT DE SON DATA CENTER..."],

@@ -246,6 +246,17 @@ window.Sfx = (() => {
             tone({ type: 'triangle', from: 2400, to: 1800, duration: 0.18, volume: 0.1 });
             tone({ type: 'sine', from: 3600, to: 3200, duration: 0.14, volume: 0.06 });
         },
+        // une vie de plus : arpège qui monte
+        oneup: () => [659, 784, 1319, 1047, 1175, 1568].forEach((f, i) => tone({ type: 'square', from: f, duration: 0.08, volume: 0.12, delay: i * 0.08 })),
+        // WALL OF DEATH : la foule hurle, la batterie blast, les gars crient
+        wod: () => {
+            noise({ duration: 1.8, volume: 0.45, filter: 'bandpass', from: 400, to: 1400, q: 0.8 });
+            for (let i = 0; i < 10; i++) {
+                tone({ type: 'sine', from: 120, to: 40, duration: 0.12, volume: 0.6, delay: i * 0.14 });       // grosse caisse
+                noise({ duration: 0.08, volume: 0.35, filter: 'highpass', from: 2000, delay: i * 0.14 + 0.07 }); // caisse claire
+            }
+            [190, 240, 160].forEach((pitch, i) => setTimeout(() => scream({ pitch, duration: 0.9, volume: 0.3, vowel: 'a', toVowel: 'o', contour: [1, 1.2, 0.8] }), i * 120));
+        },
         // grillons pendant un silence gênant : "cri-cri... cri-cri..."
         cricket: () => {
             [0, 0.12, 0.9, 1.02, 1.8, 1.92].forEach((delay) => tone({ type: 'square', from: 4200, to: 4000, duration: 0.05, volume: 0.04, delay }));

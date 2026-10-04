@@ -292,7 +292,10 @@
         locked: false,
         waveIndex: 0,
         score: 0,
-        kills: 0, // ennemis mis K.O. : un cœur tous les 10
+        kills: 0,        // ennemis mis K.O. : un cœur tous les 10
+        nextLife: 10000, // une vie de plus tous les 10 000 points
+        boxes: [],       // caisse mystère du niveau (Wall of Death dedans)
+        toughGuys: [],   // les gros durs du Wall of Death en pleine charge
         hiscore: loadHiscore(),
         lives: 3,
         player: null,
@@ -340,6 +343,7 @@
             scale: cfg.scale ?? 1,
             weapon: null, weaponUntil: 0, // arme ramassée (héros)
             z: 0, vz: 0,                   // hauteur du saut
+            wods: 0,                       // Wall of Death en réserve
             vinyls: type === 'hero' ? VINYL.start : 0, // vinyles en poche au départ
         };
     }
@@ -416,6 +420,7 @@
         if (pressed.has('Enter') || pressed.has('Space')) {
             state.score = 0;
             state.kills = 0;
+            state.nextLife = 10000;
             state.lives = 3;
             sfx('start');
             hud.root.classList.remove('hud--home');
@@ -466,7 +471,7 @@
     function startStory(steps, onEnd) {
         Object.assign(story, { steps, index: 0, onEnd });
         Object.assign(state, {
-            player: null, cast: [], enemies: [], projectiles: [], pickups: [], pows: [],
+            player: null, cast: [], enemies: [], projectiles: [], pickups: [], pows: [], boxes: [], toughGuys: [],
             explosions: [], notes: [], texts: [], birds: [], fx: [], citizens: [],
         });
         hud.root.classList.add('hud--story');
@@ -816,6 +821,8 @@
             enemies: [], projectiles: [], pickups: [], explosions: [], notes: [], particles: [], flashes: [],
             sparks: [], texts: [], boss: null, lastEnemy: null,
             pows: level.pows.map((x) => ({ x, y: floor.min + 1, freed: false, t: 0 })),
+            boxes: [{ x: level.wodBox, y: floor.min + 2, hp: 2, shake: 0 }],
+            toughGuys: [],
         });
         state.player = createFighter('hero', 70, 158);
         hud.go.hidden = true;
@@ -937,6 +944,13 @@
             return;
         }
 
+        // ESPACE + V en même temps : WALL OF DEATH !
+        const combo = keys.has('Space') && keys.has('KeyV') && (pressed.has('Space') || pressed.has('KeyV'));
+        if (combo && p.wods > 0) {
+            launchWallOfDeath(p);
+            return;
+        }
+
         if (pressed.has('Space') || pressed.has('KeyX')) {
             setState(p, 'attack');
             p.hits.clear();
@@ -1035,6 +1049,80 @@
             const reach = (pow.x - p.x) * p.dir;
             if (reach >= minReach && reach <= maxReach && Math.abs(pow.y - p.y) < 10) freePow(pow);
         }
+
+        // un coup sur la caisse mystère
+        for (const box of state.boxes) {
+            const reach = (box.x - p.x) * p.dir;
+            if (box.hp > 0 && !p.hits.has(box) && reach >= minReach && reach <= maxReach && Math.abs(box.y - p.y) < 12) {
+                p.hits.add(box);
+                hitBox(box);
+            }
+        }
+    }
+
+    /** La caisse mystère encaisse un coup ; cassée, elle libère le Wall of Death. */
+    function hitBox(box) {
+        box.hp--;
+        box.shake = 8;
+        state.sparks.push({ x: box.x, y: box.y - 8, t: 0 });
+        sfx('metal');
+        if (box.hp <= 0) {
+            for (let i = 0; i < 5; i++) state.sparks.push({ x: box.x + rand(-8, 8), y: box.y - rand(2, 14), t: -i });
+            sfx('explosion');
+            spawnPickup('wod', box.x, box.y + 4, { fly: true });
+            shout('?!', box.x, box.y - 24, '#ffd23f');
+        }
+    }
+
+    /**
+     * WALL OF DEATH : cinq gros durs chargent à travers l'écran.
+     * Tous les petits ennemis tombent, un boss perd la moitié de sa vie
+     * (avec 2 Wall of Death en réserve, on les lance ensemble : le boss y passe).
+     */
+    function launchWallOfDeath(p) {
+        const power = p.wods;
+        p.wods = 0;
+        p.invuln = Math.max(p.invuln, 150);
+        const fromLeft = p.dir > 0;
+        const types = ['tough1', 'tough2', 'tough3'];
+        for (let i = 0; i < 5 * power; i++) {
+            const guy = createFighter(types[i % types.length], fromLeft ? state.cam - 20 - i * 14 : state.cam + W + 20 + i * 14,
+                floor.min + ((i * 7) % (floor.max - floor.min)), { hp: 1 });
+            guy.dir = fromLeft ? 1 : -1;
+            guy.scale = 1.5;
+            setState(guy, 'walk');
+            state.toughGuys.push(guy);
+        }
+        state.wodPower = power;
+        state.shake = 10;
+        state.flash = 6;
+        message('<span class="hud__warning">WALL OF DEATH !!!</span>', 120);
+        sfx('wod');
+    }
+
+    function updateToughGuys() {
+        for (const guy of state.toughGuys) {
+            guy.anim += 3; // ils courent à fond
+            guy.x += guy.dir * 4.2;
+            if (state.tick % 6 === 0) state.shake = 4;
+            for (const e of state.enemies) {
+                if (e.state === 'dead' || Math.abs(e.x - guy.x) > 14) continue;
+                // chaque ennemi n'est percuté qu'une fois par toute la charge
+                if (state.toughGuys.some((g) => g.hits.has(e.id))) continue;
+                guy.hits.add(e.id);
+                state.sparks.push({ x: e.x, y: e.y - 20 * e.scale, t: 0 });
+                state.lastEnemy = e;
+                state.lastEnemyUntil = state.tick + 150;
+                if (e.boss) {
+                    e.hp -= Math.ceil(e.maxHp / 2) * state.wodPower; // moitié de la vie par Wall of Death
+                    if (e.hp <= 0) killEnemy(e, guy.dir);
+                    else sfx('heavyHit');
+                } else {
+                    killEnemy(e, guy.dir);
+                }
+            }
+        }
+        state.toughGuys = state.toughGuys.filter((g) => g.x > state.cam - 120 && g.x < state.cam + W + 120);
     }
 
     /** Otage libéré : il remercie, lâche un bonus et s'enfuit. */
@@ -1106,7 +1194,10 @@
     function collectPickups(p) {
         state.pickups = state.pickups.filter((item) => {
             if (item.z === 0 && Math.abs(item.x - p.x) < 10 && Math.abs(item.y - p.y) < 6) {
-                if (item.kind === 'life') {
+                if (item.kind === 'wod') {
+                    p.wods++;
+                    shout('WALL OF DEATH ! (ESPACE + V)', p.x, p.y - 48, '#e8203a');
+                } else if (item.kind === 'life') {
                     const heal = Math.round(p.maxHp / 2);
                     p.hp = Math.min(p.maxHp, p.hp + heal);
                     shout('+50% VIE !', p.x, p.y - 48, '#ff3ea5');
@@ -1134,7 +1225,7 @@
 
         const dir = p.x > fromX ? 1 : -1;
         p.hp -= amount;
-        p.invuln = 50;
+        p.invuln = 75;
         p.dir = -dir;
         state.shake = 4;
         state.sparks.push({ x: p.x - dir * 4, y: p.y - 24, t: 0 });
@@ -1211,7 +1302,7 @@
             }
             if (e.t >= timing.end) {
                 setState(e, 'idle');
-                e.cooldown = e.boss ? rand(30, 70) : rand(40, 100) * (1 - state.levelIndex * 0.04);
+                e.cooldown = e.boss ? rand(40, 80) : rand(55, 120) * (1 - state.levelIndex * 0.02);
             }
             return;
         }
@@ -1237,7 +1328,7 @@
         const side = e.x < p.x ? -1 : 1;
         const far = Math.abs(p.x - e.x);
         // plus on avance dans l'album, plus il y a d'ennemis qui attaquent en même temps
-        const attackers = state.levelIndex >= 3 ? 3 : 2;
+        const attackers = state.levelIndex >= 5 ? 3 : 2;
 
         // Attaques variées : ruée, lancer d'arme...
         if (!e.boss && e.cooldown <= 0 && Math.abs(p.y - e.y) < 6) {
@@ -1295,7 +1386,7 @@
 
     /** Les dégâts des ennemis augmentent au fil de l'album. */
     function enemyDamage(e) {
-        return Math.round(e.cfg.damage * (1 + state.levelIndex * 0.06));
+        return Math.round(e.cfg.damage * 0.75 * (1 + state.levelIndex * 0.03));
     }
 
     /** Choisit une attaque spéciale selon la distance et les attaques connues de l'ennemi. */
@@ -1504,6 +1595,12 @@
             for (const pow of state.pows) {
                 if (!pow.freed && Math.abs(pow.x - x) < VINYL.radius && Math.abs(pow.y - y) < 14) freePow(pow);
             }
+            for (const box of state.boxes) {
+                if (box.hp > 0 && Math.abs(box.x - x) < VINYL.radius && Math.abs(box.y - y) < 14) {
+                    box.hp = 1;
+                    hitBox(box);
+                }
+            }
         } else {
             const p = state.player;
             if (Math.abs(p.x - x) < 20 && Math.abs(p.y - y) < 10) damagePlayer(14, x);
@@ -1656,6 +1753,7 @@
                 updateProjectiles();
                 updatePickups();
                 updatePows();
+                updateToughGuys();
 
                 if (state.mode === 'playing') updateCamera();
                 break;
@@ -1673,6 +1771,7 @@
                     // continue : on recommence le niveau, le score repart à zéro
                     state.score = 0;
                     state.kills = 0;
+                    state.nextLife = 10000;
                     state.lives = 3;
                     startLevel(state.levelIndex);
                 }
@@ -1689,6 +1788,14 @@
             drop.y += 5;
             drop.x -= 1.5;
             if (drop.y > H) Object.assign(drop, { y: rand(-20, 0), x: rand(0, W + 60) });
+        }
+
+        // une vie de plus tous les 10 000 points
+        if (state.player && !['title', 'select', 'story'].includes(state.mode) && state.score >= state.nextLife) {
+            state.nextLife += 10000;
+            state.lives++;
+            shout('1UP !', state.player.x, state.player.y - 60, '#7dff5a');
+            sfx('oneup');
         }
 
         if (state.score > state.hiscore) {
@@ -1986,7 +2093,16 @@
 
         if (state.mode === 'story') drawStoryBackdrop();
 
-        const actors = [...state.enemies, ...state.cast, state.player].filter(Boolean).sort((a, b) => a.y - b.y);
+        for (const box of state.boxes) {
+            if (box.hp <= 0) continue;
+            const image = items.wodbox;
+            const wobble = box.shake > 0 ? Math.round(rand(-1, 1)) : 0;
+            box.shake = Math.max(0, box.shake - 1);
+            drawShadow(box.x, box.y, 7);
+            ctx.drawImage(image, Math.round(box.x - image.width / 2) + wobble, Math.round(box.y - image.height + 1));
+        }
+
+        const actors = [...state.enemies, ...state.cast, ...state.toughGuys, state.player].filter(Boolean).sort((a, b) => a.y - b.y);
         actors.forEach((a) => drawShadow(a.x, a.y, 10 * a.scale));
         actors.forEach(drawFighter);
 
@@ -2025,7 +2141,7 @@
         hud.hiscore.textContent = pad(state.hiscore);
         hud.life.style.width = `${inGame && p ? (p.hp / p.maxHp) * 100 : 100}%`;
         const seconds = p?.weapon ? Math.ceil((p.weaponUntil - state.tick) / 60) : 0;
-        hud.lives.textContent = `♥ x${Math.max(0, state.lives)} · VINYL ${p?.vinyls ?? 0}` + (p?.weapon ? ` · ${data.weapons[p.weapon].name} ${seconds}` : '');
+        hud.lives.textContent = `♥ x${Math.max(0, state.lives)} · VINYL ${p?.vinyls ?? 0}` + (p?.wods ? ` · WOD ${p.wods}` : '') + (p?.weapon ? ` · ${data.weapons[p.weapon].name} ${seconds}` : '');
 
         const boss = state.boss && state.boss.state !== 'dead' ? state.boss : null;
         const enemy = boss ?? state.lastEnemy;

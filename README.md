@@ -15,6 +15,7 @@ Au clavier, ou sur mobile avec le stick et les boutons dessinés sur la borne (p
 | Espace | coup de katana |
 | B | coup de pied sauté |
 | V | lancer un vinyle (il explose en notes de musique) |
+| Espace + V | WALL OF DEATH (trouvé dans une caisse « ? », une par niveau) |
 | C | attaque en skate |
 | Entrée | start / continuer |
 | M | couper la musique |

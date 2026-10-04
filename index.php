@@ -116,7 +116,7 @@ $game = [
             <ul class="panel__help">
                 <li><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> marcher · <kbd>ENTRÉE</kbd> start</li>
                 <li><kbd>ESPACE</kbd> coup de katana · <kbd>B</kbd> coup de pied sauté</li>
-                <li><kbd>V</kbd> vinyle · <kbd>C</kbd> skate · <kbd>M</kbd> musique</li>
+                <li><kbd>V</kbd> vinyle · <kbd>ESPACE</kbd>+<kbd>V</kbd> wall of death · <kbd>C</kbd> skate</li>
             </ul>
             <div class="panel__buttons">
                 <?php foreach ([['red', 'Space', 'KATANA'], ['yellow', 'KeyB', 'B'], ['white', 'KeyV', 'V'], ['black', 'KeyC', 'C']] as [$color, $key, $label]): ?>
