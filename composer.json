@@ -27,6 +27,10 @@
             "php -S localhost:8000"
         ],
         "build": "php tools/build.php",
+        "build:openbor": [
+            "Composer\\Config::disableProcessTimeout",
+            "php tools/build-openbor.php"
+        ],
         "test": "phpunit",
         "lint": "phpcs",
         "analyse": "phpstan analyse",

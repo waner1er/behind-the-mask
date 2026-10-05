@@ -6,3 +6,6 @@ node_modules/
 # Dépendances Composer (composer install)
 vendor/
 .phpunit.cache/
+
+# Module OpenBOR généré (composer build:openbor)
+build/openbor/

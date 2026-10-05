@@ -10,7 +10,7 @@ Guide pour les agents de code (et les humains pressés) qui travaillent sur ce d
 - **JavaScript** (`js/`, modules ES, classes) **anime** : boucle à 60 images/s, IA, rendu canvas, son synthétisé.
 - Ils ne communiquent que par les données (`#game-data` dans la page, décors chargés à la demande).
 
-Documentation : `docs/architecture.md` (vue d'ensemble), `docs/php.md` et `docs/javascript.md` (références), `docs/content.md` (niveaux, boss, ennemis, sprites, scénario), `docs/workflow.md` (commandes, tests, publication).
+Documentation : `docs/architecture.md` (vue d'ensemble), `docs/php.md` et `docs/javascript.md` (références), `docs/content.md` (niveaux, boss, ennemis, sprites, scénario), `docs/workflow.md` (commandes, tests, publication), `docs/recalbox.md` (version borne OpenBOR).
 
 ## Commandes
 
@@ -23,6 +23,7 @@ npm run test:e2e                   # le jeu complet dans Chrome headless (~1 min
 UPDATE_SNAPSHOTS=1 composer test   # valider un changement VOULU de décor ou de sprite
 node tools/screenshot.mjs 4 5 out.png   # capture du niveau 4 après 5 s de jeu (title | peace | 1-9)
 composer build                     # index.html + scenes/ pour GitHub Pages
+composer build:openbor             # build/openbor/Vigilante.pak pour la borne Recalbox (OpenBOR)
 npm run css                        # style.scss → build/style.css
 ```
 
@@ -40,6 +41,7 @@ npm run css                        # style.scss → build/style.css
 | changer un écran (accueil, menus, game over) | `js/modes/` |
 | changer un bruitage | `js/audio/sounds.js` |
 | changer la borne (HTML / styles) | `templates/page.php`, `style.scss` |
+| adapter la version borne Recalbox (OpenBOR) | `src/Export/OpenBor/`, `docs/recalbox.md` |
 
 ## Règles
 
