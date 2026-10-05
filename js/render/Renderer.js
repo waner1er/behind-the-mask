@@ -94,7 +94,7 @@ export class Renderer {
 
     #actors() {
         const { state } = this;
-        const actors = [...state.enemies, ...state.cast, ...state.toughGuys, state.player]
+        const actors = [...state.enemies, ...state.cast, ...state.toughGuys, ...state.players]
             .filter(Boolean)
             .sort((a, b) => a.y - b.y);
         actors.forEach((a) => this.brush.shadow(a.x, a.y, 10 * a.scale));

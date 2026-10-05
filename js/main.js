@@ -12,7 +12,7 @@ import { TouchStick } from './input/TouchStick.js';
 const data = JSON.parse(document.getElementById('game-data').textContent);
 const game = new Game(data);
 
-new KeyboardControls(game.input).bind();
+new KeyboardControls(game.input, game.pads, () => game.state.duo).bind();
 document.querySelectorAll('[data-joystick], [data-touch-stick]').forEach((pad) => new TouchStick(pad, game.input).bind());
 new MobileGuard().bind();
 game.audio.unlockOnGesture();

@@ -7,7 +7,6 @@ export class Projectiles {
 
     update() {
         const { game, state } = this;
-        const p = state.player;
         state.projectiles = state.projectiles.filter((shot) => {
             shot.x += shot.vx;
             shot.y += shot.vy;
@@ -16,8 +15,9 @@ export class Projectiles {
             shot.t = (shot.t ?? 0) + 1;
 
             if (shot.owner !== 'hero') {
-                const hitsPlayer = Math.abs(shot.z - p.z) < 30 && Math.abs(p.x - shot.x) < 8 && Math.abs(p.y - shot.y) < 6;
-                if (hitsPlayer && game.combat.damagePlayer(shot.damage, shot.x - shot.vx * 10)) return false;
+                const hits = (p) => Math.abs(shot.z - p.z) < 30 && Math.abs(p.x - shot.x) < 8 && Math.abs(p.y - shot.y) < 6;
+                const victim = state.players.find((p) => hits(p) && game.combat.damagePlayer(p, shot.damage, shot.x - shot.vx * 10));
+                if (victim) return false;
             }
 
             if (shot.z > 0) return true;

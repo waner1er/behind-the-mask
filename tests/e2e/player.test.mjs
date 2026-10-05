@@ -11,6 +11,7 @@ after(() => game?.close());
 
 test('MORCEAUX : choisir le 2e morceau et le lancer', async () => {
     await game.press('ArrowDown');
+    await game.press('ArrowDown');
     await game.press('Enter');
     assert.equal((await game.state()).mode, 'select');
 
@@ -33,6 +34,6 @@ test('sans se défendre : GAME OVER, puis START recommence le niveau', async () 
     await game.press('Enter', 120);
     const state = await game.state();
     assert.equal(state.mode, 'intro');
-    assert.equal(state.lives, 3);
+    assert.deepEqual(state.lives, [3]);
     assert.deepEqual(game.errors, []);
 });

@@ -82,10 +82,9 @@ export class Combat {
         this.#loot(e, fromDir);
     }
 
-    /** Le héros encaisse un coup venu de fromX. Renvoie false s'il l'esquive (invulnérable, en l'air...). */
-    damagePlayer(amount, fromX) {
+    /** Le héros p encaisse un coup venu de fromX. Renvoie false s'il l'esquive (invulnérable, en l'air...). */
+    damagePlayer(p, amount, fromX) {
         const { game, state } = this;
-        const p = state.player;
         if (state.demo) return false; // en démo, Pete ne prend pas de coups
         if (p.invuln || p.isDown || p.z > 10) return false;
 
@@ -99,7 +98,7 @@ export class Combat {
         if (p.hp <= 0) {
             p.hp = 0;
             p.weapon = null;
-            state.lives--;
+            state.lives[p.slot]--;
             p.setState('dead');
             p.vx = dir * 2;
             game.sfx('heavyHit');

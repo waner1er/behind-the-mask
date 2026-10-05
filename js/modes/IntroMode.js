@@ -6,7 +6,7 @@ export class IntroMode extends Mode {
 
     update() {
         const { game, state, input } = this;
-        state.player.anim++;
+        state.players.forEach((p) => p.anim++);
         const skipped = state.modeTimer > 30 && input.wasPressed('Enter', 'Space');
         if (state.modeTimer > IntroMode.DURATION || skipped) {
             game.hud.message('', 0);

@@ -84,7 +84,7 @@ tools/build.php ─► StaticSiteBuilder::build()        → index.html + scenes
 | `SpriteSheet` | Palette + animations (`idle`, `walk`, `attack`, `dead`, `skate`, `jump`, `kick`…). |
 | `Pose` | Enum `Walk` / `Windup` / `Strike` : position d'une arme tenue. |
 | `Character\Skeleton` | Squelette commun : jambes, bras, cycle de marche, ancrage, positions des mains. |
-| `Character\HeroParts`, `HeroFrame`, `HeroBuilder`, `Stance` | Le héros : pièces, une image, toutes les animations (avec katana ou arme ramassée), gardes. |
+| `Character\HeroLook`, `HeroParts`, `BaptParts`, `HeroFrame`, `HeroBuilder`, `Stance` | Les héros jouables : interface des pièces, Pete (katana) et VigiBapt (guitare, joueur 2), une image, toutes les animations (avec arme fétiche ou ramassée), gardes. |
 | `Character\EnemyLook` | Apparence d'un ennemi : palette, tête, torse, couleurs des bras, arme, calques `back`/`over`/`front`. |
 | `Character\EnemyFrame`, `EnemyBuilder` | Une image d'ennemi ; toutes ses animations. |
 | `Character\Skinheads`, `Masculinists` | Les deux gangs de base : `look(couleurs, arme)`. |

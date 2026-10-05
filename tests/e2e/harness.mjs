@@ -65,6 +65,16 @@ export async function openGame(path = 'index.php?debug') {
             await page.keyboard.press(key);
             await game.run(frames);
         },
+        /** Maintient une touche pendant N images. */
+        async hold(key, frames) {
+            await page.keyboard.down(key);
+            await game.run(frames);
+            await page.keyboard.up(key);
+        },
+        /** Position et état de chaque héros en jeu. */
+        players: () => page.evaluate(() => window.game.state.players.map((p) => ({
+            type: p.type, slot: p.slot, x: p.x, y: p.y, state: p.state,
+        }))),
         state: () => page.evaluate(() => {
             const s = window.game.state;
             return { mode: s.mode, level: s.levelIndex, selected: s.selected, lives: s.lives, score: s.score, demo: s.demo };

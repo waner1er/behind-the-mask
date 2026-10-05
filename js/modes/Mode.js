@@ -11,10 +11,11 @@ export class Mode {
     /** Menus : le héros marche sur place pendant que la ville défile derrière lui. */
     walkInPlace() {
         const { state } = this;
-        state.player ??= this.game.spawn('hero', 150, 158);
+        if (!state.players.length) state.players = [this.game.spawn('hero', 150, 158)];
+        const [p] = state.players;
         state.cam += 0.5;
-        state.player.x = state.cam + 150;
-        state.player.anim++;
-        state.player.setState('walk');
+        p.x = state.cam + 150;
+        p.anim++;
+        p.setState('walk');
     }
 }

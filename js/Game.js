@@ -3,7 +3,7 @@ import { DemoPilot } from './actors/DemoPilot.js';
 import { EnemyAI } from './actors/EnemyAI.js';
 import { PlayerController } from './actors/PlayerController.js';
 import { AudioEngine } from './audio/AudioEngine.js';
-import { HERO_HP, HISCORE_KEY } from './config.js';
+import { HERO_HP, HEROES, HISCORE_KEY } from './config.js';
 import { GameState } from './core/GameState.js';
 import { Input } from './input/Input.js';
 import { Campaign } from './modes/Campaign.js';
@@ -45,6 +45,8 @@ export class Game {
         this.hiscores = new HiscoreStore(HISCORE_KEY);
         this.state = new GameState(data, this.hiscores.load());
         this.input = new Input();
+        /** Commandes de chaque joueur en partie à deux (en solo, Pete obéit à input). */
+        this.pads = [new Input(), new Input()];
         this.audio = new AudioEngine();
         this.sprites = new SpriteBank(data);
         this.hud = new Hud(root, this);
@@ -86,8 +88,23 @@ export class Game {
 
     /** Crée un personnage ; sans cfg, celle du héros ou de l'ennemi de ce type (config/game.php). */
     spawn(type, x, y, cfg = undefined) {
-        cfg ??= type === 'hero' ? { hp: HERO_HP } : this.data.enemies[type];
+        cfg ??= HEROES.includes(type) ? { hp: HERO_HP } : this.data.enemies[type];
         return new Fighter(type, x, y, cfg);
+    }
+
+    /** Fait entrer les héros (un en solo, deux en duo), côte à côte. */
+    spawnPlayers(x, y) {
+        const count = this.state.duo ? 2 : 1;
+        return HEROES.slice(0, count).map((type, slot) => {
+            const p = this.spawn(type, x - slot * 22, y + (count > 1 ? (slot ? 6 : -6) : 0));
+            p.slot = slot;
+            return p;
+        });
+    }
+
+    /** Les commandes d'un héros : son pavé en duo, sinon les commandes communes. */
+    inputOf(p) {
+        return this.state.duo ? this.pads[p.slot] : this.input;
     }
 
     sfx(name, ...args) {
@@ -106,7 +123,7 @@ export class Game {
 
     goHome() {
         const { state, hud } = this;
-        Object.assign(state, { demo: false, player: null, enemies: [], cast: [], menu: 0 });
+        Object.assign(state, { demo: false, duo: false, players: [], enemies: [], cast: [], menu: 0 });
         hud.showDialog(false);
         hud.showCredits(null);
         hud.setLayout('story', false);
@@ -137,6 +154,7 @@ export class Game {
         this.hud.expireMessage();
         this.panel.update();
         input.endFrame();
+        this.pads.forEach((pad) => pad.endFrame());
     }
 
     draw() {

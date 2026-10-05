@@ -1,4 +1,4 @@
-import { ATTACK, VINYL } from '../config.js';
+import { ATTACK, HEROES, VINYL } from '../config.js';
 import { rand } from '../util/math.js';
 
 let nextId = 1;
@@ -21,6 +21,7 @@ export class Fighter {
         this.vx = 0;
         this.vz = 0;
         this.dir = 1;
+        this.slot = 0;
         this.scale = cfg.scale ?? 1;
 
         this.state = 'idle';
@@ -41,7 +42,7 @@ export class Fighter {
         this.weapon = null;
         this.weaponUntil = 0;
         this.wods = 0;
-        this.vinyls = type === 'hero' ? VINYL.start : 0;
+        this.vinyls = this.isHero ? VINYL.start : 0;
     }
 
     setState(name) {
@@ -51,8 +52,12 @@ export class Fighter {
     }
 
     get attackTiming() {
-        if (this.type === 'hero') return ATTACK.hero;
+        if (this.isHero) return ATTACK.hero;
         return this.boss ? ATTACK.boss : ATTACK.enemy;
+    }
+
+    get isHero() {
+        return HEROES.includes(this.type);
     }
 
     get isDown() {

@@ -8,7 +8,7 @@ use Vigilante\PixelArt\Layer;
 use Vigilante\PixelArt\Line;
 
 /** Pete, le Vigilante : kimono, ceinture noire, casquette de skateur, masque et katana. */
-final class HeroParts
+final class HeroParts implements HeroLook
 {
     public const PALETTE = [
         'K' => '#0c0a10',
@@ -135,36 +135,38 @@ final class HeroParts
         ],
     ];
 
-    public static function head(): Layer
+    /** @return array<array-key, string> */
+    public function palette(): array
+    {
+        return self::PALETTE;
+    }
+
+    public function head(bool $twinkle): Layer
     {
         return new Layer(self::HEAD, 0, 4);
     }
 
-    public static function torso(): Layer
+    public function torso(): Layer
     {
         return new Layer(self::TORSO, 0, 16);
     }
 
     /** Le skate porté dans le dos, ou sous les pieds pendant l'attaque en glisse. */
-    public static function board(bool $riding): Layer
+    public function back(bool $riding): Layer
     {
         return $riding ? new Layer(self::BOARD_UNDER, 0, 36) : new Layer(self::BOARD_ON_BACK, 0, 14);
     }
 
     /** @param 'near'|'far' $side */
-    public static function arm(Stance $stance, string $side): Layer
+    public function arm(Stance $stance, string $side): Layer
     {
         [$y, $rows] = self::ARMS[$stance->value][$side];
 
         return new Layer($rows, 0, $y);
     }
 
-    /**
-     * Le katana : poignée, garde dorée, lame.
-     *
-     * @return list<Layer>
-     */
-    public static function katana(Stance $stance): array
+    /** Le katana : poignée, garde dorée, lame. */
+    public function signature(Stance $stance): array
     {
         return match ($stance) {
             Stance::Guard => [

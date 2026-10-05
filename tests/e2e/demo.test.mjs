@@ -10,8 +10,7 @@ before(async () => {
 after(() => game?.close());
 
 test('la démo enchaîne l\'intro, les 9 niveaux, la fin et le générique, puis revient à l\'accueil', async () => {
-    await game.press('ArrowDown');
-    await game.press('ArrowDown');
+    await game.press('ArrowUp'); // DÉMO, en dernier dans le menu
     await game.press('Enter');
     assert.equal((await game.state()).demo, true);
 

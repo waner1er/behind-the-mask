@@ -15,6 +15,8 @@ export class GameState {
         this.menu = 0;
         this.selected = 0;
         this.demo = false;
+        /** Partie à deux : Pete (1P) et VigiBapt (2P). */
+        this.duo = false;
 
         this.levelIndex = 0;
         this.level = data.levels[0];
@@ -22,13 +24,15 @@ export class GameState {
         this.locked = false;
         this.waveIndex = 0;
 
+        // score commun aux deux joueurs, vies par joueur
         this.score = 0;
         this.hiscore = hiscore;
         this.kills = 0;
-        this.lives = LIVES.start;
+        this.lives = [LIVES.start];
         this.nextLife = LIVES.extraEvery;
 
-        this.player = null;
+        /** Les héros en jeu ; p.slot = numéro du joueur (0 = Pete, 1 = VigiBapt). */
+        this.players = [];
         this.boss = null;
         this.enemies = [];
         this.toughGuys = [];
@@ -64,13 +68,27 @@ export class GameState {
         this.score = 0;
         this.kills = 0;
         this.nextLife = LIVES.extraEvery;
-        this.lives = LIVES.start;
+        this.lives = Array(this.duo ? 2 : 1).fill(LIVES.start);
+    }
+
+    /** Le héros le plus proche, debout de préférence : celui que visent les ennemis. */
+    nearestPlayer(x, y) {
+        let best = null;
+        let bestScore = Infinity;
+        for (const p of this.players) {
+            const score = Math.abs(p.x - x) + Math.abs(p.y - y) * 2 + (p.isDown ? 10000 : 0);
+            if (score < bestScore) {
+                best = p;
+                bestScore = score;
+            }
+        }
+        return best;
     }
 
     /** Vide la scène avant une séquence animée. */
     clearScene() {
         Object.assign(this, {
-            player: null, cast: [], enemies: [], projectiles: [], pickups: [], pows: [], boxes: [], toughGuys: [],
+            players: [], cast: [], enemies: [], projectiles: [], pickups: [], pows: [], boxes: [], toughGuys: [],
             explosions: [], notes: [], texts: [], birds: [], fx: [], citizens: [],
         });
     }

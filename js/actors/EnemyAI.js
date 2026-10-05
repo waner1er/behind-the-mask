@@ -45,7 +45,7 @@ export class EnemyAI {
 
     #approach(e, rank) {
         const { state } = this;
-        const p = state.player;
+        const p = state.nearestPlayer(e.x, e.y);
         const W = this.game.data.width;
 
         e.cooldown--;
@@ -140,13 +140,13 @@ export class EnemyAI {
 
     #striking(e) {
         const { state } = this;
-        const p = state.player;
+        const p = state.nearestPlayer(e.x, e.y);
         const timing = e.attackTiming;
         e.t++;
         if (e.t >= timing.hitFrom && e.t <= timing.hitTo && !e.landed) {
             const reach = (p.x - e.x) * e.dir;
             if (reach > 2 && reach < (e.cfg.reach ?? 26) * e.scale && Math.abs(p.y - e.y) < 6 + e.scale * 2) {
-                e.landed = this.game.combat.damagePlayer(this.damage(e), e.x);
+                e.landed = this.game.combat.damagePlayer(p, this.damage(e), e.x);
             }
         }
         if (e.t >= timing.end) {
@@ -157,7 +157,7 @@ export class EnemyAI {
 
     /** Ruée : l'ennemi prend son élan (il clignote) puis fonce. */
     #lunging(e) {
-        const p = this.state.player;
+        const p = this.state.nearestPlayer(e.x, e.y);
         e.t++;
         if (e.state === 'lunge-wind') {
             e.faceTowards(p.x);
@@ -169,7 +169,7 @@ export class EnemyAI {
         }
         e.x += e.dir * 3.2;
         if (!e.landed && Math.abs(p.x - e.x) < 12 && Math.abs(p.y - e.y) < 6) {
-            e.landed = this.game.combat.damagePlayer(this.damage(e), e.x - e.dir * 10);
+            e.landed = this.game.combat.damagePlayer(p, this.damage(e), e.x - e.dir * 10);
         }
         if (e.t > 18) {
             e.setState('idle');
@@ -181,7 +181,7 @@ export class EnemyAI {
     /** Lance un projectile vers le héros (boss, hooligans, armes lancées). */
     #throwing(e) {
         const { game } = this;
-        const p = this.state.player;
+        const p = this.state.nearestPlayer(e.x, e.y);
         e.t++;
         e.faceTowards(p.x);
         if (e.t === 18) {

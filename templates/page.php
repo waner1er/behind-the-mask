@@ -57,6 +57,11 @@ $buttons = [['red', 'Space', 'KATANA'], ['yellow', 'KeyB', 'B'], ['white', 'KeyV
                         </div>
                         <div class="hud__bar"><div class="hud__fill" data-hud="life"></div></div>
                         <span class="hud__lives" data-hud="lives">♥ x3</span>
+                        <div class="hud__p2" data-hud="p2" hidden>
+                            <span class="hud__label">2UP · BAPT</span>
+                            <div class="hud__bar"><div class="hud__fill" data-hud="life2"></div></div>
+                            <span class="hud__lives" data-hud="lives2">♥ x3</span>
+                        </div>
                     </div>
                     <div class="hud__center">
                         <span class="hud__label hud__label--red" data-hud="level">HI-SCORE</span>

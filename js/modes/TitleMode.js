@@ -1,8 +1,11 @@
 import { Mode } from './Mode.js';
 
-/** Écran d'accueil : JOUER (avec le scénario), MORCEAUX (choix du niveau) ou DÉMO. */
+/** Écran d'accueil : JOUER (avec le scénario), 2 JOUEURS (Pete et VigiBapt), MORCEAUX (choix du niveau) ou DÉMO. */
 export class TitleMode extends Mode {
-    static MENU = ['JOUER', 'MORCEAUX', 'DÉMO'];
+    static MENU = ['JOUER', '2 JOUEURS', 'MORCEAUX', 'DÉMO'];
+
+    /** Rappel des commandes à deux, affiché quand « 2 JOUEURS » est sélectionné. */
+    static DUO_HELP = '1P ZQSD + V C X W · 2P OKLM + , ; : !';
 
     update() {
         const { game, state, input } = this;
@@ -27,6 +30,7 @@ export class TitleMode extends Mode {
         game.hud.message(
             `<img class="hud__logo" src="${game.data.logo}" alt="Vigilante - Behind the Mask">`
             + `<div class="hud__menu">${items}</div>`
+            + (TitleMode.MENU[state.menu] === '2 JOUEURS' ? `<span class="hud__small">${TitleMode.DUO_HELP}</span><br>` : '')
             + '<span class="blink-text hud__small">INSERT COIN · PRESS START</span>',
         );
         game.hud.setLevelLabel('HI-SCORE');
@@ -34,6 +38,7 @@ export class TitleMode extends Mode {
 
     #choose() {
         const { game, state } = this;
+        state.duo = TitleMode.MENU[state.menu] === '2 JOUEURS';
         state.resetScore();
         game.sfx('start');
         game.hud.setLayout('home', false);
@@ -42,6 +47,7 @@ export class TitleMode extends Mode {
                 game.demo.start();
                 break;
             case 'JOUER':
+            case '2 JOUEURS':
                 game.campaign.playIntro();
                 break;
             default:

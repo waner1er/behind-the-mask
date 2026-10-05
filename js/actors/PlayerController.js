@@ -1,12 +1,11 @@
 import { ATTACK, JUMP, SKATE, VINYL } from '../config.js';
 import { clamp } from '../util/math.js';
 
-/** Le héros obéit aux commandes : marcher, katana, coup de pied sauté, vinyle, skate, Wall of Death. */
+/** Chaque héros obéit à ses commandes : marcher, katana (ou guitare), coup de pied sauté, vinyle, skate, Wall of Death. */
 export class PlayerController {
     constructor(game) {
         this.game = game;
         this.state = game.state;
-        this.input = game.input;
     }
 
     update(p) {
@@ -42,7 +41,8 @@ export class PlayerController {
     }
 
     #control(p) {
-        const { game, input } = this;
+        const { game } = this;
+        const input = game.inputOf(p);
 
         // ESPACE + V en même temps : WALL OF DEATH !
         const combo = input.isHeld('Space') && input.isHeld('KeyV') && input.wasPressed('Space', 'KeyV');
@@ -112,7 +112,7 @@ export class PlayerController {
         p.t++;
         p.z += p.vz;
         p.vz -= JUMP.gravity;
-        p.x += p.dir * JUMP.speed + this.input.axisX * 0.4;
+        p.x += p.dir * JUMP.speed + this.game.inputOf(p).axisX * 0.4;
         if (p.t > 5) this.game.combat.heroHits(p, -4, 30, 4.5, 2);
         if (p.z <= 0 && p.t > 2) {
             p.z = 0;
@@ -157,7 +157,7 @@ export class PlayerController {
     #skating(p) {
         p.t++;
         p.x += p.dir * SKATE.speed * (p.t < SKATE.duration - 8 ? 1 : 0.5);
-        p.y += this.input.axisY * 0.6;
+        p.y += this.game.inputOf(p).axisY * 0.6;
         this.game.combat.heroHits(p, -6, 36, 3.6, 1);
         this.keepOnScreen(p);
         if (p.t >= SKATE.duration) {

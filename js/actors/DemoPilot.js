@@ -19,6 +19,7 @@ export class DemoPilot {
 
     start() {
         this.state.demo = true;
+        this.state.duo = false;
         this.game.campaign.playIntro();
     }
 
@@ -32,7 +33,7 @@ export class DemoPilot {
     play() {
         const { state, input } = this;
         input.releaseAll();
-        const p = state.player;
+        const [p] = state.players;
         if (state.mode !== 'playing' || !p || ['dead', 'hurt'].includes(p.state)) return;
 
         // les ennemis juste hors champ comptent aussi : Pete se place au bord et frappe

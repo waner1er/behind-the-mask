@@ -21,7 +21,7 @@ export class BossAI {
     }
 
     #trigger(e) {
-        const p = this.state.player;
+        const p = this.state.nearestPlayer(e.x, e.y);
         e.special--;
         if (e.special > 0 || p.isDown) return false;
         e.special = e.cfg.every;
@@ -33,7 +33,7 @@ export class BossAI {
 
     #windUp(e) {
         e.t++;
-        e.faceTowards(this.state.player.x);
+        e.faceTowards(this.state.nearestPlayer(e.x, e.y).x);
         if (e.t > 34) {
             e.setState('charge');
             e.landed = false;
@@ -45,12 +45,14 @@ export class BossAI {
     /** Fonce à travers l'écran jusqu'au bord. */
     #charge(e) {
         const { state } = this;
-        const p = state.player;
         const W = this.game.data.width;
         e.t++;
         e.x += e.dir * 3.4;
-        if (!e.landed && Math.abs(p.x - e.x) < 14 * e.scale && Math.abs(p.y - e.y) < 6 + e.scale * 3) {
-            e.landed = this.game.combat.damagePlayer(Math.round(e.cfg.damage * 1.5), e.x - e.dir * 10);
+        // la charge renverse tous ceux qu'elle traverse
+        for (const p of state.players) {
+            if (Math.abs(p.x - e.x) < 14 * e.scale && Math.abs(p.y - e.y) < 6 + e.scale * 3) {
+                this.game.combat.damagePlayer(p, Math.round(e.cfg.damage * 1.5), e.x - e.dir * 10);
+            }
         }
         const atEdge = e.x < state.cam + 12 || e.x > state.cam + W - 12;
         if (e.t > 80 || atEdge) {
@@ -60,10 +62,10 @@ export class BossAI {
         return true;
     }
 
-    /** Disparaît et réapparaît dans le dos du héros, prêt à frapper. */
+    /** Disparaît et réapparaît dans le dos du héros le plus proche, prêt à frapper. */
     #teleport(e) {
         const { state } = this;
-        const p = state.player;
+        const p = state.nearestPlayer(e.x, e.y);
         e.t++;
         if (e.t === 26) {
             e.x = clamp(p.x - p.dir * 24, state.cam + 12, state.cam + this.game.data.width - 12);

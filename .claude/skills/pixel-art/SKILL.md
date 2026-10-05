@@ -37,5 +37,5 @@ Un snapshot qui change alors qu'on ne voulait pas changer le dessin = régressio
 
 - `BossDesign` : `SKIN + palette()`, la peau commune l'emporte (voulu pour l'instant, voir `docs/php.md`).
 - Les clés numériques de palette (`'1'`) deviennent des entiers PHP.
-- Le héros utilise `1 2 3 4` pour les couleurs des armes ramassées (`HeroParts::WEAPON_MAP`) car `M m L j` sont pris par sa casquette.
+- Les héros (Pete `HeroParts`, VigiBapt `BaptParts`, tous deux `HeroLook`) utilisent `1 2 3 4` pour les couleurs des armes ramassées (`HeroParts::WEAPON_MAP`) car `M m L j` sont pris par la casquette de Pete.
 - Les boss sont agrandis par `scale` côté JS : dessiner à la taille normale.

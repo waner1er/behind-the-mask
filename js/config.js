@@ -19,6 +19,9 @@ export const VINYL = { start: 5, perCrate: 5, max: 20, radius: 30, damage: 4 };
 export const LIVES = { start: 3, extraEvery: 10000 };
 export const HERO_HP = 100;
 
+/** Les héros jouables, par numéro de joueur : Pete (1P) et VigiBapt (2P). */
+export const HEROES = ['hero', 'bapt'];
+
 /** Un cœur tombe tous les N ennemis mis K.O. */
 export const HEART_EVERY_KILLS = 10;
 

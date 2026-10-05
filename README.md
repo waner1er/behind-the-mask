@@ -20,6 +20,18 @@ Au clavier, ou sur mobile avec le stick et les boutons dessinés sur la borne (p
 | Entrée | start / continuer |
 | M | couper la musique |
 
+**À deux** (menu « 2 JOUEURS », clavier AZERTY) : Pete (1P) et VigiBapt (2P, à la guitare) jouent en même temps, avec un score commun et des vies par joueur.
+
+| Action | 1P · Pete | 2P · VigiBapt |
+|---|---|---|
+| marcher | Z Q S D | O K L M |
+| frapper | V | , |
+| skate | C | ; |
+| vinyle | X | : |
+| coup de pied sauté | W | ! |
+| WALL OF DEATH | V + X | , + : |
+| start | Entrée | Entrée |
+
 ## Comment c'est fait
 
 - **PHP** (`src/`, namespace `Vigilante\`) génère tout le pixel art : les sprites sont décrits en texte (1 caractère = 1 pixel), les décors sont procéduraux (SVG), les niveaux viennent des paroles de l'album (`medias/audio/…/paroles.md`) et de `config/`.

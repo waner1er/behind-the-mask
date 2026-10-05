@@ -2,6 +2,22 @@ export const ARROWS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
 export const GAME_KEYS = [...ARROWS, 'Space', 'KeyX', 'KeyB', 'KeyV', 'KeyC', 'Enter', 'KeyM'];
 
 /**
+ * À deux sur un clavier AZERTY, chaque joueur a son pavé, traduit en touches du mode solo
+ * (ESPACE frappe, C skate, V vinyle, B saut). Codes physiques : « Z » AZERTY = KeyW, « , » = KeyM...
+ * 1P : ZQSD + V C X W ; 2P : OKLM + , ; : !
+ */
+export const DUO_KEYS = [
+    {
+        KeyW: 'ArrowUp', KeyA: 'ArrowLeft', KeyS: 'ArrowDown', KeyD: 'ArrowRight',
+        KeyV: 'Space', KeyC: 'KeyC', KeyX: 'KeyV', KeyZ: 'KeyB',
+    },
+    {
+        KeyO: 'ArrowUp', KeyK: 'ArrowLeft', KeyL: 'ArrowDown', Semicolon: 'ArrowRight',
+        KeyM: 'Space', Comma: 'KeyC', Period: 'KeyV', Slash: 'KeyB',
+    },
+];
+
+/**
  * État des commandes, quelle que soit leur source (clavier, boutons de la borne, stick tactile, démo).
  * held : touches maintenues ; pressed : touches enfoncées depuis la dernière image.
  */

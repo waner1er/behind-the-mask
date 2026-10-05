@@ -31,7 +31,7 @@ npm run lint:js
 npm run test:e2e        # la démo doit finir le jeu ; MORCEAUX, game over, sourdine
 ```
 
-Pour tester à la main : `composer serve`, `http://localhost:8000/?debug`, puis dans la console `game.campaign.startLevel(n)`, `game.state.player.wods = 2`, `game.state.player.hp = 1`…
+Pour tester à la main : `composer serve`, `http://localhost:8000/?debug`, puis dans la console `game.campaign.startLevel(n)`, `game.state.players[0].wods = 2`, `game.state.players[0].hp = 1`…
 
 Si le changement touche le mode démo (cibles, déplacements), le test e2e de démo complète est le juge : un blocage = la démo ne revient jamais à l'accueil.
 

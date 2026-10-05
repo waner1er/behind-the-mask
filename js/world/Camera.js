@@ -1,7 +1,7 @@
 import { clamp, pick, rand } from '../util/math.js';
 
 /**
- * La caméra avance avec le héros, seulement vers la droite (comme dans Final Fight).
+ * La caméra avance avec les héros (à deux, sans laisser le dernier hors champ), seulement vers la droite (comme dans Final Fight).
  * À chaque déclencheur, elle se bloque le temps d'une vague d'ennemis ; la dernière vague est le boss.
  */
 export class Camera {
@@ -18,8 +18,10 @@ export class Camera {
         const { game, state } = this;
         const wave = state.level.waves[state.waveIndex];
 
-        if (!state.locked) {
-            const target = clamp(state.player.x - Camera.LEAD, 0, game.data.levelLength - this.width);
+        if (!state.locked && state.players.length) {
+            const xs = state.players.map((p) => p.x);
+            const lead = Math.min(Math.max(...xs) - Camera.LEAD, Math.min(...xs) - 10);
+            const target = clamp(lead, 0, game.data.levelLength - this.width);
             state.cam = Math.max(state.cam, target);
             if (wave) state.cam = Math.min(state.cam, wave.at);
         }

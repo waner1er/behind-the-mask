@@ -36,7 +36,7 @@ export class FighterPainter {
     }
 
     #frameOf(f) {
-        // le héros avec une arme ramassée a ses propres sprites (« hero-bat »...)
+        // un héros avec une arme ramassée a ses propres sprites (« hero-bat », « bapt-bat »...)
         const anims = this.sprites.fighters[f.weapon ? `${f.type}-${f.weapon}` : f.type];
         const timing = f.attackTiming;
 
@@ -73,7 +73,7 @@ export class FighterPainter {
     /** Traînée du coup de katana, et de la glisse en skate ou des ruées. */
     #speedLines(f) {
         const timing = f.attackTiming;
-        const swinging = f.type === 'hero' && f.state === 'attack' && f.t >= timing.hitFrom && f.t <= timing.hitTo + 2;
+        const swinging = f.isHero && f.state === 'attack' && f.t >= timing.hitFrom && f.t <= timing.hitTo + 2;
         const skating = f.state === 'skate' || f.state === 'charge' || f.state === 'lunge';
         if (!swinging && !skating) return;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vigilante\Sprite;
 
 use Vigilante\Sprite\Boss\BossRoster;
+use Vigilante\Sprite\Character\BaptParts;
 use Vigilante\Sprite\Character\EnemyBuilder;
 use Vigilante\Sprite\Character\EnemyRoster;
 use Vigilante\Sprite\Character\HeroBuilder;
@@ -16,7 +17,8 @@ use Vigilante\Sprite\Weapon\WeaponCatalog;
  * Tous les sprites animés envoyés au JavaScript (clé « sprites » des données du jeu).
  *
  * Clés spéciales : « anchor » (point d'ancrage des personnages) et « weaponIcons »
- * (armes posées au sol). Le héros armé d'une arme ramassée est « hero-<arme> ».
+ * (armes posées au sol). Les héros sont « hero » (Pete) et « bapt » (VigiBapt, joueur 2) ;
+ * armés d'une arme ramassée, « hero-<arme> » et « bapt-<arme> ».
  */
 final class CharacterCatalog
 {
@@ -30,6 +32,7 @@ final class CharacterCatalog
                 'sprites' => WeaponCatalog::icons(),
             ],
             'hero' => HeroBuilder::build(),
+            'bapt' => HeroBuilder::build(look: new BaptParts()),
             'pow' => Hostage::build(),
         ];
 
@@ -40,6 +43,7 @@ final class CharacterCatalog
 
         foreach (WeaponCatalog::PICKABLE as $weapon) {
             $characters["hero-$weapon"] = HeroBuilder::build(WeaponCatalog::get($weapon));
+            $characters["bapt-$weapon"] = HeroBuilder::build(WeaponCatalog::get($weapon), new BaptParts());
         }
 
         return $characters + BossRoster::sheets();

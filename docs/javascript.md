@@ -60,7 +60,7 @@ main.js
 | `core/` | `GameLoop` | Boucle à pas fixe. |
 | | `GameState` | Tout l'état mutable de la partie (voir plus bas). |
 | `input/` | `Input` | Touches maintenues (`held`) et appuyées cette image (`pressed`), `axisX`/`axisY`, `interceptor` (la démo s'interrompt au premier appui). |
-| | `KeyboardControls` | Clavier et boutons de la borne (`data-key`). |
+| | `KeyboardControls` | Clavier et boutons de la borne (`data-key`). En duo, les pavés des joueurs (`DUO_KEYS`) vont à `game.pads[slot]`, traduits en touches du solo ; `game.inputOf(p)` donne les commandes d'un héros. |
 | | `TouchStick` | Stick tactile ou dessiné → flèches. |
 | | `MobileGuard` | Pas de zoom ni de défilement ; plein écran et paysage au premier appui. |
 | `audio/` | `AudioEngine` | Contexte audio créé au premier geste, mixage, `play(nom)`, musique, sourdine. |
@@ -96,10 +96,10 @@ main.js
 | Champ | Contenu |
 |---|---|
 | `mode`, `modeTimer`, `tick` | Écran en cours, images depuis son début, images depuis le lancement. |
-| `menu`, `selected`, `demo` | Choix de l'accueil, morceau choisi, mode démo. |
+| `menu`, `selected`, `demo`, `duo` | Choix de l'accueil, morceau choisi, mode démo, partie à deux. |
 | `levelIndex`, `level`, `cam`, `locked`, `waveIndex` | Niveau (données PHP), position de la caméra, caméra bloquée par une vague, vague suivante. |
-| `score`, `hiscore`, `kills`, `lives`, `nextLife` | Compteurs. |
-| `player`, `boss`, `enemies`, `toughGuys`, `wodPower` | Personnages en jeu. |
+| `score`, `hiscore`, `kills`, `lives`, `nextLife` | Compteurs ; score commun, `lives[slot]` par joueur. |
+| `players`, `boss`, `enemies`, `toughGuys`, `wodPower` | Personnages en jeu ; `players` = les héros (`p.slot` 0 = Pete, 1 = VigiBapt), `nearestPlayer(x, y)` = celui que vise un ennemi. |
 | `projectiles`, `pickups`, `boxes`, `pows` | Objets. |
 | `cast`, `citizens`, `birds`, `fx` | Figurants des scènes animées. |
 | `explosions`, `notes`, `particles`, `flashes`, `sparks`, `texts`, `rain`, `shake`, `flash` | Effets. |

@@ -1,12 +1,12 @@
 import { Mode } from './Mode.js';
 
-/** MISSION COMPLETE : le héros souffle, puis niveau suivant. */
+/** MISSION COMPLETE : les héros soufflent, puis niveau suivant. */
 export class ClearMode extends Mode {
     static DURATION = 260;
 
     update() {
         const { game, state } = this;
-        game.player.update(state.player);
+        state.players.forEach((p) => game.player.update(p));
         for (const e of state.enemies) e.t++;
         if (state.modeTimer > ClearMode.DURATION) game.campaign.nextLevel();
     }

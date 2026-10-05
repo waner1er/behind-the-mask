@@ -29,8 +29,9 @@ export class Explosions {
         if (byHero) {
             this.#vinylDamage(x, y);
         } else {
-            const p = state.player;
-            if (Math.abs(p.x - x) < 20 && Math.abs(p.y - y) < 10) game.combat.damagePlayer(14, x);
+            for (const p of state.players) {
+                if (Math.abs(p.x - x) < 20 && Math.abs(p.y - y) < 10) game.combat.damagePlayer(p, 14, x);
+            }
         }
     }
 

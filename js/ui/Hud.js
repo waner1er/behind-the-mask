@@ -50,21 +50,16 @@ export class Hud {
         if (html !== null) this.el.credits.innerHTML = html;
     }
 
-    /** Mise à jour à chaque image : score, vie, inventaire, ennemi visé. */
+    /** Mise à jour à chaque image : score, vies, inventaires, ennemi visé. */
     update() {
         const { state, el } = this;
-        const { weapons } = this.game.data;
-        const p = state.player;
         const inGame = !['title', 'loading'].includes(state.mode);
 
         el.score.textContent = pad(state.score);
         el.hiscore.textContent = pad(state.hiscore);
-        el.life.style.width = `${inGame && p ? (p.hp / p.maxHp) * 100 : 100}%`;
-
-        const seconds = p?.weapon ? Math.ceil((p.weaponUntil - state.tick) / 60) : 0;
-        el.lives.textContent = `♥ x${Math.max(0, state.lives)} · VINYL ${p?.vinyls ?? 0}`
-            + (p?.wods ? ` · WOD ${p.wods}` : '')
-            + (p?.weapon ? ` · ${weapons[p.weapon].name} ${seconds}` : '');
+        this.#player(0, el.life, el.lives, inGame);
+        el.p2.hidden = !state.duo;
+        if (state.duo) this.#player(1, el.life2, el.lives2, inGame);
 
         const boss = state.boss && state.boss.state !== 'dead' ? state.boss : null;
         const enemy = boss ?? state.lastEnemy;
@@ -74,5 +69,19 @@ export class Hud {
             el['enemy-name'].textContent = enemy.cfg.name;
             el['enemy-life'].style.width = `${(Math.max(0, enemy.hp) / enemy.maxHp) * 100}%`;
         }
+    }
+
+    /** Barre de vie et inventaire d'un joueur (vide s'il a quitté la partie). */
+    #player(slot, life, lives, inGame) {
+        const { state } = this;
+        const { weapons } = this.game.data;
+        const p = state.players.find((hero) => hero.slot === slot);
+        const full = p ? (p.hp / p.maxHp) * 100 : (state.duo ? 0 : 100); // à deux, barre vide = hors jeu
+        life.style.width = `${inGame ? full : 100}%`;
+
+        const seconds = p?.weapon ? Math.ceil((p.weaponUntil - state.tick) / 60) : 0;
+        lives.textContent = `♥ x${Math.max(0, state.lives[slot] ?? 0)} · VINYL ${p?.vinyls ?? 0}`
+            + (p?.wods ? ` · WOD ${p.wods}` : '')
+            + (p?.weapon ? ` · ${weapons[p.weapon].name} ${seconds}` : '');
     }
 }

@@ -270,6 +270,18 @@ body {
         gap: 1.5cqw;
     }
 
+    // joueur 2, sous le joueur 1 (le score est commun)
+    &__p2 {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6cqw;
+        margin-top: 0.6cqw;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
     &__center {
         display: flex;
         flex-direction: column;
