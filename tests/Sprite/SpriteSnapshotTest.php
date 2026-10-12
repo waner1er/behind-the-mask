@@ -27,7 +27,9 @@ final class SpriteSnapshotTest extends SnapshotTestCase
         $levels = require dirname(__DIR__, 2) . '/config/levels.php';
 
         foreach ($levels as $level) {
-            self::assertInstanceOf(SpriteSheet::class, $sprites[$level['boss']['sprite']] ?? null, $level['boss']['sprite']);
+            foreach (array_filter([$level['boss'], $level['midboss'] ?? null]) as $boss) {
+                self::assertInstanceOf(SpriteSheet::class, $sprites[$boss['sprite']] ?? null, $boss['sprite']);
+            }
         }
     }
 }

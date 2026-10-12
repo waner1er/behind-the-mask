@@ -15,6 +15,7 @@ final class BossRoster
     {
         $designs = [
             'manager' => new Manager(),
+            'tv' => new Television(),
             'general' => new General(),
             'priest' => new Priest(),
             'champion' => new Champion(),

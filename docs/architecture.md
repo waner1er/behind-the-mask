@@ -32,9 +32,8 @@ Le JSON de `#game-data` (construit par `Vigilante\Game\GameData`) contient :
 | Clé | Contenu | Source |
 |---|---|---|
 | `width`, `height`, `floor` | écran 320 × 180, bande du sol où marchent les personnages | `Scene\Screen` |
-| `levelLength` | longueur d'une rue (5 écrans) | `Level\LevelFactory::LENGTH` |
 | `enemies`, `weapons`, `weaponDuration` | caractéristiques des ennemis et des armes ramassables | `config/game.php` |
-| `levels[]` | un niveau par morceau : titre, audio, paroles, couleur, vagues, boss, caisse « ? », otages | `Level\LevelFactory` + `config/levels.php` |
+| `levels[]` | un niveau par morceau : titre, audio, paroles, couleur, longueur de la rue, vagues (boss de mi-niveau compris), boss, caisse « ? », otages | `Level\LevelFactory` + `config/levels.php` |
 | `story` | intro, fin et générique | `config/story.php` |
 | `links`, `logo` | liens de l'album, logo | `paroles.md`, `config/game.php` |
 | `sceneUrl` | modèle d'URL des décors (`%d` = numéro du niveau ou `peace`) | `GameData` |

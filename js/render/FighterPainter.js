@@ -9,7 +9,7 @@ export class FighterPainter {
         if (!this.#visible(f)) return;
 
         const frame = this.#frameOf(f);
-        const winding = f.state === 'charge-wind' || f.state === 'lunge-wind';
+        const winding = ['charge-wind', 'lunge-wind', 'static-wind'].includes(f.state);
         const flashing = (f.state === 'hurt' && f.t < 5) || (winding && Math.floor(f.t / 4) % 2);
         const image = flashing ? frame.flash : frame.normal;
         const { ctx } = this;
@@ -52,11 +52,13 @@ export class FighterPainter {
             case 'vinyl':
                 return anims.attack[f.t < 6 ? 0 : 1];
             case 'lunge':
+            case 'static':
                 return anims.attack[1];
             case 'charge':
                 return anims.skate ? anims.skate[0] : anims.attack[1];
             case 'lunge-wind':
             case 'charge-wind':
+            case 'static-wind':
             case 'summon':
                 return anims.attack[0];
             case 'throw':

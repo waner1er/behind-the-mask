@@ -12,6 +12,16 @@
  *                   charge (fonce à travers l'écran), teleport (réapparaît dans ton dos),
  *                   déclenché toutes les « every » images.
  *
+ * Options d'un niveau plus long (sinon : 5 écrans, 3 vagues tirées au sort puis le boss) :
+ * length   : longueur de la rue, en écrans.
+ * stages   : les vagues dans l'ordre, réparties le long de la rue, puis le boss au bout.
+ *            enemies = nombre d'ennemis tirés au sort, extra = ennemis imposés en plus
+ *            (même pas encore débloqués), reinforcements = renforts quand il n'en reste
+ *            qu'un debout, pincer = les attaquants se placent de part et d'autre du héros.
+ *            'midboss' = le boss de mi-niveau.
+ * midboss  : un boss comme les autres (score = points rapportés, 5000 par défaut).
+ *            special = static : onde de neige télé qui étourdit à courte portée.
+ *
  * Voir docs/content.md pour ajouter ou modifier un niveau.
  */
 
@@ -27,6 +37,31 @@ return [
             'signs' => ['BANK', 'MALL', 'TV', 'JOBS', 'SALE', 'OFFICE'],
         ],
         'tags' => ['WALK STRAIGHT!', 'KEEP SILENCE!'],
+        // la difficulté monte en deux temps : la télé coupe la rue en deux
+        'length' => 9,
+        'stages' => [
+            ['enemies' => 2],
+            ['enemies' => 3],
+            ['enemies' => 3, 'reinforcements' => 2],
+            'midboss',
+            ['enemies' => 3, 'pincer' => true],
+            ['enemies' => 3, 'extra' => ['knifer'], 'pincer' => true, 'reinforcements' => 2],
+            ['enemies' => 4, 'extra' => ['knifer'], 'pincer' => true, 'reinforcements' => 3],
+        ],
+        'midboss' => [
+            'scale' => 1.5,
+            'sprite' => 'tv',
+            'name' => 'WALK STRAIGHT',
+            'hp' => 20,
+            'speed' => 0.5,
+            'damage' => 10,
+            'reach' => 28,
+            'special' => 'static',
+            'every' => 240,
+            'score' => 2500,
+            'line' => 'KEEP SILENCE!',
+            'staticLine' => 'WATCHING TV... NOW FORGET IT!',
+        ],
         'boss' => [
             'scale' => 1.5,
             'sprite' => 'manager',

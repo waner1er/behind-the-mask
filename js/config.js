@@ -16,6 +16,15 @@ export const SKATE = { duration: 34, speed: 3.2, cooldown: 70 };
 export const JUMP = { impulse: 3.4, gravity: 0.22, speed: 1.7 };
 export const VINYL = { start: 5, perCrate: 5, max: 20, radius: 30, damage: 4 };
 
+/**
+ * Onde de neige télé (attaque spéciale « static ») : elle part du boss et s'élargit de speed
+ * pixels par image jusqu'à reach ; elle étourdit le héros qu'elle traverse pendant stun images.
+ */
+export const STATIC = { wind: 30, speed: 2.6, reach: 80, stun: 40 };
+
+/** Combo d'un ennemi : le premier coup est plus léger, le second part plus vite (image de départ). */
+export const COMBO = { firstHit: 0.6, restartAt: 12, step: 1.2 };
+
 export const LIVES = { start: 3, extraEvery: 10000 };
 export const HERO_HP = 100;
 

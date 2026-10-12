@@ -7,7 +7,7 @@ let nextId = 1;
  * Un personnage qui se bat : le héros, un ennemi, un boss, un acteur des scènes animées.
  *
  * state : idle | walk | attack | hurt | dead | jump | skate | vinyl (héros)
- *         lunge-wind | lunge | throw (ennemis), charge-wind | charge | vanish | summon (boss)
+ *         lunge-wind | lunge | throw (ennemis), charge-wind | charge | vanish | summon | static-wind | static (boss)
  * t : images écoulées dans l'état courant ; anim : compteur d'animation.
  */
 export class Fighter {

@@ -50,6 +50,7 @@ export class Renderer {
         this.#actors();
         this.#projectiles();
         state.explosions.forEach((ex) => this.effects.explosion(ex));
+        state.statics.forEach((wave) => this.effects.staticWave(wave));
         if (inStory) this.story.extras();
         state.notes.forEach((note) => this.effects.note(note));
         state.sparks.forEach((s) => this.effects.spark(s));

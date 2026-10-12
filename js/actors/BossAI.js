@@ -1,8 +1,9 @@
+import { STATIC } from '../config.js';
 import { clamp, pick, rand } from '../util/math.js';
 
-/** Les attaques spéciales des boss (config/levels.php) : charge, lancer, téléportation, appel de sbires. */
+/** Les attaques spéciales des boss (config/levels.php) : charge, lancer, téléportation, appel de sbires, neige télé. */
 export class BossAI {
-    static START = { charge: 'charge-wind', throw: 'throw', teleport: 'vanish', summon: 'summon' };
+    static START = { charge: 'charge-wind', throw: 'throw', teleport: 'vanish', summon: 'summon', static: 'static-wind' };
 
     constructor(game) {
         this.game = game;
@@ -16,6 +17,8 @@ export class BossAI {
             case 'charge': return this.#charge(e);
             case 'vanish': return this.#teleport(e);
             case 'summon': return this.#summon(e);
+            case 'static-wind':
+            case 'static': return this.#static(e);
         }
         return this.#trigger(e);
     }
@@ -27,7 +30,8 @@ export class BossAI {
         e.special = e.cfg.every;
 
         e.setState(BossAI.START[e.cfg.special]);
-        if (e.cfg.special === 'summon' || Math.random() < 0.3) this.game.shout(e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
+        if (e.cfg.special === 'static') this.game.shout(e.cfg.staticLine ?? e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
+        else if (e.cfg.special === 'summon' || Math.random() < 0.3) this.game.shout(e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
         return true;
     }
 
@@ -94,6 +98,39 @@ export class BossAI {
             }
         }
         if (e.t > 40) e.setState('idle');
+        return true;
+    }
+
+    /**
+     * L'écran grésille (il clignote, on a le temps de s'écarter ou de sauter), puis une onde
+     * de neige part en anneau : le héros qu'elle traverse reste étourdi.
+     */
+    #static(e) {
+        const { game, state } = this;
+        e.t++;
+        if (e.state === 'static-wind') {
+            if (e.t > STATIC.wind) {
+                e.setState('static');
+                e.hits.clear();
+                state.statics.push({ x: e.x, y: e.y, t: 0 });
+                game.sfx('static');
+                state.shake = 3;
+            }
+            return true;
+        }
+
+        const r = e.t * STATIC.speed;
+        for (const p of state.players) {
+            // l'anneau est aplati par la perspective : la profondeur compte triple
+            const distance = Math.hypot(p.x - e.x, (p.y - e.y) * 3);
+            if (e.hits.has(p) || Math.abs(distance - r) > STATIC.speed * 2) continue;
+            e.hits.add(p);
+            if (game.combat.damagePlayer(p, game.enemyAI.damage(e), e.x)) {
+                p.t = -STATIC.stun; // il titube plus longtemps qu'un coup normal
+                game.shout('ZZZT!', p.x, p.y - 40, '#ffffff');
+            }
+        }
+        if (r >= STATIC.reach) e.setState('idle');
         return true;
     }
 }

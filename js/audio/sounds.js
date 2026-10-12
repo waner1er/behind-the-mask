@@ -28,6 +28,12 @@ export const SOUNDS = {
         s.tone({ type: 'square', from: 230, to: 55, duration: 0.15, volume: 0.45 });
         s.tone({ type: 'triangle', from: 1000, to: 200, duration: 0.04, volume: 0.4 });
     },
+    // neige d'une télé qui sature
+    static: (s) => {
+        s.noise({ duration: 0.5, volume: 0.5, filter: 'highpass', from: 1200, to: 4000 });
+        s.tone({ type: 'sawtooth', from: 60, to: 50, duration: 0.5, volume: 0.25 });
+        s.tone({ type: 'square', from: 15600, to: 15600, duration: 0.3, volume: 0.04 });
+    },
     hurt: (s) => {
         s.noise({ duration: 0.14, volume: 0.9, filter: 'lowpass', from: 1800, to: 200 });
         s.tone({ type: 'sine', from: 120, to: 40, duration: 0.18, volume: 0.8 });

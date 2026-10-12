@@ -1,3 +1,4 @@
+import { STATIC } from '../config.js';
 import { rand } from '../util/math.js';
 
 /** L'ambiance qui vit toute seule : la ville part en ruine au fil de l'album, la pluie tombe, les effets s'estompent. */
@@ -40,6 +41,7 @@ export class Ambience {
         }
         state.notes = state.notes.filter((note) => note.t < 70);
         state.explosions = Ambience.#age(state.explosions, 30);
+        state.statics = Ambience.#age(state.statics, STATIC.reach / STATIC.speed);
     }
 
     /** À chaque image, quel que soit le mode : étincelles, textes et pluie. */

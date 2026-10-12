@@ -63,7 +63,7 @@ export class Combat {
         e.dir = -fromDir;
         e.setState('dead');
         e.vx = fromDir * 2.4;
-        state.score += e.boss ? 5000 : e.cfg.score;
+        state.score += e.boss ? (e.cfg.score ?? 5000) : e.cfg.score;
         game.sfx(e.boss ? 'heavyHit' : 'hit');
 
         if (e.boss) {
