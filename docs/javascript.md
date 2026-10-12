@@ -91,6 +91,7 @@ main.js
 | | `FighterPainter` | Image d'animation selon l'état, chute au K.O., traînées de vitesse. |
 | | `EffectPainter`, `WeatherPainter`, `StoryPainter`, `PixelBrush` | Effets, météo, décors de l'intro et de la fin, primitives (disque, ombre, cœur…). |
 | `ui/` | `Hud`, `ControlPanel` | Affichage DOM (score, vies, barres, messages, dialogues, générique) ; joystick et boutons qui réagissent. |
+| | `InventoryView` | L'inventaire d'un joueur sous sa barre de vie : une ligne par objet (vies, vinyles, WOD s'il en a, arme ramassée avec jauge et secondes), icônes = sprites des objets au sol. |
 | | `ControlsHelp` | Les commandes de l'écran de pause selon ce qu'on a en main : manette (Xbox ou PlayStation), tactile, clavier (solo ou duo). Pas de majuscules accentuées : la police pixel n'en a pas. |
 | `util/` | `math.js`, `HiscoreStore` | `rand`, `clamp`, `pick`, `pad` ; meilleur score dans `localStorage`. |
 

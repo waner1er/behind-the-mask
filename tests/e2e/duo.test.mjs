@@ -26,15 +26,25 @@ test('2 JOUEURS : Pete et VigiBapt entrent dans le niveau 1', async () => {
 });
 
 test('chaque joueur a son pavé', async () => {
-    const [pete, bapt] = await game.players();
+    const held = () => game.page.evaluate(() => window.game.pads.map((pad) => [...pad.held]));
+    await game.run(60); // START passe l'intro d'un coup : les deux héros finissent de se placer
 
-    await game.hold('KeyL', 30); // « L » : 2P descend
-    await game.hold('KeyA', 30); // « Q » : 1P recule
-    const [pete2, bapt2] = await game.players();
-    assert.ok(bapt2.y > bapt.y, 'VigiBapt descend');
-    assert.equal(bapt2.x, bapt.x, 'VigiBapt n\'a pas bougé à gauche');
-    assert.ok(pete2.x < pete.x, 'Pete recule');
-    assert.equal(pete2.y, pete.y, 'Pete n\'a pas bougé en hauteur');
+    // les héros ne prennent pas de coups pendant ce test : on ne teste que les commandes
+    // (les ennemis restent, le test suivant en a besoin pour le game over)
+    await game.page.evaluate(() => window.game.state.players.forEach((p) => { p.invuln = 99999; }));
+    const [, bapt] = await game.players();
+    await game.page.keyboard.down('KeyL'); // « L » : 2P descend
+    await game.run(30);
+    assert.deepEqual(await held(), [[], ['ArrowDown']]);
+    assert.ok((await game.players())[1].y > bapt.y, 'VigiBapt descend');
+    await game.page.keyboard.up('KeyL');
+
+    const [pete] = await game.players();
+    await game.page.keyboard.down('KeyA'); // « Q » : 1P recule
+    await game.run(30);
+    assert.deepEqual(await held(), [['ArrowLeft'], []]);
+    assert.ok((await game.players())[0].x < pete.x, 'Pete recule');
+    await game.page.keyboard.up('KeyA');
 
     await game.page.keyboard.press('KeyM'); // « , » : 2P frappe (et ne coupe pas le son)
     await game.run(2);
@@ -44,6 +54,7 @@ test('chaque joueur a son pavé', async () => {
     await game.page.keyboard.press('KeyV'); // « V » : 1P frappe
     await game.run(2);
     assert.equal((await game.players())[0].state, 'attack');
+    await game.page.evaluate(() => window.game.state.players.forEach((p) => { p.invuln = 0; }));
     assert.deepEqual(game.errors, []);
 });
 

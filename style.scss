@@ -328,8 +328,57 @@ body {
         transition: width 0.15s steps(4);
     }
 
-    &__lives {
-        color: $red;
+    // inventaire : une ligne par objet, icône à l'échelle du jeu puis le compte
+    &__inventory {
+        display: grid;
+        gap: 0.3cqw;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: 1.3cqw;
+        line-height: 1;
+    }
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 0.7cqw;
+
+        &[hidden] {
+            display: none;
+        }
+
+        &--wod {
+            color: var(--accent, #{$red});
+        }
+
+        &--weapon {
+            color: #ffd23f;
+        }
+    }
+
+    // même case pour toutes les icônes : les textes restent alignés
+    &__icon {
+        width: 2.6cqw;
+        height: 1.7cqw;
+        object-fit: contain;
+        image-rendering: pixelated;
+        filter: drop-shadow(0.2cqw 0.2cqw 0 #000);
+    }
+
+    // l'arme ramassée : la jauge se vide en 15 s
+    &__gauge {
+        width: 6cqw;
+        height: 0.9cqw;
+        padding: 0.2cqw;
+        background: #000;
+        border: 0.2cqw solid $paper;
+
+        span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(#fff36b, #f2b51e);
+        }
     }
 
     &__message {

@@ -236,8 +236,47 @@ body {
   background: linear-gradient(#fff36b, #f2b51e);
   transition: width 0.15s steps(4);
 }
-.hud__lives {
-  color: #e8203a;
+.hud__inventory {
+  display: grid;
+  gap: 0.3cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 1.3cqw;
+  line-height: 1;
+}
+.hud__item {
+  display: flex;
+  align-items: center;
+  gap: 0.7cqw;
+}
+.hud__item[hidden] {
+  display: none;
+}
+.hud__item--wod {
+  color: var(--accent, #e8203a);
+}
+.hud__item--weapon {
+  color: #ffd23f;
+}
+.hud__icon {
+  width: 2.6cqw;
+  height: 1.7cqw;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0.2cqw 0.2cqw 0 #000);
+}
+.hud__gauge {
+  width: 6cqw;
+  height: 0.9cqw;
+  padding: 0.2cqw;
+  background: #000;
+  border: 0.2cqw solid #ece8dc;
+}
+.hud__gauge span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(#fff36b, #f2b51e);
 }
 .hud__message {
   position: absolute;
