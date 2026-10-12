@@ -19,7 +19,7 @@ main.js
  └─ GameLoop(update, draw).start()   ← après le chargement de la police « Press Start 2P »
 ```
 
-`index.php?debug` (ou `index.html?debug`) expose le jeu dans la console : `window.game` (par exemple `game.campaign.startLevel(8)`, `game.state`).
+`index.php?debug` (ou `?debug` sur le site publié) expose le jeu dans la console : `window.game` (par exemple `game.campaign.startLevel(8)`, `game.state`).
 
 ## Une image de jeu
 

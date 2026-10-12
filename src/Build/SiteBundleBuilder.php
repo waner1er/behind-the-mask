@@ -7,11 +7,11 @@ namespace Vigilante\Build;
 use Vigilante\Application;
 
 /**
- * Prépare le jeu pour l'app iOS (ios/www/, copié tel quel dans l'app par Xcode) :
- * la version statique, plus le code et les seuls médias lus par la page.
+ * Le jeu autonome, prêt à servir sans PHP : la version statique, plus le code et les seuls médias
+ * lus par la page. Publié sur GitHub Pages (build/site/) et copié tel quel dans l'app iOS (ios/www/).
  * Le dossier est vidé à chaque build : il ne contient que du généré.
  */
-final readonly class IosBundleBuilder
+final readonly class SiteBundleBuilder
 {
     /** Servis tels quels : le code, le style compilé, les polices. */
     private const COPIED = ['js', 'build/style.css', 'medias/fonts'];

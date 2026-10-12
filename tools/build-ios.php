@@ -9,12 +9,12 @@
 declare(strict_types=1);
 
 use Vigilante\Build\AppIcon;
-use Vigilante\Build\IosBundleBuilder;
+use Vigilante\Build\SiteBundleBuilder;
 
 $app = require dirname(__DIR__) . '/bootstrap.php';
 
 $target = $app->root . '/ios/www';
-$written = (new IosBundleBuilder($app, $target))->build();
+$written = (new SiteBundleBuilder($app, $target))->build();
 printf("%d fichiers et dossiers → ios/www/\n", count($written));
 
 file_put_contents($app->root . '/ios/Vigilante/Assets.xcassets/AppIcon.appiconset/AppIcon.png', AppIcon::png());

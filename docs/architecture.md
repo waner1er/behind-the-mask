@@ -19,11 +19,11 @@
 
 | | Développement | Production (GitHub Pages) |
 |---|---|---|
-| Page | `index.php`, générée à chaque requête | `index.html`, générée par `php tools/build.php` |
+| Page | `index.php`, générée à chaque requête | `index.html`, générée par `php tools/build.php` dans `build/site/` |
 | Décors | `scene.php?level=N` | `scenes/level-N.html`, `scenes/level-peace.html` |
-| Commande | `composer serve` (ou `php -S localhost:8000`) | `composer build`, puis commit et push |
+| Commande | `composer serve` (ou `php -S localhost:8000`) | push sur `main` : le workflow `pages.yml` teste, builde et publie |
 
-GitHub Pages n'exécute pas PHP : **les fichiers générés (`index.html`, `scenes/`) sont commités**. La seule différence entre les deux versions est la clé `sceneUrl` des données du jeu (voir `Vigilante\Game\GameData`).
+GitHub Pages n'exécute pas PHP : **les fichiers générés ne sont pas commités**, GitHub les produit à chaque push sur `main`. La seule différence entre les deux versions est la clé `sceneUrl` des données du jeu (voir `Vigilante\Game\GameData`).
 
 ## Ce que PHP envoie au JavaScript
 

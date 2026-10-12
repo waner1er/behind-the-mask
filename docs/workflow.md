@@ -39,18 +39,20 @@ npm run css:watch    # recompile build/style.css à chaque modification de style
 
 ## Publier sur GitHub Pages
 
-GitHub Pages n'exécute pas PHP : on génère une version statique **et on la commite**.
+GitHub Pages n'exécute pas PHP : le site publié est une version statique, **générée par GitHub à chaque push sur `main`** (`.github/workflows/pages.yml`). Rien à builder ni à commiter : pousser suffit.
+
+Le workflow lance `composer check`, `npm run lint:js` et `npm run test:e2e`, puis `npm run css` et `composer build`, et publie `build/site/`. Si un contrôle échoue, rien n'est publié : le site en ligne reste le précédent (le relancer depuis l'onglet *Actions* après correction, ou pousser le correctif).
+
+Prérequis, une fois : *Settings › Pages › Source* = **GitHub Actions**.
+
+Pour voir le site statique en local, tel qu'il sera publié :
 
 ```bash
-composer check && npm run test:e2e
-composer build       # écrit index.html et scenes/level-N.html
-git add index.html scenes && git commit -m "Build"
-git push
+npm run css && composer build      # vide puis remplit build/site/ (non commité)
+php -S localhost:8001 -t build/site
 ```
 
-Si `style.scss` a changé : `npm run css` avant le build (`build/style.css` est commité lui aussi).
-
-Ne jamais modifier `index.html` ni `scenes/` à la main : ils sont écrasés à chaque build.
+`build/site/` contient la page (`index.html`, `scenes/`) et tout ce qu'elle lit : `js/`, CSS, polices, logo, musiques de l'album (`Build\SiteBundleBuilder`, le même que pour l'app iOS).
 
 ## Préparer l'app iOS
 
@@ -59,7 +61,7 @@ npm run css          # si style.scss a changé : build/style.css est copié tel 
 composer build:ios   # vide puis remplit ios/www/ (≈ 30 Mo) et redessine l'icône de l'app
 ```
 
-`ios/www/` contient tout ce que la page lit (version statique, `js/`, CSS, polices, logo, musiques de l'album) et rien d'autre : ni PHP, ni appel réseau. Xcode le copie tel quel dans l'app. Il n'est **pas commité** (`.gitignore`) : on le régénère avant chaque compilation de l'app.
+`ios/www/` contient la même chose que `build/site/` : tout ce que la page lit (version statique, `js/`, CSS, polices, logo, musiques de l'album) et rien d'autre : ni PHP, ni appel réseau. Xcode le copie tel quel dans l'app. Il n'est **pas commité** (`.gitignore`) : on le régénère avant chaque compilation de l'app.
 
 Ensuite : ouvrir `ios/Vigilante.xcodeproj` dans Xcode et lancer (⌘R) sur un simulateur ou un iPhone branché. L'app Swift (`ios/Vigilante/`) ne connaît pas le jeu :
 
@@ -90,7 +92,7 @@ sh tools/ios-testflight.sh --no-upload   # s'arrête à build/ios/Vigilante.ipa 
 ```
 index.php, scene.php     points d'entrée (développement)
 bootstrap.php            autoload + Application
-tools/build.php          version statique (production)
+tools/build.php          site statique pour GitHub Pages → build/site/
 config/                  contenu : réglages, niveaux, scénario
 src/                     PHP (namespace Vigilante\)
 templates/page.php       la borne d'arcade (HTML)
@@ -99,8 +101,8 @@ style.scss → build/      styles de la borne
 medias/                  audio, paroles, logo
 tests/                   PHPUnit, snapshots, e2e
 docs/                    cette documentation
-index.html, scenes/      générés par tools/build.php (GitHub Pages)
 ios/                     l'app iOS (projet Xcode + Swift)
+build/site/              généré par tools/build.php (GitHub Pages, non commité)
 ios/www/                 généré par tools/build-ios.php (app iOS, non commité)
 build/ios/               archive et .ipa de tools/ios-testflight.sh (non commités)
 ```
