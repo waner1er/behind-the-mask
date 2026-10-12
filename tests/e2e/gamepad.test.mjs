@@ -50,7 +50,12 @@ test('à la manette : croix pour le menu, START pour 2 JOUEURS', async () => {
 test('chaque manette commande son héros', async () => {
     const held = () => game.page.evaluate(() => window.game.pads.map((pad) => [...pad.held]));
 
-    // la position seule ne suffit pas : les ennemis bousculent les héros, on regarde aussi les commandes
+    // personne pour bousculer ou frapper les héros : on ne teste que les commandes
+    await game.page.evaluate(() => {
+        const { state } = window.game;
+        state.enemies = [];
+        state.players.forEach((p) => { p.invuln = 99999; });
+    });
     const [, bapt] = await game.players();
     await game.page.evaluate(() => { window.__pads[1].axes = [0, 1, 0, 0]; }); // manette 2 : stick bas
     await game.run(30);
