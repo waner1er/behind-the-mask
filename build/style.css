@@ -323,6 +323,18 @@ body {
   text-shadow: 0.3cqw 0.3cqw 0 #000, 0 0 1.5cqw var(--accent, #e8203a);
 }
 
+.hud--story .hud__message {
+  top: auto;
+  bottom: 2.5cqw;
+  text-align: right;
+}
+
+.hud__skip {
+  font-size: 1.4cqw;
+  color: rgb(74.9564270153%, 69.6840958606%, 53.8671023965%);
+  animation: blink 1.6s steps(1) infinite;
+}
+
 .hud--paused {
   background: rgba(0, 0, 0, 0.8);
 }
@@ -332,10 +344,18 @@ body {
   visibility: hidden;
 }
 .hud--paused .hud__message {
-  top: 7%;
+  top: 4%;
   display: grid;
   justify-items: center;
-  gap: 2.6cqw;
+  gap: 1.8cqw;
+}
+.hud--paused .hud__pause {
+  font-size: 4cqw;
+}
+.hud--paused .hud__menu {
+  gap: 0.8cqw;
+  margin: 0;
+  font-size: 2cqw;
 }
 
 .hud__controls {

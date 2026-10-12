@@ -430,6 +430,19 @@ body {
     }
 }
 
+// --- scènes animées : « START : PASSER » discret, en bas à droite ------------
+.hud--story .hud__message {
+    top: auto;
+    bottom: 2.5cqw;
+    text-align: right;
+}
+
+.hud__skip {
+    font-size: 1.4cqw;
+    color: color.adjust($paper, $lightness: -25%);
+    animation: blink 1.6s steps(1) infinite;
+}
+
 // --- pause : l'écran s'assombrit, les commandes remplacent le score ----------
 .hud--paused {
     background: rgba(0, 0, 0, 0.8);
@@ -441,10 +454,20 @@ body {
     }
 
     .hud__message {
-        top: 7%;
+        top: 4%;
         display: grid;
         justify-items: center;
-        gap: 2.6cqw;
+        gap: 1.8cqw;
+    }
+
+    .hud__pause {
+        font-size: 4cqw;
+    }
+
+    .hud__menu {
+        gap: 0.8cqw;
+        margin: 0;
+        font-size: 2cqw;
     }
 }
 

@@ -14,7 +14,7 @@ export class ControlsHelp {
         ['X', 'VINYLE'],
         ['Y', 'SKATE'],
         ['A + X OU RB', ControlsHelp.WOD],
-        ['START', 'REPRENDRE'],
+        ['START', 'PAUSE / VALIDER'],
     ];
 
     static PLAYSTATION = [
@@ -24,7 +24,7 @@ export class ControlsHelp {
         ['CARRE', 'VINYLE'],
         ['TRIANGLE', 'SKATE'],
         ['CROIX + CARRE OU R1', ControlsHelp.WOD],
-        ['OPTIONS', 'REPRENDRE'],
+        ['OPTIONS', 'PAUSE / VALIDER'],
     ];
 
     static TOUCH = [
@@ -34,7 +34,7 @@ export class ControlsHelp {
         ['V', 'VINYLE'],
         ['C', 'SKATE'],
         ['KATANA + V', ControlsHelp.WOD],
-        ['START', 'REPRENDRE'],
+        ['START', 'PAUSE / VALIDER'],
     ];
 
     static KEYBOARD = [
@@ -44,7 +44,7 @@ export class ControlsHelp {
         ['V', 'VINYLE'],
         ['C', 'SKATE'],
         ['ESPACE + V', ControlsHelp.WOD],
-        ['ENTREE', 'REPRENDRE'],
+        ['ENTREE', 'PAUSE / VALIDER'],
     ];
 
     /** À deux au clavier AZERTY : action, 1P, 2P (voir DUO_KEYS dans Input.js). */
@@ -56,7 +56,7 @@ export class ControlsHelp {
         ['VINYLE', 'X', ':'],
         ['SKATE', 'C', ';'],
         [ControlsHelp.WOD, 'V + X', ', + :'],
-        ['REPRENDRE', 'ENTREE', 'ENTREE'],
+        ['PAUSE / VALIDER', 'ENTREE', 'ENTREE'],
     ];
 
     constructor(game) {

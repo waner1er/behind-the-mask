@@ -41,7 +41,7 @@ main.js
 |---|---|---|
 | `title` | `modes/TitleMode` | Accueil : JOUER, MORCEAUX, DÉMO. |
 | `select` | `modes/SelectMode` | Choix du morceau (décor et musique suivent). |
-| `story` | `modes/StoryMode` | Intro ou fin, déroulée par `story/StoryPlayer`. |
+| `story` | `modes/StoryMode` | Intro ou fin, déroulée par `story/StoryPlayer` : ESPACE/B passe au plan suivant, START passe toute la séquence (sauf en démo et au générique). |
 | `loading` | `modes/Mode` | Chargement du décor d'un niveau (rien à faire). |
 | `intro` | `modes/IntroMode` | Titre du niveau et premières paroles. |
 | `playing` | `modes/PlayingMode` | La partie. |
@@ -58,7 +58,7 @@ main.js
 | | `config.js` | Réglages : fenêtres d'attaque, skate, saut, vinyles, vies, démo… |
 | `core/` | `GameLoop` | Boucle à pas fixe. |
 | | `GameState` | Tout l'état mutable de la partie (voir plus bas). |
-| | `Pause` | START en pleine partie fige tout (jeu, son via `AudioEngine.setPaused`), écran assombri (`hud--paused`) avec les commandes (`ControlsHelp`) ; pause automatique quand l'onglet ou l'app passe en arrière-plan. |
+| | `Pause` | START en pleine partie fige tout (jeu, son via `AudioEngine.setPaused`), écran assombri (`hud--paused`) avec un menu (reprendre, recommencer le niveau, retour à l'accueil ; flèches et START/ESPACE de tous les joueurs) et les commandes (`ControlsHelp`) ; pause automatique quand l'onglet ou l'app passe en arrière-plan. |
 | `input/` | `Input` | Touches maintenues (`held`) et appuyées cette image (`pressed`), `axisX`/`axisY`, `interceptor` (la démo s'interrompt au premier appui). |
 | | `KeyboardControls` | Clavier et boutons de la borne (`data-key`). En duo, les pavés des joueurs (`DUO_KEYS`) vont à `game.pads[slot]`, traduits en touches du solo ; `game.inputOf(p)` donne les commandes d'un héros. |
 | | `GamepadControls` | Manettes (API Gamepad, disposition standard), relues à chaque image → touches du solo (`BUTTONS`). En duo, la n-ième manette va à `game.pads[n]` ; START et musique restent communs. Classe `has-gamepad` sur `<html>` : les commandes tactiles s'effacent. |

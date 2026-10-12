@@ -17,7 +17,7 @@ Au clavier, à la manette, ou sur mobile avec le stick et les boutons dessinés 
 | V | lancer un vinyle (il explose en notes de musique) |
 | Espace + V | WALL OF DEATH (trouvé dans une caisse « ? », une par niveau) |
 | C | attaque en skate |
-| Entrée | start / continuer / pause en pleine partie |
+| Entrée | start / continuer / pause en pleine partie (menu : reprendre, recommencer, accueil) ; dans le scénario, le passer |
 | M | couper la musique |
 
 **À deux** (menu « 2 JOUEURS », clavier AZERTY) : Pete (1P) et VigiBapt (2P, à la guitare) jouent en même temps, avec un score commun et des vies par joueur.
@@ -32,7 +32,7 @@ Au clavier, à la manette, ou sur mobile avec le stick et les boutons dessinés 
 | WALL OF DEATH | V + X | , + : |
 | start | Entrée | Entrée |
 
-**À la manette** (Xbox, PlayStation, MFi… ; noms des boutons Xbox) : stick gauche ou croix pour marcher, **A** katana, **B** coup de pied sauté, **X** vinyle, **Y** skate, **A + X** ou **RB** WALL OF DEATH, **Start** start et pause, **Select** musique. À deux, la 1re manette est Pete, la 2e VigiBapt. Sur mobile, les commandes tactiles s'effacent quand une manette est utilisée. Les coups, explosions et K.O. font vibrer la manette, ou le téléphone sans manette.
+**À la manette** (Xbox, PlayStation, MFi… ; noms des boutons Xbox) : stick gauche ou croix pour marcher, **A** katana, **B** coup de pied sauté, **X** vinyle, **Y** skate, **A + X** ou **RB** WALL OF DEATH, **Start** start, pause et passer le scénario, **Select** musique. À deux, la 1re manette est Pete, la 2e VigiBapt. Sur mobile, les commandes tactiles s'effacent quand une manette est utilisée. Les coups, explosions et K.O. font vibrer la manette, ou le téléphone sans manette.
 
 ## Comment c'est fait
 
