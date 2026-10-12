@@ -16,6 +16,7 @@ export class AudioEngine {
         this.synth = null;
         this.music = null;
         this.muted = false;
+        this.paused = false;
     }
 
     /** Débloque le son à chaque geste (iOS/Android n'autorisent le son qu'à ce moment-là). */
@@ -66,8 +67,16 @@ export class AudioEngine {
         if (this.master) this.master.gain.setTargetAtTime(muted ? 0 : 1, this.ctx.currentTime, 0.05);
     }
 
+    /** Pause du jeu : tout le son se fige (musique comprise) et reprend où il en était. */
+    setPaused(paused) {
+        this.paused = paused;
+        if (!this.ctx) return;
+        if (paused) this.ctx.suspend();
+        else this.#resume();
+    }
+
     #resume() {
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+        if (!this.paused && this.ctx.state === 'suspended') this.ctx.resume();
     }
 
     #init() {

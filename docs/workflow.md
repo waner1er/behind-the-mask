@@ -52,6 +52,39 @@ Si `style.scss` a changé : `npm run css` avant le build (`build/style.css` est 
 
 Ne jamais modifier `index.html` ni `scenes/` à la main : ils sont écrasés à chaque build.
 
+## Préparer l'app iOS
+
+```bash
+npm run css          # si style.scss a changé : build/style.css est copié tel quel
+composer build:ios   # vide puis remplit ios/www/ (≈ 30 Mo) et redessine l'icône de l'app
+```
+
+`ios/www/` contient tout ce que la page lit (version statique, `js/`, CSS, polices, logo, musiques de l'album) et rien d'autre : ni PHP, ni appel réseau. Xcode le copie tel quel dans l'app. Il n'est **pas commité** (`.gitignore`) : on le régénère avant chaque compilation de l'app.
+
+Ensuite : ouvrir `ios/Vigilante.xcodeproj` dans Xcode et lancer (⌘R) sur un simulateur ou un iPhone branché. L'app Swift (`ios/Vigilante/`) ne connaît pas le jeu :
+
+| Fichier | Rôle |
+|---|---|
+| `VigilanteApp.swift` | Plein écran, sans barre d'état ; session audio `.playback` (la musique joue même en mode silencieux). |
+| `GameView.swift` | La `WKWebView` qui charge `app://localhost/index.html`. En Debug, inspectable depuis Safari › Développement. |
+| `Assets.xcassets/AppIcon.appiconset/AppIcon.png` | L'icône, dessinée par `Build\AppIcon` à partir du sprite de Pete. Commitée ; elle ne change que si le sprite change. |
+| `HapticsHandler.swift` | Reçoit `window.webkit.messageHandlers.haptics.postMessage(style)` (`js/input/Haptics.js`) et fait vibrer l'iPhone. |
+| `AppSchemeHandler.swift` | Sert les fichiers de `www/` sous `app://` (en `file://`, WebKit bloque les modules ES et les `fetch()`). |
+
+Le paysage, le nom affiché et l'identifiant (`fr.banvillet.vigilante`) sont dans les réglages de la cible (onglet *Build Settings*, clés `INFOPLIST_KEY_…`). Si `ios/www/` est vide, la compilation s'arrête avec un message qui rappelle la commande à lancer.
+
+### Envoyer une version sur TestFlight
+
+```bash
+composer ios:testflight              # CSS + ios/www + archive + envoi à App Store Connect
+sh tools/ios-testflight.sh --no-upload   # s'arrête à build/ios/Vigilante.ipa signé (vérification)
+```
+
+- Signature automatique avec le compte Apple configuré dans Xcode (équipe `GDFM8ML2BH`). L'archive est faite sans signature, puis l'export la signe pour l'App Store : aucun iPhone n'a besoin d'être enregistré sur le compte.
+- Le numéro de build est la date (`202610121827`) : toujours croissant, rien à commiter. La version affichée (`1.0`) est `MARKETING_VERSION` dans le projet Xcode.
+- Le questionnaire sur le chiffrement est déjà répondu (`ITSAppUsesNonExemptEncryption = NO`).
+- Après l'envoi, Apple traite le build (10 à 30 min) ; il apparaît ensuite dans l'app TestFlight des testeurs internes, sans vérification par Apple.
+
 ## Structure du dépôt
 
 ```
@@ -67,4 +100,7 @@ medias/                  audio, paroles, logo
 tests/                   PHPUnit, snapshots, e2e
 docs/                    cette documentation
 index.html, scenes/      générés par tools/build.php (GitHub Pages)
+ios/                     l'app iOS (projet Xcode + Swift)
+ios/www/                 généré par tools/build-ios.php (app iOS, non commité)
+build/ios/               archive et .ipa de tools/ios-testflight.sh (non commités)
 ```

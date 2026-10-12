@@ -27,12 +27,11 @@ main.js
 
 `Game.update()` :
 
-1. `tick` et `modeTimer` avancent ; en démo, `DemoPilot.play()` simule les touches ;
-2. `M` coupe/rétablit le son ;
-3. `modes[state.mode].update()` ;
-4. ambiance (`Ambience`) : chaos (sauf accueil/menu/chargement), puis étincelles, textes et pluie ;
-5. `Campaign.updateScore()` : vie bonus tous les 10 000 points, meilleur score ;
-6. fin du message temporaire, panneau de commandes, `input.endFrame()`.
+1. `GamepadControls.poll()` relit les manettes ; `M` coupe/rétablit le son ; si la partie est en pause (`Pause.update()` : START en mode `playing`, ou onglet/app quitté), l'image s'arrête là ; sinon `tick` et `modeTimer` avancent ; en démo, `DemoPilot.play()` simule les touches ;
+2. `modes[state.mode].update()` ;
+3. ambiance (`Ambience`) : chaos (sauf accueil/menu/chargement), puis étincelles, textes et pluie ;
+4. `Campaign.updateScore()` : vie bonus tous les 10 000 points, meilleur score ;
+5. fin du message temporaire, panneau de commandes, `input.endFrame()`.
 
 `Renderer.draw()` : parallaxe du décor SVG (`Backdrop.scroll`), puis sur le canvas (avec la caméra) : otages, bonus, (data center de l'intro), caisses « ? », personnages triés par `y` avec leurs ombres, projectiles, explosions, (figurants de la fin), notes, étincelles, textes ; enfin la météo, le flash blanc et le HUD.
 
@@ -42,7 +41,7 @@ main.js
 |---|---|---|
 | `title` | `modes/TitleMode` | Accueil : JOUER, MORCEAUX, DÉMO. |
 | `select` | `modes/SelectMode` | Choix du morceau (décor et musique suivent). |
-| `story` | `modes/StoryMode` | Intro ou fin, déroulée par `story/StoryPlayer`. |
+| `story` | `modes/StoryMode` | Intro ou fin, déroulée par `story/StoryPlayer` : ESPACE/B passe au plan suivant, START passe toute la séquence (sauf en démo et au générique). |
 | `loading` | `modes/Mode` | Chargement du décor d'un niveau (rien à faire). |
 | `intro` | `modes/IntroMode` | Titre du niveau et premières paroles. |
 | `playing` | `modes/PlayingMode` | La partie. |
@@ -59,8 +58,11 @@ main.js
 | | `config.js` | Réglages : fenêtres d'attaque, skate, saut, vinyles, vies, démo… |
 | `core/` | `GameLoop` | Boucle à pas fixe. |
 | | `GameState` | Tout l'état mutable de la partie (voir plus bas). |
+| | `Pause` | START en pleine partie fige tout (jeu, son via `AudioEngine.setPaused`), écran assombri (`hud--paused`) avec un menu (reprendre, recommencer le niveau, retour à l'accueil ; flèches et START/ESPACE de tous les joueurs) et les commandes (`ControlsHelp`) ; pause automatique quand l'onglet ou l'app passe en arrière-plan. |
 | `input/` | `Input` | Touches maintenues (`held`) et appuyées cette image (`pressed`), `axisX`/`axisY`, `interceptor` (la démo s'interrompt au premier appui). |
 | | `KeyboardControls` | Clavier et boutons de la borne (`data-key`). En duo, les pavés des joueurs (`DUO_KEYS`) vont à `game.pads[slot]`, traduits en touches du solo ; `game.inputOf(p)` donne les commandes d'un héros. |
+| | `GamepadControls` | Manettes (API Gamepad, disposition standard), relues à chaque image → touches du solo (`BUTTONS`). En duo, la n-ième manette va à `game.pads[n]` ; START et musique restent communs. Classe `has-gamepad` sur `<html>` : les commandes tactiles s'effacent. |
+| | `Haptics` | Vibrations nommées (`hit`, `explosion`, `hurt`, `ko`, `wod`, `boss` ; la plus forte l'emporte à la même image) : manette (`dual-rumble`, celle du héros concerné à deux), sinon iPhone (message `haptics` vers Swift) ou `navigator.vibrate`. `game.haptics.pulse(nom, héros)`. |
 | | `TouchStick` | Stick tactile ou dessiné → flèches. |
 | | `MobileGuard` | Pas de zoom ni de défilement ; plein écran et paysage au premier appui. |
 | `audio/` | `AudioEngine` | Contexte audio créé au premier geste, mixage, `play(nom)`, musique, sourdine. |
@@ -89,6 +91,7 @@ main.js
 | | `FighterPainter` | Image d'animation selon l'état, chute au K.O., traînées de vitesse. |
 | | `EffectPainter`, `WeatherPainter`, `StoryPainter`, `PixelBrush` | Effets, météo, décors de l'intro et de la fin, primitives (disque, ombre, cœur…). |
 | `ui/` | `Hud`, `ControlPanel` | Affichage DOM (score, vies, barres, messages, dialogues, générique) ; joystick et boutons qui réagissent. |
+| | `ControlsHelp` | Les commandes de l'écran de pause selon ce qu'on a en main : manette (Xbox ou PlayStation), tactile, clavier (solo ou duo). Pas de majuscules accentuées : la police pixel n'en a pas. |
 | `util/` | `math.js`, `HiscoreStore` | `rand`, `clamp`, `pick`, `pad` ; meilleur score dans `localStorage`. |
 
 ## L'état (`GameState`)

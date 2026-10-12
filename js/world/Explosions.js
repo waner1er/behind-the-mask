@@ -14,6 +14,7 @@ export class Explosions {
         state.explosions.push({ x, y, t: 0 });
         state.shake = 7;
         game.sfx('explosion');
+        game.haptics.pulse('explosion');
 
         if (byHero) {
             game.sfx('scratch');

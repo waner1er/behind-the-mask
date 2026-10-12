@@ -10,14 +10,18 @@ use Vigilante\Level\SceneCatalog;
 /**
  * Génère la version statique du jeu pour GitHub Pages (qui n'exécute pas PHP) :
  * index.html et un fichier scenes/level-N.html par décor.
+ * Par défaut à la racine du projet ; IosBundleBuilder l'écrit ailleurs.
  */
 final readonly class StaticSiteBuilder
 {
-    public function __construct(private Application $app)
+    private string $target;
+
+    public function __construct(private Application $app, ?string $target = null)
     {
+        $this->target = $target ?? $app->root;
     }
 
-    /** @return list<string> fichiers écrits, relatifs à la racine du projet */
+    /** @return list<string> fichiers écrits, relatifs au dossier cible */
     public function build(): array
     {
         $written = [$this->write('index.html', $this->app->page()->render(static: true))];
@@ -33,7 +37,7 @@ final readonly class StaticSiteBuilder
 
     private function write(string $file, string $content): string
     {
-        $path = $this->app->root . '/' . $file;
+        $path = $this->target . '/' . $file;
         if (!is_dir(dirname($path))) {
             mkdir(dirname($path), 0777, true);
         }

@@ -6,6 +6,19 @@
 $pixel: "Press Start 2P", monospace;
 $marker: "Permanent Marker", cursive;
 
+// Polices embarquées (pas de Google Fonts) : le jeu marche hors ligne, et dans l'app iOS.
+@font-face {
+    font-family: "Press Start 2P";
+    src: url("../medias/fonts/PressStart2P-Regular.ttf") format("truetype");
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Permanent Marker";
+    src: url("../medias/fonts/PermanentMarker-Regular.ttf") format("truetype");
+    font-display: swap;
+}
+
 $ink: #0e0d0c;
 $paper: #ece8dc;
 $red: #e8203a;
@@ -351,6 +364,11 @@ body {
         color: $paper;
     }
 
+    &__pause {
+        font-size: 5cqw;
+        animation: blink 1s steps(1) infinite;
+    }
+
     &__warning {
         font-size: 5cqw;
         color: var(--accent, #{$red});
@@ -409,6 +427,66 @@ body {
     &.is-active {
         color: #fff;
         text-shadow: 0.3cqw 0.3cqw 0 #000, 0 0 1.5cqw var(--accent, #{$red});
+    }
+}
+
+// --- scènes animées : « START : PASSER » discret, en bas à droite ------------
+.hud--story .hud__message {
+    top: auto;
+    bottom: 2.5cqw;
+    text-align: right;
+}
+
+.hud__skip {
+    font-size: 1.4cqw;
+    color: color.adjust($paper, $lightness: -25%);
+    animation: blink 1.6s steps(1) infinite;
+}
+
+// --- pause : l'écran s'assombrit, les commandes remplacent le score ----------
+.hud--paused {
+    background: rgba(0, 0, 0, 0.8);
+
+    .hud__player,
+    .hud__center,
+    .hud__enemy {
+        visibility: hidden;
+    }
+
+    .hud__message {
+        top: 4%;
+        display: grid;
+        justify-items: center;
+        gap: 1.8cqw;
+    }
+
+    .hud__pause {
+        font-size: 4cqw;
+    }
+
+    .hud__menu {
+        gap: 0.8cqw;
+        margin: 0;
+        font-size: 2cqw;
+    }
+}
+
+.hud__controls {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), auto);
+    gap: 1.1cqw 3cqw;
+    font-size: 1.6cqw;
+    line-height: 1.2;
+    text-align: left;
+}
+
+.hud__control {
+    &--key {
+        color: color.adjust($paper, $lightness: -12%);
+    }
+
+    &--wod {
+        color: var(--accent, #{$red});
     }
 }
 
@@ -774,6 +852,17 @@ kbd {
     }
 }
 
+// Manette en main (GamepadControls) : les commandes tactiles ne servent plus
+@media (pointer: coarse) {
+    .has-gamepad {
+        .touch-stick,
+        .panel__buttons,
+        .panel__system {
+            display: none;
+        }
+    }
+}
+
 // Portrait : on demande de tourner le téléphone
 @media (pointer: coarse) and (orientation: portrait) {
     .cabinet {
@@ -897,6 +986,65 @@ kbd {
     .system-btn {
         padding: 9px 12px;
         font-size: 0.5rem;
+    }
+}
+
+// Écran plus large que 2:1 (iPhone récents) : de vraies bandes noires de part et d'autre de l'écran 16/9.
+// Les commandes s'y rangent et mordent à peine sur le jeu. On ignore la marge de sécurité
+// en bas des bandes : la Dynamic Island est au milieu de la hauteur, pas dans les coins.
+@media (pointer: coarse) and (orientation: landscape) and (min-aspect-ratio: 2/1) {
+    .cabinet {
+        --band: calc((100vw - 100dvh * 16 / 9) / 2);
+        --btn: min(44px, 12vh);
+    }
+
+    .touch-stick,
+    .panel__buttons,
+    .system-btn {
+        opacity: 0.85;
+    }
+
+    .touch-stick {
+        --size: min(100px, 28vh);
+        left: max(4px, (var(--band) - var(--size)) / 2);
+        bottom: 24px;
+    }
+
+    .panel__buttons {
+        right: max(4px, (var(--band) - 2 * var(--btn) - 8px) / 2);
+        bottom: 20px;
+        gap: 4px 8px;
+    }
+
+    .arcade-btn {
+        width: var(--btn);
+    }
+
+    // START en haut à gauche, musique en haut à droite : le bas de l'écran (la rue) reste dégagé
+    .panel__system {
+        display: contents;
+    }
+
+    .system-btn {
+        position: fixed;
+        z-index: 5;
+        top: 30px;
+        padding: 8px 6px;
+        font-size: 0.45rem;
+        transform: translateX(-50%);
+
+        &:first-child {
+            left: calc(var(--band) / 2);
+        }
+
+        &:last-child {
+            left: calc(100vw - var(--band) / 2);
+        }
+
+        &:active,
+        &.is-pressed {
+            transform: translate(-50%, 2px);
+        }
     }
 }
 

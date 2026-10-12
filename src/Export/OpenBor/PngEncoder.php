@@ -12,7 +12,8 @@ final class PngEncoder
 {
     private const SIGNATURE = "\x89PNG\r\n\x1a\n";
 
-    public static function encode(IndexedImage $image): string
+    /** @param bool $opaque sans tRNS : l'index 0 est une couleur comme une autre (icône iOS, qui refuse toute transparence) */
+    public static function encode(IndexedImage $image, bool $opaque = false): string
     {
         // profondeur 8, type 3 (palette), compression, filtre et entrelacement par défaut
         $header = pack('NNCCCCC', $image->width, $image->height, 8, 3, 0, 0, 0);
@@ -30,7 +31,7 @@ final class PngEncoder
         return self::SIGNATURE
             . self::chunk('IHDR', $header)
             . self::chunk('PLTE', $palette)
-            . self::chunk('tRNS', "\0") // index 0 transparent, pour les visionneuses (OpenBOR l'ignore)
+            . ($opaque ? '' : self::chunk('tRNS', "\0")) // index 0 transparent, pour les visionneuses (OpenBOR l'ignore)
             . self::chunk('IDAT', (string) gzcompress($raw, 9))
             . self::chunk('IEND', '');
     }

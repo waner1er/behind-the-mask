@@ -2,7 +2,8 @@ import { Typewriter } from './Typewriter.js';
 
 /**
  * Déroule une séquence animée (config/story.php) : à chaque étape, un « réalisateur » met le plan
- * en scène et le texte s'écrit dans la boîte de dialogue. START, ESPACE ou B pour passer.
+ * en scène et le texte s'écrit dans la boîte de dialogue. ESPACE ou B pour passer au plan suivant,
+ * START pour passer toute la séquence (on connaît déjà l'histoire).
  */
 export class StoryPlayer {
     /** En démo, un texte fini reste affiché 1,5 s avant de passer tout seul. */
@@ -33,7 +34,7 @@ export class StoryPlayer {
         Object.assign(this, { steps, index: 0, onEnd });
         game.state.clearScene();
         game.hud.setLayout('story', true);
-        game.hud.message('');
+        game.hud.message(game.state.demo ? '' : '<span class="hud__skip">START : PASSER</span>');
         game.setMode('story');
         this.#enter();
     }
@@ -48,6 +49,11 @@ export class StoryPlayer {
         const html = typewriter.update();
         if (html !== null) game.hud.setDialog(html);
 
+        // le générique a sa propre sortie (CreditsDirector) ; ailleurs START passe toute la séquence
+        if (step.scene !== 'credits' && !game.state.demo && game.input.wasPressed('Enter')) {
+            this.#end();
+            return;
+        }
         if (step.duration) {
             if (this.t >= step.duration) this.#next();
             return;
@@ -61,7 +67,7 @@ export class StoryPlayer {
         const { game, typewriter } = this;
         const demoNext = game.state.demo && typewriter.done && !typewriter.paused
             && ++this.waited > StoryPlayer.DEMO_READING_TIME;
-        return demoNext || game.input.wasPressed('Enter', 'Space', 'KeyB');
+        return demoNext || game.input.wasPressed('Space', 'KeyB');
     }
 
     #enter() {
@@ -96,10 +102,12 @@ export class StoryPlayer {
 
     #next() {
         this.index++;
-        if (this.index < this.steps.length) {
-            this.#enter();
-            return;
-        }
+        if (this.index < this.steps.length) this.#enter();
+        else this.#end();
+    }
+
+    #end() {
+        this.game.hud.message('');
         this.game.hud.showDialog(false);
         this.game.hud.setLayout('story', false);
         this.onEnd?.();

@@ -9,3 +9,12 @@ vendor/
 
 # Module OpenBOR généré (composer build:openbor)
 build/openbor/
+
+# Jeu préparé pour l'app iOS (composer build:ios)
+ios/www/
+# Archive et .ipa de l'app iOS (composer ios:testflight)
+build/ios/
+
+# Xcode : réglages propres à chaque poste
+xcuserdata/
+DerivedData/

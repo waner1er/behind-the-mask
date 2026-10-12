@@ -19,6 +19,7 @@ index.php ─► bootstrap.php ─► new Application(racine)
          └─► Application::page()->render()          → templates/page.php
 scene.php ─► SceneController::handle($_GET)          → SceneCatalog::level(n) | peace()
 tools/build.php ─► StaticSiteBuilder::build()        → index.html + scenes/*.html
+tools/build-ios.php ─► IosBundleBuilder::build()     → ios/www/ (la même chose + js, CSS, polices, musiques)
 ```
 
 `bootstrap.php` charge `vendor/autoload.php` (il faut avoir lancé `composer install`) et renvoie l'`Application`.
@@ -114,7 +115,9 @@ tools/build.php ─► StaticSiteBuilder::build()        → index.html + scenes
 | `View\Template` | Rend un gabarit PHP avec ses variables. |
 | `View\AssetVersioner` | `?v=<date>` sur les fichiers et import map des modules JS (cache navigateur). |
 | `Http\SceneController` | `scene.php?level=N|peace`. |
-| `Build\StaticSiteBuilder` | Écrit `index.html` et `scenes/*.html` pour GitHub Pages. |
+| `Build\StaticSiteBuilder` | Écrit `index.html` et `scenes/*.html` pour GitHub Pages (ou dans un autre dossier). |
+| `Build\AppIcon` | L'icône de l'app iOS en pixel art (Pete devant le soleil), PNG opaque 1024 × 1024. |
+| `Build\IosBundleBuilder` | Prépare `ios/www/` pour l'app iOS : la version statique et tout ce qu'elle lit, sans PHP ni réseau. |
 | `Support\ConfigRepository` | Lit les fichiers de `config/` (une seule fois chacun). |
 | `Support\SeededRandom` | Hasard reproductible (Mt19937, même suite que `mt_rand`) : `int()`, `chance()`, `oneIn()`, `pick()`, `tenths()`. |
 

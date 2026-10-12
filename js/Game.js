@@ -5,6 +5,9 @@ import { PlayerController } from './actors/PlayerController.js';
 import { AudioEngine } from './audio/AudioEngine.js';
 import { HERO_HP, HEROES, HISCORE_KEY } from './config.js';
 import { GameState } from './core/GameState.js';
+import { Pause } from './core/Pause.js';
+import { GamepadControls } from './input/GamepadControls.js';
+import { Haptics } from './input/Haptics.js';
 import { Input } from './input/Input.js';
 import { Campaign } from './modes/Campaign.js';
 import { ClearMode } from './modes/ClearMode.js';
@@ -47,6 +50,9 @@ export class Game {
         this.input = new Input();
         /** Commandes de chaque joueur en partie à deux (en solo, Pete obéit à input). */
         this.pads = [new Input(), new Input()];
+        this.gamepads = new GamepadControls(this);
+        this.haptics = new Haptics(this);
+        this.pause = new Pause(this);
         this.audio = new AudioEngine();
         this.sprites = new SpriteBank(data);
         this.hud = new Hud(root, this);
@@ -141,10 +147,16 @@ export class Game {
     /** Une image de logique (1/60 s). */
     update() {
         const { state, input } = this;
+        this.gamepads.poll();
+        if (input.wasPressed('KeyM')) this.toggleMute();
+        if (this.pause.update()) {
+            this.panel.update();
+            this.#endFrame();
+            return;
+        }
         state.tick++;
         state.modeTimer++;
         if (state.demo) this.demo.play();
-        if (input.wasPressed('KeyM')) this.toggleMute();
 
         this.modes[state.mode].update();
 
@@ -153,7 +165,11 @@ export class Game {
         this.campaign.updateScore();
         this.hud.expireMessage();
         this.panel.update();
-        input.endFrame();
+        this.#endFrame();
+    }
+
+    #endFrame() {
+        this.input.endFrame();
         this.pads.forEach((pad) => pad.endFrame());
     }
 
