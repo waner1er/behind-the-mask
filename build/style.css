@@ -1,3 +1,13 @@
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("../medias/fonts/PressStart2P-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Permanent Marker";
+  src: url("../medias/fonts/PermanentMarker-Regular.ttf") format("truetype");
+  font-display: swap;
+}
 *,
 *::before,
 *::after {

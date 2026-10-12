@@ -9,3 +9,6 @@ vendor/
 
 # Module OpenBOR généré (composer build:openbor)
 build/openbor/
+
+# Jeu préparé pour l'app iOS (composer build:ios)
+ios/www/

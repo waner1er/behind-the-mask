@@ -52,6 +52,15 @@ Si `style.scss` a changé : `npm run css` avant le build (`build/style.css` est 
 
 Ne jamais modifier `index.html` ni `scenes/` à la main : ils sont écrasés à chaque build.
 
+## Préparer l'app iOS
+
+```bash
+npm run css          # si style.scss a changé : build/style.css est copié tel quel
+composer build:ios   # vide puis remplit ios/www/ (≈ 30 Mo)
+```
+
+`ios/www/` contient tout ce que la page lit (version statique, `js/`, CSS, polices, logo, musiques de l'album) et rien d'autre : ni PHP, ni appel réseau. Xcode le copie tel quel dans l'app. Il n'est **pas commité** (`.gitignore`) : on le régénère avant chaque compilation de l'app.
+
 ## Structure du dépôt
 
 ```
@@ -67,4 +76,5 @@ medias/                  audio, paroles, logo
 tests/                   PHPUnit, snapshots, e2e
 docs/                    cette documentation
 index.html, scenes/      générés par tools/build.php (GitHub Pages)
+ios/www/                 généré par tools/build-ios.php (app iOS, non commité)
 ```

@@ -31,6 +31,7 @@
             "Composer\\Config::disableProcessTimeout",
             "php tools/build-openbor.php"
         ],
+        "build:ios": "php tools/build-ios.php",
         "test": "phpunit",
         "lint": "phpcs",
         "analyse": "phpstan analyse",
