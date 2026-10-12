@@ -59,10 +59,11 @@ npm run test:e2e               # le jeu en entier dans Chrome headless
 
 ## Publier (GitHub Pages)
 
-GitHub Pages n'exécute pas PHP : on génère une version statique, qu'on commite.
+GitHub Pages n'exécute pas PHP : à chaque push sur `main`, un workflow GitHub (`.github/workflows/pages.yml`) lance les tests, génère la version statique et la publie. Pour la voir en local :
 
 ```bash
-composer build                 # écrit index.html et scenes/level-N.html
+npm run css && composer build  # écrit build/site/
+php -S localhost:8001 -t build/site
 ```
 
 Musique et paroles © 2026 Vigilante.

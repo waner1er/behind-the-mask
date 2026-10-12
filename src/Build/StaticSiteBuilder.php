@@ -8,17 +8,13 @@ use Vigilante\Application;
 use Vigilante\Level\SceneCatalog;
 
 /**
- * Génère la version statique du jeu pour GitHub Pages (qui n'exécute pas PHP) :
- * index.html et un fichier scenes/level-N.html par décor.
- * Par défaut à la racine du projet ; IosBundleBuilder l'écrit ailleurs.
+ * Génère la version statique de la page (GitHub Pages et l'app iOS n'exécutent pas PHP) :
+ * index.html et un fichier scenes/level-N.html par décor. Utilisé par SiteBundleBuilder.
  */
 final readonly class StaticSiteBuilder
 {
-    private string $target;
-
-    public function __construct(private Application $app, ?string $target = null)
+    public function __construct(private Application $app, private string $target)
     {
-        $this->target = $target ?? $app->root;
     }
 
     /** @return list<string> fichiers écrits, relatifs au dossier cible */

@@ -6,17 +6,17 @@ namespace Vigilante\Tests\Build;
 
 use PHPUnit\Framework\TestCase;
 use Vigilante\Application;
-use Vigilante\Build\IosBundleBuilder;
+use Vigilante\Build\SiteBundleBuilder;
 
-/** L'app iOS n'a ni PHP ni réseau : tout ce que la page demande doit être dans le dossier. */
-final class IosBundleBuilderTest extends TestCase
+/** GitHub Pages n'a pas PHP, l'app iOS ni PHP ni réseau : tout ce que la page demande doit être dans le dossier. */
+final class SiteBundleBuilderTest extends TestCase
 {
     private static string $target;
 
     public static function setUpBeforeClass(): void
     {
-        self::$target = sys_get_temp_dir() . '/vigilante-ios-' . getmypid();
-        (new IosBundleBuilder(new Application(dirname(__DIR__, 2)), self::$target))->build();
+        self::$target = sys_get_temp_dir() . '/vigilante-site-' . getmypid();
+        (new SiteBundleBuilder(new Application(dirname(__DIR__, 2)), self::$target))->build();
     }
 
     public static function tearDownAfterClass(): void

@@ -1,0 +1,65 @@
+# À chaque push sur main : contrôles, build du site, puis publication sur GitHub Pages.
+# Pages ne publie que si tout passe : le site en ligne n'est jamais un mélange d'ancien et de nouveau.
+# Réglage du dépôt requis : Settings › Pages › Source = « GitHub Actions ».
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement à la fois ; celui en cours va jusqu'au bout.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: composer install --no-interaction --no-progress
+      - run: npm ci
+
+      - name: Contrôles PHP (PSR-12, PHPStan, PHPUnit)
+        run: composer check
+      - name: Syntaxe des modules JS
+        run: npm run lint:js
+      - name: Le jeu complet dans Chrome headless
+        run: npm run test:e2e
+
+      - name: Build du site
+        run: |
+          npm run css
+          composer build
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -7,6 +7,9 @@ node_modules/
 vendor/
 .phpunit.cache/
 
+# Site publié sur GitHub Pages, généré à chaque push sur main (composer build)
+build/site/
+
 # Module OpenBOR généré (composer build:openbor)
 build/openbor/
 

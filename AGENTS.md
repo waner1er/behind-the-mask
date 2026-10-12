@@ -22,7 +22,7 @@ npm run lint:js                    # syntaxe des modules JS
 npm run test:e2e                   # le jeu complet dans Chrome headless (~1 min)
 UPDATE_SNAPSHOTS=1 composer test   # valider un changement VOULU de décor ou de sprite
 node tools/screenshot.mjs 4 5 out.png   # capture du niveau 4 après 5 s de jeu (title | peace | 1-9)
-composer build                     # index.html + scenes/ pour GitHub Pages
+composer build                     # build/site/ : le site de GitHub Pages (npm run css avant)
 composer build:openbor             # build/openbor/Vigilante.pak pour la borne Recalbox (OpenBOR)
 composer build:ios                 # ios/www/ : le jeu hors ligne pour l'app iOS (npm run css avant)
 composer ios:testflight            # archive l'app iOS et l'envoie sur TestFlight (demander avant !)
@@ -44,11 +44,11 @@ npm run css                        # style.scss → build/style.css
 | changer un bruitage | `js/audio/sounds.js` |
 | changer la borne (HTML / styles) | `templates/page.php`, `style.scss` |
 | adapter la version borne Recalbox (OpenBOR) | `src/Export/OpenBor/`, `docs/recalbox.md` |
-| adapter l'app iOS | `ios/Vigilante/` (Swift), `src/Build/IosBundleBuilder.php`, `docs/workflow.md` |
+| adapter l'app iOS | `ios/Vigilante/` (Swift), `src/Build/SiteBundleBuilder.php`, `docs/workflow.md` |
 
 ## Règles
 
-1. **Ne jamais éditer `index.html` ni `scenes/`** : générés par `composer build`, à commiter après le build seulement quand on publie. Idem pour `ios/www/` (`composer build:ios`), jamais commité.
+1. **Rien de généré n'est commité** : `build/site/` (`composer build`) et `ios/www/` (`composer build:ios`). GitHub Pages est publié par le workflow `.github/workflows/pages.yml` à chaque push sur `main`, après les contrôles et les tests e2e.
 2. **Les décors sont déterministes.** Chaque plan a son `SeededRandom` ; ajouter, retirer ou réordonner un tirage change le décor. Un snapshot qui casse = changement visuel : volontaire → `UPDATE_SNAPSHOTS=1 composer test` et commiter les `.sha1` ; sinon, c'est une régression.
 3. **Le contenu va dans `config/`**, pas dans le code. Le code lit la config.
 4. **PHP** : PSR-12, `declare(strict_types=1)`, classes `final`, objets valeur `readonly`, enums pour les choix fermés, dépendances injectées (seule `Vigilante\Application` assemble). Fichiers courts, une responsabilité.
