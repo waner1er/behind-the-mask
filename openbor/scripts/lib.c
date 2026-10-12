@@ -1,6 +1,16 @@
 // Fonctions partagées par les scripts de Vigilante : temps, messages, cris, sons.
 // Le temps du moteur compte 200 unités par seconde ; le jeu web compte 60 images par seconde.
 
+// Variable globale numérique : 0 si elle n'a jamais été définie (sinon NULL + 1 ne vaut rien).
+int counter(char name)
+{
+    int value = getglobalvar(name);
+    if (!value) {
+        return 0;
+    }
+    return value;
+}
+
 int now()
 {
     return openborvariant("elapsed_time");

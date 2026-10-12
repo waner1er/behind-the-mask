@@ -11,7 +11,7 @@ Il faut Node et Chrome (comme pour les tests e2e : décors, scènes et bruitages
 
 ## Installer sur la borne
 
-1. Copier **le contenu** de `build/openbor/recalbox/` dans `share/roms/openbor/` (partage réseau `\\RECALBOX\share`, ou clé USB) : `Vigilante.pak`, `gamelist.xml` (nom, description, nombre de joueurs) et `media/images/Vigilante.jpg` (la pochette de l'album). Le `.pak` doit garder le nom `Vigilante.pak`, c'est celui de la fiche.
+1. Copier **le contenu** de `build/openbor/recalbox/` dans `share/roms/openbor/` (partage réseau `\\RECALBOX\share`, ou clé USB) : `VigilanteBehindTheMask.pak`, `gamelist.xml` (nom, description, nombre de joueurs) et `media/images/VigilanteBehindTheMask.jpg` (la pochette de l'album). Le `.pak` doit garder le nom `VigilanteBehindTheMask.pak`, c'est celui de la fiche.
 2. Menu Recalbox → *Options des manettes* : déclarer la manette 1 (joueur 1) et la manette 2 (joueur 2), si ce n'est pas déjà fait.
 3. Redémarrer la borne (Recalbox relit `gamelist.xml` au démarrage) : *Vigilante - Behind the Mask* apparaît dans le système OpenBOR, avec sa pochette.
 
@@ -24,7 +24,7 @@ Recalbox transmet lui-même à OpenBOR le stick et les boutons de chaque joueur 
 | Bouton Recalbox | Dans Vigilante | Touche du web |
 |---|---|---|
 | stick | marcher | flèches |
-| A | frapper (katana / guitare), ramasser un objet | ESPACE |
+| A | frapper (katana / guitare) | ESPACE |
 | B | coup de pied sauté | B |
 | X ou R1 | attaque en skate | C |
 | Y | lancer un vinyle | V |
@@ -40,13 +40,11 @@ Recalbox transmet lui-même à OpenBOR le stick et les boutons de chaque joueur 
 - L'**intro** et la **fin** (scènes filmées dans le jeu web, texte en machine à écrire), le **générique** qui défile.
 - Les **9 niveaux** : décors en parallaxe, musique de chaque morceau, titre de mission et paroles au départ, « WAVE n », vagues qui bloquent la caméra, paroles criées par les ennemis qui tombent.
 - Tous les **ennemis** (coups, ruées, lancers, armes lâchées, bières), les **9 boss** agrandis comme sur le web, avec leur attaque spéciale (sbires, projectiles, charge, téléportation), « WARNING! » et leur réplique.
-- **Vinyles** (5 au départ, 20 au plus), **otages** à libérer, **caisse « ? »** et **Wall of Death**, **armes** ramassables, **cœur** tous les 10 K.O., **vie en plus** tous les 10 000 points.
+- **Vinyles** (5 au départ, 20 au plus) qui éclatent en notes de musique, objets **ramassés en passant dessus**, armes pendant 15 s, **otages** à libérer, **caisse « ? »** et **Wall of Death**, **armes** ramassables, **cœur** tous les 10 K.O., **vie en plus** tous les 10 000 points.
 - Les **bruitages** du jeu web (enregistrés depuis son synthé), la police Press Start 2P, les menus en français.
 
 ## Ce qui diffère (moteur OpenBOR)
 
-- Les objets se ramassent avec **A** (règle d'OpenBOR), pas en marchant dessus.
-- Une arme ramassée se perd quand on est mis à terre (le web la reprend au bout de 15 s).
 - Score par joueur (le web additionne les deux joueurs), menus et tableau des scores d'OpenBOR.
 - L'IA d'OpenBOR choisit ses coups selon la distance : mêmes coups et mêmes délais moyens que le web, mais pas exactement les mêmes décisions.
 
@@ -66,7 +64,8 @@ Recalbox transmet lui-même à OpenBOR le stick et les boutons de chaque joueur 
 | `SystemAssets`, `MenuTranslation`, `RecalboxGamelist` | Fichiers à chemin fixe (polices, ombres, écrans), menus en français, fiche et pochette Recalbox. |
 | `PakWriter` | Archive `.pak` (format de borpak), identique d'un build à l'autre ; un fichier identique n'y est stocké qu'une fois. |
 | `Toolchain` | Outils externes : `tools/rasterize-svg.mjs`, `tools/capture-story.mjs`, `tools/record-sounds.mjs` (Chrome), `ffmpeg`, `convert`. |
-| `openbor/scripts/*.c` | Scripts OpenBOR : HUD (vinyles, Wall of Death), messages et cris, vie en plus, Wall of Death, attaques spéciales, cœurs. |
+| `NoteBurst` | Le vinyle qui éclate en notes de musique, image par image (mêmes notes et trajectoires que le web). |
+| `openbor/scripts/*.c` | Scripts OpenBOR : HUD (vinyles, Wall of Death, arme et ses secondes), messages et cris, vie en plus, ramassage (`pickup.c`), Wall of Death, attaques spéciales, cœurs. |
 
 ## Pièges du moteur de Recalbox
 
@@ -78,7 +77,11 @@ Fork OpenBOR v3.0 de 2020 (gitlab.com/Bkg2k/openbor, branche `recalbox-compliant
 - Les apparitions d'un niveau sont lues **dans l'ordre** : chacune attend sa position de caméra (`at`), il faut les trier.
 - Un modèle déclaré `know` n'est chargé que s'il est cité par un niveau : projectiles, bonus et entités créées par script doivent être en `load`.
 - `spawn1`/`spawn2` : profondeur comptée depuis le haut de la zone de marche ; `coords` des ennemis : profondeur absolue. `z` se règle dans `levels.txt`.
+- **Commandes** : Recalbox réécrit `system/configs/openbor/default.cfg` à chaque lancement, mais le moteur lit en priorité `<nom du .pak>.cfg` (créé au premier lancement, puis réécrit à chaque démarrage). Si les directions ou les boutons sont faux, ou après avoir reconfiguré les manettes dans Recalbox : supprimer `VigilanteBehindTheMask.cfg` (jamais `default.cfg`), il sera recréé à partir des réglages de Recalbox.
 - Le MP se recharge seul par défaut : `mpset max 2 0 0 0 0` le fige (il sert de stock de vinyles).
 - Sans chrono : `settime 0` et `notime 1` dans chaque niveau.
 - `alias` garde les guillemets : les noms affichés utilisent des espaces insécables (0xA0).
-- Scripts : pas d'`changeopenborvariant("quake")` ; le temps compte 200 unités par seconde.
+- Objets ramassés en passant dessus : `subtype touch`, **avec** une zone de corps (le moteur ne ramasse qu'une image « vulnérable ») ; sans effet natif (vie, MP, score), un objet `touch` donne une vie en plus : la caisse WOD et les armes ont `score 1` et un `didhitscript` (pickup.c).
+- Une arme équipée par script (`changeentityproperty(…, "weapon", n)`) demande que les modèles armés soient en `load`, sinon le moteur s'arrête.
+- Le HUD du 2P n'est pas décalé automatiquement dans cette résolution : positions absolues dans `levels.txt`.
+- Scripts : pas d'`changeopenborvariant("quake")` ; le temps compte 200 unités par seconde ; une variable globale jamais définie + 1 ne vaut pas 1 (voir `counter()` dans lib.c).

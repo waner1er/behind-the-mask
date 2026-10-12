@@ -51,9 +51,11 @@ final class PropModels
         $models[] = self::item('Beer', $palette, $sprites['beer'], 'health	30');
         $models[] = self::item('Life', $palette, $sprites['life'], 'health	50', 30);
         $models[] = self::item('Vinyls', $palette, $sprites['vinyls'], 'mp	' . 5 * HeroModels::MP_PER_VINYL);
-        $models[] = self::item('Wod', $palette, $sprites['wod'], 'score	1');
-        foreach (self::PICKABLE as $i => $weapon) {
-            $models[] = self::item('Item_' . $weapon, $weaponPalette, self::trim($weapons[$weapon]), 'subtype	weapon', weapnum: $i + 1);
+        // caisse WOD et armes : effet appliqué par pickup.c ; « score 1 » car un objet sans effet
+        // natif compte pour une vie en plus dans le moteur
+        $models[] = self::item('Wod', $palette, $sprites['wod'], 'score	1', script: true);
+        foreach (self::PICKABLE as $weapon) {
+            $models[] = self::item('Item_' . $weapon, $weaponPalette, self::trim($weapons[$weapon]), 'score	1', script: true);
         }
         $models[] = self::pow();
         $models[] = self::wodBox($palette, $sprites['wodbox']);
@@ -80,9 +82,23 @@ final class PropModels
      */
     private static function vinyl(array $palette, array $grid): CharacterModel
     {
-        $frames = self::spin($grid) + self::blast();
+        $bursts = NoteBurst::frames(self::blast()['blast.0']);
+        $sheet = ModelSheet::prop($palette + self::BLAST_COLORS + NoteBurst::COLORS, self::spin($grid) + $bursts);
+        $anchors = $sheet->anchors;
+        foreach (array_keys($bursts) as $key) {
+            $anchors[$key] = NoteBurst::ANCHOR_X . ' ' . NoteBurst::ANCHOR_Y;
+        }
+        $sheet = new ModelSheet($sheet->palette, $sheet->frames, 0, 0, 1, $anchors);
 
-        return new CharacterModel('Vinyl', ModelSheet::prop($palette + self::BLAST_COLORS, $frames), [
+        // les notes s'envolent du point d'impact ; seul le premier instant blesse (rayon VINYL.radius)
+        $explosion = [];
+        foreach (array_keys($bursts) as $i => $key) {
+            $explosion[] = $i === 0
+                ? Frame::at($key, NoteBurst::STEP, new Hit(-30, 30, 40, true, 20, 20), commands: ['sound	' . SoundBank::path('scratch')])
+                : Frame::at($key, NoteBurst::STEP);
+        }
+
+        return new CharacterModel('Vinyl', $sheet, [
             'type	none',
             'speed	14',
             'jumpheight	2',
@@ -90,10 +106,7 @@ final class PropModels
             'candamage	enemy obstacle',
         ], [
             new Animation('idle', self::spinFrames(), loop: true),
-            new Animation('attack1', [
-                Frame::at('blast.0', 6, new Hit(-30, 30, 40, true, 20, 20), commands: ['sound	' . SoundBank::path('scratch')]),
-                Frame::at('blast.1', 12),
-            ]),
+            new Animation('attack1', $explosion),
         ], hittable: false);
     }
 
@@ -136,7 +149,7 @@ final class PropModels
     /**
      * @param array<array-key, string> $palette
      * @param list<string> $grid
-     * @param int|null $weapnum arme ramassable : numéro dans « weapons » des héros
+     * @param bool $script effet appliqué par data/scripts/pickup.c (caisse WOD, armes)
      */
     private static function item(
         string $name,
@@ -144,15 +157,19 @@ final class PropModels
         array $grid,
         string $effect,
         int $lifespan = self::LIFESPAN,
-        ?int $weapnum = null,
+        bool $script = false,
     ): CharacterModel {
         return new CharacterModel($name, ModelSheet::prop($palette, ['idle.0' => $grid]), [
             'type	item',
+            // ramassé en passant dessus, comme dans le jeu web (Pickups.collect)
+            'subtype	touch',
+            // pas de nom ni de barre de vie dans le HUD (réservés aux ennemis)
+            'nolife	1',
             $effect,
-            ...($weapnum !== null ? ["weapnum	$weapnum"] : []),
+            ...($script ? ['didhitscript	data/scripts/pickup.c'] : []),
             "lifespan	$lifespan",
             'shadow	1',
-        ], [new Animation('idle', [Frame::at('idle.0', 60)], loop: true)], hittable: false);
+        ], [new Animation('idle', [Frame::at('idle.0', 60)], loop: true)]); // avec une zone de corps : le moteur ne ramasse qu'une image « vulnérable »
     }
 
     /** L'otage ligoté : un coup le libère (+1000), il détale vers la gauche en lâchant un bonus. */

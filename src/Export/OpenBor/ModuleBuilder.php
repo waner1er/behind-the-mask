@@ -16,8 +16,11 @@ use Vigilante\Sprite\SpriteSheet;
  */
 final readonly class ModuleBuilder
 {
-    /** Nom du fichier sur la borne : la fiche gamelist.xml y fait référence. */
-    public const PAK_NAME = 'Vigilante';
+    /**
+     * Nom du fichier sur la borne : la fiche gamelist.xml y fait référence. Pas « Vigilante » tout court :
+     * c'est aussi le jeu d'arcade Irem de 1988, et le moteur range ses réglages sous ce nom (<nom>.cfg).
+     */
+    public const PAK_NAME = 'VigilanteBehindTheMask';
 
     /** Héros par joueur : 1P Pete, 2P VigiBapt (mêmes noms de sprites que côté JS). */
     private const HEROES = ['hero' => 'Pete', 'bapt' => 'Bapt'];
@@ -50,6 +53,7 @@ final readonly class ModuleBuilder
             'data/translation.txt' => MenuTranslation::file(),
             ...(new SystemAssets($this->font(), $this->app->root . '/' . $this->game()['logo']))->files(),
             ...$this->scripts(),
+            'data/scripts/weapons.c' => $this->weaponsScript(),
             ...$this->sounds($work),
         ];
 
@@ -163,6 +167,29 @@ final readonly class ModuleBuilder
         return $files;
     }
 
+    /**
+     * Les armes ramassables (config/game.php) : numéro dans « weapons » des héros, nom affiché, durée.
+     */
+    private function weaponsScript(): string
+    {
+        $game = $this->game();
+        $lines = ['// Généré depuis config/game.php par ModuleBuilder : ne pas modifier.', '', 'int weaponNumber(char item)', '{'];
+        foreach (PropModels::PICKABLE as $i => $weapon) {
+            $lines[] = sprintf('    if (item == "Item_%s") {', $weapon);
+            $lines[] = '        return ' . ($i + 1) . ';';
+            $lines[] = '    }';
+        }
+        $lines = [...$lines, '    return 0;', '}', '', 'char weaponLabel(char item)', '{'];
+        foreach (PropModels::PICKABLE as $weapon) {
+            $lines[] = sprintf('    if (item == "Item_%s") {', $weapon);
+            $lines[] = '        return ' . Latin1::literal($game['weapons'][$weapon]['name']) . ';';
+            $lines[] = '    }';
+        }
+        $lines = [...$lines, '    return "";', '}', '', 'int weaponDuration()', '{', '    return ' . (int) $game['weaponDuration'] . ';', '}'];
+
+        return Latin1::encode(implode("\n", $lines) . "\n");
+    }
+
     /** @return array<string, string> */
     private function sounds(string $work): array
     {
@@ -207,9 +234,14 @@ final readonly class ModuleBuilder
         // sans ça, un ennemi qui apparaît près de l'écran tombe du ciel (tradition de Beats of Rage)
         $lines = ["nodropspawn\t1"];
         $loaded = [...array_values(self::HEROES), ...array_map(fn(CharacterModel $m) => $m->name, PropModels::all())];
+        foreach (self::HEROES as $hero) {
+            foreach (PropModels::PICKABLE as $weapon) {
+                $loaded[] = HeroModels::armedName($hero, $weapon);
+            }
+        }
         foreach ($models as $model) {
-            // chargés d'office : les héros, et tout ce qui apparaît en cours de jeu sans être cité par
-            // un niveau (projectiles, bonus, Wall of Death) ; le reste est chargé par les niveaux
+            // chargés d'office : les héros (et leurs versions armées), et tout ce qui apparaît en cours
+            // de jeu sans être cité par un niveau (projectiles, bonus, Wall of Death) ; le reste par les niveaux
             $command = in_array($model->name, $loaded, true) ? 'load' : 'know';
             $lines[] = "$command\t$model->name\t{$model->path()}";
         }
@@ -232,16 +264,17 @@ final readonly class ModuleBuilder
         ];
         // HUD comme dans le jeu web : nom et score, barre de vie et vies en haut (vinyles : update.c),
         // l'ennemi qu'on frappe en bas ; pas de jauge de « MP » (ce sont les vinyles)
-        foreach ([1, 2] as $p) {
+        // 1P à gauche, 2P à droite (positions absolues : dans cette résolution, le moteur ne décale pas le 2P)
+        foreach ([1 => 8, 2 => 168] as $p => $x) {
             array_push(
                 $lines,
-                "p{$p}score	8 3 0 0 0 0 0",
-                "p{$p}life	8 13",
-                "p{$p}lifex	112 12 0",
-                "p{$p}lifen	120 12 2",
+                "p{$p}score	$x 3 0 0 0 0 0",
+                "p{$p}life	$x 13",
+                sprintf("p{$p}lifex	%d 12 0", $x + 104),
+                sprintf("p{$p}lifen	%d 12 2", $x + 112),
                 "p{$p}mp	0 400",
-                "e{$p}life	8 170",
-                "e{$p}name	8 160 1",
+                "e{$p}life	$x 170",
+                "e{$p}name	$x 160 1",
             );
         }
         foreach ($levels as $level) {

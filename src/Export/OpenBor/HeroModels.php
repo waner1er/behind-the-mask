@@ -83,7 +83,7 @@ final class HeroModels
             new Animation('pain', [Frame::at('idle.1', 16, commands: [$sound('hurt')])]),
             new Animation('fall', [Frame::at('fall.0', 60, commands: [$sound('heavyHit')])]),
             new Animation('rise', [Frame::at('idle.0', 20)]),
-            new Animation('get', [Frame::at('idle.0', 10, commands: [$sound('pickup'), '@cmd	onGet'])]),
+            new Animation('get', [Frame::at('idle.0', 10, commands: [$sound('pickup')])]),
             new Animation('select', [Frame::at('idle.0', 30), Frame::at('idle.1', 30)], loop: true),
         ]);
     }

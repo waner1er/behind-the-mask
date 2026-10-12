@@ -1,5 +1,6 @@
 // À chaque image du jeu : messages, cris, vinyles et Wall of Death de chaque joueur, vies en plus.
 #include "data/scripts/lib.c"
+#include "data/scripts/weapons.c"
 
 void main()
 {
@@ -63,9 +64,26 @@ void drawPlayer(int p)
         changeentityproperty(hero, "mp", 50);
     }
     char text = "VINYL x" + getentityproperty(hero, "mp") / 10;
-    int wods = getglobalvar("wods" + p);
+    int wods = counter("wods" + p);
     if (wods) {
         text = text + "  WOD " + wods;
+    }
+    // arme ramassée : son nom et les secondes qui restent, puis retour à l'arme fétiche
+    int since = getentityvar(hero, 4);
+    if (since) {
+        int left = (webFrames(weaponDuration()) - (now() - since)) / 200;
+        if (left < 0) {
+            setentityvar(hero, 4, 0);
+            changeentityproperty(hero, "weapon", 0, 0);
+            if (p == 0) {
+                shout("KATANA!", getentityproperty(hero, "x"), getentityproperty(hero, "z") - 48, 0);
+            } else {
+                shout("GUITARE!", getentityproperty(hero, "x"), getentityproperty(hero, "z") - 48, 0);
+            }
+            sound("select");
+        } else {
+            text = text + "  " + getentityvar(hero, 5) + " " + (left + 1);
+        }
     }
     int x = 8;
     if (p == 1) {

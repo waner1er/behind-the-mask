@@ -10,7 +10,7 @@ void main()
     if (count) {
         shout(getglobalvar("shoutLine" + randomIndex(count)), x, z - 46, 0);
     }
-    int kills = getglobalvar("kills") + 1;
+    int kills = counter("kills") + 1;
     setglobalvar("kills", kills);
     if (kills % 10 == 0) {
         clearspawnentry();
