@@ -68,6 +68,7 @@ Ensuite : ouvrir `ios/Vigilante.xcodeproj` dans Xcode et lancer (⌘R) sur un si
 | `VigilanteApp.swift` | Plein écran, sans barre d'état ; session audio `.playback` (la musique joue même en mode silencieux). |
 | `GameView.swift` | La `WKWebView` qui charge `app://localhost/index.html`. En Debug, inspectable depuis Safari › Développement. |
 | `Assets.xcassets/AppIcon.appiconset/AppIcon.png` | L'icône, dessinée par `Build\AppIcon` à partir du sprite de Pete. Commitée ; elle ne change que si le sprite change. |
+| `HapticsHandler.swift` | Reçoit `window.webkit.messageHandlers.haptics.postMessage(style)` (`js/input/Haptics.js`) et fait vibrer l'iPhone. |
 | `AppSchemeHandler.swift` | Sert les fichiers de `www/` sous `app://` (en `file://`, WebKit bloque les modules ES et les `fetch()`). |
 
 Le paysage, le nom affiché et l'identifiant (`fr.banvillet.vigilante`) sont dans les réglages de la cible (onglet *Build Settings*, clés `INFOPLIST_KEY_…`). Si `ios/www/` est vide, la compilation s'arrête avec un message qui rappelle la commande à lancer.

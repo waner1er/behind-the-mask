@@ -34,6 +34,7 @@ export class WallOfDeath {
         state.flash = 6;
         game.hud.message('<span class="hud__warning">WALL OF DEATH !!!</span>', 120);
         game.sfx('wod');
+        game.haptics.pulse('wod');
     }
 
     update() {

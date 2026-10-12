@@ -34,9 +34,14 @@ export class GamepadControls {
         this.count = 0;
     }
 
-    poll() {
+    /** Les manettes utilisables, dans l'ordre des joueurs. */
+    connected() {
         const pads = navigator.getGamepads?.() ?? [];
-        const connected = [...pads].filter((pad) => pad?.connected && pad.mapping === 'standard');
+        return [...pads].filter((pad) => pad?.connected && pad.mapping === 'standard');
+    }
+
+    poll() {
+        const connected = this.connected();
         const seen = new Set();
 
         connected.forEach((pad, slot) => {

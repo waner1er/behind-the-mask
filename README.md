@@ -32,7 +32,7 @@ Au clavier, à la manette, ou sur mobile avec le stick et les boutons dessinés 
 | WALL OF DEATH | V + X | , + : |
 | start | Entrée | Entrée |
 
-**À la manette** (Xbox, PlayStation, MFi… ; noms des boutons Xbox) : stick gauche ou croix pour marcher, **A** katana, **B** coup de pied sauté, **X** vinyle, **Y** skate, **A + X** ou **RB** WALL OF DEATH, **Start** start, **Select** musique. À deux, la 1re manette est Pete, la 2e VigiBapt. Sur mobile, les commandes tactiles s'effacent quand une manette est utilisée.
+**À la manette** (Xbox, PlayStation, MFi… ; noms des boutons Xbox) : stick gauche ou croix pour marcher, **A** katana, **B** coup de pied sauté, **X** vinyle, **Y** skate, **A + X** ou **RB** WALL OF DEATH, **Start** start, **Select** musique. À deux, la 1re manette est Pete, la 2e VigiBapt. Sur mobile, les commandes tactiles s'effacent quand une manette est utilisée. Les coups, explosions et K.O. font vibrer la manette, ou le téléphone sans manette.
 
 ## Comment c'est fait
 

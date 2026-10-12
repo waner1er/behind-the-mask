@@ -23,6 +23,7 @@ export class Combat {
             if (reach < minReach - bulk || reach > maxReach + bulk || Math.abs(e.y - p.y) > 7 + bulk / 4) continue;
 
             p.hits.add(e.id);
+            this.game.haptics.pulse('hit', p);
             e.hp -= damage;
             state.score += 10 * damage;
             state.shake = 3;
@@ -67,6 +68,7 @@ export class Combat {
 
         if (e.boss) {
             game.sfx('bossDeath', e.scale);
+            game.haptics.pulse('boss');
             state.flash = 12;
             state.shake = 8;
             game.shout('K.O.!', e.x, e.y - 50 * e.scale);
@@ -103,10 +105,12 @@ export class Combat {
             p.vx = dir * 2;
             game.sfx('heavyHit');
             game.sfx('heroDeath');
+            game.haptics.pulse('ko', p);
         } else {
             p.setState('hurt');
             p.vx = dir * 2.5;
             game.sfx('hurt');
+            game.haptics.pulse('hurt', p);
         }
         return true;
     }

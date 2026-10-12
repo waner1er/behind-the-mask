@@ -6,6 +6,7 @@ import { AudioEngine } from './audio/AudioEngine.js';
 import { HERO_HP, HEROES, HISCORE_KEY } from './config.js';
 import { GameState } from './core/GameState.js';
 import { GamepadControls } from './input/GamepadControls.js';
+import { Haptics } from './input/Haptics.js';
 import { Input } from './input/Input.js';
 import { Campaign } from './modes/Campaign.js';
 import { ClearMode } from './modes/ClearMode.js';
@@ -49,6 +50,7 @@ export class Game {
         /** Commandes de chaque joueur en partie à deux (en solo, Pete obéit à input). */
         this.pads = [new Input(), new Input()];
         this.gamepads = new GamepadControls(this);
+        this.haptics = new Haptics(this);
         this.audio = new AudioEngine();
         this.sprites = new SpriteBank(data);
         this.hud = new Hud(root, this);

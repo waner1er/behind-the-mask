@@ -62,6 +62,7 @@ main.js
 | `input/` | `Input` | Touches maintenues (`held`) et appuyées cette image (`pressed`), `axisX`/`axisY`, `interceptor` (la démo s'interrompt au premier appui). |
 | | `KeyboardControls` | Clavier et boutons de la borne (`data-key`). En duo, les pavés des joueurs (`DUO_KEYS`) vont à `game.pads[slot]`, traduits en touches du solo ; `game.inputOf(p)` donne les commandes d'un héros. |
 | | `GamepadControls` | Manettes (API Gamepad, disposition standard), relues à chaque image → touches du solo (`BUTTONS`). En duo, la n-ième manette va à `game.pads[n]` ; START et musique restent communs. Classe `has-gamepad` sur `<html>` : les commandes tactiles s'effacent. |
+| | `Haptics` | Vibrations nommées (`hit`, `explosion`, `hurt`, `ko`, `wod`, `boss` ; la plus forte l'emporte à la même image) : manette (`dual-rumble`, celle du héros concerné à deux), sinon iPhone (message `haptics` vers Swift) ou `navigator.vibrate`. `game.haptics.pulse(nom, héros)`. |
 | | `TouchStick` | Stick tactile ou dessiné → flèches. |
 | | `MobileGuard` | Pas de zoom ni de défilement ; plein écran et paysage au premier appui. |
 | `audio/` | `AudioEngine` | Contexte audio créé au premier geste, mixage, `play(nom)`, musique, sourdine. |
