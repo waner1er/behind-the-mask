@@ -46,7 +46,7 @@ Chaque morceau a son entrée dans `config/levels.php`, indexée par son numéro 
         'sprite' => 'nightmare',  // identifiant dans Sprite\Boss\BossRoster
         'name' => 'THE NIGHTMARE',
         'hp' => 42, 'speed' => 0.9, 'damage' => 14, 'reach' => 36,
-        'special' => 'teleport',  // summon | throw (+ 'projectile') | charge | teleport | static
+        'special' => 'teleport',  // summon | throw (+ 'projectile') | charge | teleport | static | components, ou une liste
         'every' => 200,           // images entre deux attaques spéciales
         'line' => 'WE WERE BROTHERS IN THE SAME FIGHT',
     ],
@@ -65,12 +65,15 @@ Un niveau peut aussi être **plus long** et décrire ses vagues une à une (c'es
     ['enemies' => 3, 'extra' => ['knifer'], 'pincer' => true],
 ],                                // extra = ennemis imposés, pincer = attaque en tenaille
 'midboss' => [                    // mêmes clés qu'un boss, + 'score' (5000 par défaut)
-    'sprite' => 'tv', 'name' => 'WALK STRAIGHT', 'special' => 'static', /* … */
+    'sprite' => 'tv', 'name' => 'WALK STRAIGHT',
+    'entrance' => 'door',         // il défonce une porte du décor au lieu d'entrer par la droite
+    'special' => ['static', 'components'],       // une liste = attaques en alternance
+    /* … */
     'staticLine' => 'WATCHING TV... NOW FORGET IT!',
 ],
 ```
 
-`special` = `static` : l'écran grésille puis lâche une onde de neige en anneau qui étourdit le héros qu'elle traverse (on l'esquive en sautant ou en s'éloignant ; réglages `STATIC` dans `js/config.js`).
+`special` = `static` : l'écran grésille puis lâche une onde de neige en anneau qui étourdit le héros qu'elle traverse (on l'esquive en sautant ou en s'éloignant ; réglages `STATIC` dans `js/config.js`). `components` : il crache trois composants électroniques en éventail, qui explosent en retombant avec un « PLING! » (`COMPONENTS`). L'entrée par la porte se règle avec `DOOR`.
 
 Pour un **nouveau morceau** : l'ajouter à `paroles.md` avec son fichier audio, puis une entrée dans `config/levels.php` (sinon il reprend la config du niveau 1). Le dernier morceau de l'album déclenche la scène de fin.
 

@@ -42,6 +42,14 @@ export class Ambience {
         state.notes = state.notes.filter((note) => note.t < 70);
         state.explosions = Ambience.#age(state.explosions, 30);
         state.statics = Ambience.#age(state.statics, STATIC.reach / STATIC.speed);
+        for (const bit of state.debris) {
+            bit.x += bit.vx;
+            bit.y += bit.vy;
+            bit.z = Math.max(0, bit.z + bit.vz);
+            bit.vz -= 0.18;
+            if (bit.z === 0) bit.vx *= 0.8;
+        }
+        state.debris = Ambience.#age(state.debris, 90);
     }
 
     /** À chaque image, quel que soit le mode : étincelles, textes et pluie. */

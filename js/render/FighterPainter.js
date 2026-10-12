@@ -32,6 +32,7 @@ export class FighterPainter {
     #visible(f) {
         if (f.state === 'dead' && f.t > 60 && Math.floor(f.t / 4) % 2) return false;
         if (f.invuln && !['hurt', 'dead', 'skate'].includes(f.state) && Math.floor(f.invuln / 3) % 2) return false;
+        if (f.isHidden) return false;
         return !(f.state === 'vanish' && Math.floor(f.t / 2) % 2);
     }
 
@@ -42,6 +43,7 @@ export class FighterPainter {
 
         switch (f.state) {
             case 'walk':
+            case 'emerge':
                 return anims.walk[Math.floor(f.anim / 8) % anims.walk.length];
             case 'attack':
                 return anims.attack[f.t >= timing.hitFrom && f.t < timing.strikeUntil ? 1 : 0];
@@ -63,6 +65,8 @@ export class FighterPainter {
                 return anims.attack[0];
             case 'throw':
                 return anims.attack[f.t >= 18 ? 1 : 0];
+            case 'spew':
+                return anims.attack[Math.floor(f.t / 4) % 2];
             case 'dead':
                 return (anims.dead ?? anims.idle)[0];
             case 'hurt':

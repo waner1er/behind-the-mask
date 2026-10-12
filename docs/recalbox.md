@@ -49,6 +49,7 @@ Recalbox transmet lui-même à OpenBOR le stick et les boutons de chaque joueur 
 - Score par joueur (le web additionne les deux joueurs), menus et tableau des scores d'OpenBOR.
 - L'IA d'OpenBOR choisit ses coups selon la distance : mêmes coups et mêmes délais moyens que le web, mais pas exactement les mêmes décisions.
 - Pas de **prise en tenaille** (`pincer`) : l'IA du moteur place ses attaquants elle-même.
+- La télé entre par la droite (pas de porte défoncée) et ne lance qu'**un** composant explosif par salve (le moteur n'a qu'un projectile par animation), sans « PLING! ».
 - La **neige télé** n'est pas dessinée : c'est une zone de coup qui s'élargit au ras du sol (un saut l'évite) et renverse le héros.
 
 ## Comment c'est fait

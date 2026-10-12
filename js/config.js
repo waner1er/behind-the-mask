@@ -22,6 +22,15 @@ export const VINYL = { start: 5, perCrate: 5, max: 20, radius: 30, damage: 4 };
  */
 export const STATIC = { wind: 30, speed: 2.6, reach: 80, stun: 40 };
 
+/**
+ * Entrée d'un boss par une porte du décor (entrance: 'door') : il cogne pendant knocks images,
+ * la porte vole en éclats, puis il marche vers nous. La porte est dessinée à l'échelle scale.
+ */
+export const DOOR = { knocks: 60, knockEvery: 20, scale: 2, walk: 0.6 };
+
+/** Salve de composants (attaque « components ») : un lancer toutes les every images, en éventail. */
+export const COMPONENTS = { sprites: ['tube', 'capacitor', 'chip'], every: 8, spread: 22, flight: 46 };
+
 /** Combo d'un ennemi : le premier coup est plus léger, le second part plus vite (image de départ). */
 export const COMBO = { firstHit: 0.6, restartAt: 12, step: 1.2 };
 

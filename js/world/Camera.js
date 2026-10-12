@@ -85,10 +85,13 @@ export class Camera {
         });
     }
 
+    /** Le boss entre par la droite, ou défonce une porte du décor (entrance: 'door', voir BossAI). */
     #spawnBoss(cfg) {
         const { game, state } = this;
         const { floor } = game.data;
-        const boss = game.spawn(cfg.sprite, state.cam + this.width + 20 * cfg.scale, (floor.min + floor.max) / 2, cfg);
+        const byDoor = cfg.entrance === 'door';
+        const x = byDoor ? state.cam + Math.round(this.width * 0.62) : state.cam + this.width + 20 * cfg.scale;
+        const boss = game.spawn(cfg.sprite, x, byDoor ? floor.min - 2 : (floor.min + floor.max) / 2, cfg);
         boss.boss = true;
         boss.dir = -1;
         boss.special = 180;
@@ -97,6 +100,11 @@ export class Camera {
         state.lastEnemy = boss;
         game.hud.message(`<span class="hud__warning">WARNING!</span><br><br>${cfg.name}`, 160);
         game.sfx('warning');
+        if (byDoor) {
+            state.door = { x, y: floor.min - 4, shake: 0, broken: false };
+            boss.setState('emerge');
+            return;
+        }
         setTimeout(() => game.shout(cfg.line, boss.x - 40, boss.y - 50 * boss.scale, '#ffffff'), 2800);
     }
 }

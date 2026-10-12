@@ -28,6 +28,11 @@ export const SOUNDS = {
         s.tone({ type: 'square', from: 230, to: 55, duration: 0.15, volume: 0.45 });
         s.tone({ type: 'triangle', from: 1000, to: 200, duration: 0.04, volume: 0.4 });
     },
+    // un composant électronique qui saute
+    pling: (s) => {
+        s.tone({ type: 'square', from: 1800, to: 2600, duration: 0.08, volume: 0.15 });
+        s.tone({ type: 'sine', from: 3200, to: 3000, duration: 0.25, volume: 0.2, delay: 0.05 });
+    },
     // neige d'une télé qui sature
     static: (s) => {
         s.noise({ duration: 0.5, volume: 0.5, filter: 'highpass', from: 1200, to: 4000 });

@@ -45,6 +45,7 @@ export class GameState {
         this.pickups = [];
         this.boxes = [];
         this.pows = [];
+        this.door = null; // porte défoncée par un boss (entrance: 'door')
 
         // scènes animées (intro et fin)
         this.cast = [];
@@ -55,6 +56,7 @@ export class GameState {
         // effets visuels
         this.explosions = [];
         this.statics = [];
+        this.debris = [];
         this.notes = [];
         this.particles = [];
         this.flashes = [];
@@ -94,7 +96,7 @@ export class GameState {
     clearScene() {
         Object.assign(this, {
             players: [], cast: [], enemies: [], projectiles: [], pickups: [], pows: [], boxes: [], toughGuys: [],
-            explosions: [], statics: [], notes: [], texts: [], birds: [], fx: [], citizens: [],
+            explosions: [], statics: [], debris: [], door: null, notes: [], texts: [], birds: [], fx: [], citizens: [],
         });
     }
 

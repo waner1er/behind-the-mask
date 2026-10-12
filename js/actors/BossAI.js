@@ -1,9 +1,12 @@
-import { STATIC } from '../config.js';
+import { COMPONENTS, DOOR, STATIC } from '../config.js';
 import { clamp, pick, rand } from '../util/math.js';
 
-/** Les attaques spéciales des boss (config/levels.php) : charge, lancer, téléportation, appel de sbires, neige télé. */
+/**
+ * Les attaques spéciales des boss (config/levels.php) : charge, lancer, téléportation, appel de sbires,
+ * neige télé, salve de composants ; plusieurs attaques se jouent en alternance. Et l'entrée par une porte.
+ */
 export class BossAI {
-    static START = { charge: 'charge-wind', throw: 'throw', teleport: 'vanish', summon: 'summon', static: 'static-wind' };
+    static START = { charge: 'charge-wind', throw: 'throw', teleport: 'vanish', summon: 'summon', static: 'static-wind', components: 'spew' };
 
     constructor(game) {
         this.game = game;
@@ -19,6 +22,8 @@ export class BossAI {
             case 'summon': return this.#summon(e);
             case 'static-wind':
             case 'static': return this.#static(e);
+            case 'spew': return this.#spew(e);
+            case 'emerge': return this.#emerge(e);
         }
         return this.#trigger(e);
     }
@@ -29,9 +34,11 @@ export class BossAI {
         if (e.special > 0 || p.isDown) return false;
         e.special = e.cfg.every;
 
-        e.setState(BossAI.START[e.cfg.special]);
-        if (e.cfg.special === 'static') this.game.shout(e.cfg.staticLine ?? e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
-        else if (e.cfg.special === 'summon' || Math.random() < 0.3) this.game.shout(e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
+        const specials = [e.cfg.special].flat();
+        const special = specials[(e.specialCount = (e.specialCount ?? -1) + 1) % specials.length];
+        e.setState(BossAI.START[special]);
+        if (special === 'static') this.game.shout(e.cfg.staticLine ?? e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
+        else if (special === 'summon' || Math.random() < 0.3) this.game.shout(e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
         return true;
     }
 
@@ -131,6 +138,67 @@ export class BossAI {
             }
         }
         if (r >= STATIC.reach) e.setState('idle');
+        return true;
+    }
+
+    /** Crache trois composants en éventail autour du héros ; ils explosent en retombant (Projectiles). */
+    #spew(e) {
+        const { game, state } = this;
+        const p = state.nearestPlayer(e.x, e.y);
+        e.t++;
+        e.faceTowards(p.x);
+        const shot = e.t / COMPONENTS.every - 1;
+        if (Number.isInteger(shot) && shot >= 0 && shot < COMPONENTS.sprites.length) {
+            // visée en cloche : il retombe pile sur sa cible au bout de « flight » images
+            const z = 26 * e.scale;
+            const T = COMPONENTS.flight;
+            const tx = p.x + (shot - 1) * COMPONENTS.spread;
+            state.projectiles.push({
+                sprite: COMPONENTS.sprites[shot], x: e.x + e.dir * 8 * e.scale, y: e.y, z,
+                vx: (tx - e.x) / T, vy: (p.y - e.y) / T, vz: (0.08 * T) / 2 - z / T,
+                damage: game.enemyAI.damage(e), spin: true, pling: true,
+            });
+            game.sfx('throw');
+        }
+        if (e.t > COMPONENTS.every * (COMPONENTS.sprites.length + 1)) e.setState('idle');
+        return true;
+    }
+
+    /** Entrée par la porte : il cogne (elle tremble), la porte vole en éclats, il vient vers nous. */
+    #emerge(e) {
+        const { game, state } = this;
+        const { door } = state;
+        const { floor } = game.data;
+        e.t++;
+        if (e.t < DOOR.knocks) {
+            if (e.t % DOOR.knockEvery === 0) {
+                door.shake = 8;
+                state.shake = 2;
+                game.sfx('heavyHit');
+            }
+            return true;
+        }
+        if (e.t === DOOR.knocks) {
+            door.broken = true;
+            state.shake = 7;
+            game.sfx('heavyHit');
+            game.sfx('glass');
+            for (let i = 0; i < 18; i++) {
+                state.debris.push({
+                    x: door.x + rand(-12, 12), y: door.y + rand(0, 6), z: rand(4, 50),
+                    vx: rand(-2, 2), vy: rand(0.2, 1.4), vz: rand(0.5, 2.5),
+                    size: pick([1, 2, 2, 3]), color: pick(['#c79a62', '#8a6538', '#2e2c28']), t: 0,
+                });
+            }
+        }
+        const p = state.nearestPlayer(e.x, e.y);
+        e.faceTowards(p.x);
+        const target = (floor.min + floor.max) / 2;
+        e.y = Math.min(target, e.y + DOOR.walk);
+        if (e.y >= target) {
+            e.setState('idle');
+            game.shout(e.cfg.line, e.x - 40, e.y - 50 * e.scale, '#ffffff');
+        }
         return true;
     }
 }

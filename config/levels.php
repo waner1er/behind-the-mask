@@ -20,7 +20,11 @@
  *            qu'un debout, pincer = les attaquants se placent de part et d'autre du héros.
  *            'midboss' = le boss de mi-niveau.
  * midboss  : un boss comme les autres (score = points rapportés, 5000 par défaut).
- *            special = static : onde de neige télé qui étourdit à courte portée.
+ *
+ * Options d'un boss : special peut être une liste (attaques en alternance) ;
+ *   static = onde de neige télé qui étourdit à courte portée,
+ *   components = salve de trois composants électroniques qui explosent à l'atterrissage.
+ * entrance = door : il sort du décor en défonçant une porte (sinon il entre par la droite).
  *
  * Voir docs/content.md pour ajouter ou modifier un niveau.
  */
@@ -52,12 +56,15 @@ return [
             'scale' => 1.5,
             'sprite' => 'tv',
             'name' => 'WALK STRAIGHT',
-            'hp' => 20,
-            'speed' => 0.5,
-            'damage' => 10,
+            // il défonce une porte du décor et vient vers nous au lieu d'entrer par la droite
+            'entrance' => 'door',
+            'hp' => 30,
+            'speed' => 0.55,
+            'damage' => 12,
             'reach' => 28,
-            'special' => 'static',
-            'every' => 240,
+            // en alternance : neige télé, puis une salve de composants qui explosent (PLING!)
+            'special' => ['static', 'components'],
+            'every' => 180,
             'score' => 2500,
             'line' => 'KEEP SILENCE!',
             'staticLine' => 'WATCHING TV... NOW FORGET IT!',

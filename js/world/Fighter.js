@@ -1,4 +1,4 @@
-import { ATTACK, HEROES, VINYL } from '../config.js';
+import { ATTACK, DOOR, HEROES, VINYL } from '../config.js';
 import { rand } from '../util/math.js';
 
 let nextId = 1;
@@ -7,7 +7,7 @@ let nextId = 1;
  * Un personnage qui se bat : le héros, un ennemi, un boss, un acteur des scènes animées.
  *
  * state : idle | walk | attack | hurt | dead | jump | skate | vinyl (héros)
- *         lunge-wind | lunge | throw (ennemis), charge-wind | charge | vanish | summon | static-wind | static (boss)
+ *         lunge-wind | lunge | throw (ennemis), charge-wind | charge | vanish | summon | static-wind | static | spew | emerge (boss)
  * t : images écoulées dans l'état courant ; anim : compteur d'animation.
  */
 export class Fighter {
@@ -64,9 +64,14 @@ export class Fighter {
         return this.state === 'dead';
     }
 
-    /** Hors combat : au tapis, ou disparu (téléportation du Nightmare). */
+    /** Hors combat : au tapis, disparu (téléportation du Nightmare) ou en train d'entrer en scène. */
     get isUntouchable() {
-        return this.state === 'dead' || this.state === 'vanish';
+        return this.state === 'dead' || this.state === 'vanish' || this.state === 'emerge';
+    }
+
+    /** Encore derrière la porte qu'il défonce. */
+    get isHidden() {
+        return this.state === 'emerge' && this.t < DOOR.knocks;
     }
 
     faceTowards(x) {

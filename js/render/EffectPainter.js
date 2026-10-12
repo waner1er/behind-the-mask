@@ -38,6 +38,12 @@ export class EffectPainter {
         }
     }
 
+    /** Éclat de porte qui retombe. */
+    debris(bit) {
+        this.ctx.fillStyle = bit.color;
+        this.ctx.fillRect(Math.round(bit.x), Math.round(bit.y - bit.z), bit.size, bit.size);
+    }
+
     /** Étoile d'impact (t < 0 : apparition différée). */
     spark(s) {
         if (s.t < 0) return;
