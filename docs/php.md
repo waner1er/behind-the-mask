@@ -116,6 +116,7 @@ tools/build-ios.php ─► IosBundleBuilder::build()     → ios/www/ (la même 
 | `View\AssetVersioner` | `?v=<date>` sur les fichiers et import map des modules JS (cache navigateur). |
 | `Http\SceneController` | `scene.php?level=N|peace`. |
 | `Build\StaticSiteBuilder` | Écrit `index.html` et `scenes/*.html` pour GitHub Pages (ou dans un autre dossier). |
+| `Build\AppIcon` | L'icône de l'app iOS en pixel art (Pete devant le soleil), PNG opaque 1024 × 1024. |
 | `Build\IosBundleBuilder` | Prépare `ios/www/` pour l'app iOS : la version statique et tout ce qu'elle lit, sans PHP ni réseau. |
 | `Support\ConfigRepository` | Lit les fichiers de `config/` (une seule fois chacun). |
 | `Support\SeededRandom` | Hasard reproductible (Mt19937, même suite que `mt_rand`) : `int()`, `chance()`, `oneIn()`, `pick()`, `tenths()`. |

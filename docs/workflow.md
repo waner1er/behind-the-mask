@@ -56,7 +56,7 @@ Ne jamais modifier `index.html` ni `scenes/` à la main : ils sont écrasés à 
 
 ```bash
 npm run css          # si style.scss a changé : build/style.css est copié tel quel
-composer build:ios   # vide puis remplit ios/www/ (≈ 30 Mo)
+composer build:ios   # vide puis remplit ios/www/ (≈ 30 Mo) et redessine l'icône de l'app
 ```
 
 `ios/www/` contient tout ce que la page lit (version statique, `js/`, CSS, polices, logo, musiques de l'album) et rien d'autre : ni PHP, ni appel réseau. Xcode le copie tel quel dans l'app. Il n'est **pas commité** (`.gitignore`) : on le régénère avant chaque compilation de l'app.
@@ -67,6 +67,7 @@ Ensuite : ouvrir `ios/Vigilante.xcodeproj` dans Xcode et lancer (⌘R) sur un si
 |---|---|
 | `VigilanteApp.swift` | Plein écran, sans barre d'état ; session audio `.playback` (la musique joue même en mode silencieux). |
 | `GameView.swift` | La `WKWebView` qui charge `app://localhost/index.html`. En Debug, inspectable depuis Safari › Développement. |
+| `Assets.xcassets/AppIcon.appiconset/AppIcon.png` | L'icône, dessinée par `Build\AppIcon` à partir du sprite de Pete. Commitée ; elle ne change que si le sprite change. |
 | `AppSchemeHandler.swift` | Sert les fichiers de `www/` sous `app://` (en `file://`, WebKit bloque les modules ES et les `fetch()`). |
 
 Le paysage, le nom affiché et l'identifiant (`fr.banvillet.vigilante`) sont dans les réglages de la cible (onglet *Build Settings*, clés `INFOPLIST_KEY_…`). Si `ios/www/` est vide, la compilation s'arrête avec un message qui rappelle la commande à lancer.
