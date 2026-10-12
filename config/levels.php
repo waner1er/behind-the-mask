@@ -25,6 +25,8 @@
  *   static = onde de neige télé qui étourdit à courte portée,
  *   components = salve de trois composants électroniques qui explosent à l'atterrissage.
  * entrance = door : il sort du décor en défonçant une porte (sinon il entre par la droite).
+ * guard = garde : au bout de « hits » coups encaissés en « window » images, il ne bronche plus
+ *         et repousse le héros d'un grand coup (push = élan du recul, line = sa réplique).
  *
  * Voir docs/content.md pour ajouter ou modifier un niveau.
  */
@@ -79,6 +81,8 @@ return [
             'special' => 'summon',
             'every' => 360,
             'line' => 'WORK TO SURVIVE!',
+            // on ne le bat plus en martelant le même coup : il encaisse et repousse
+            'guard' => ['hits' => 3, 'window' => 90, 'push' => 9, 'line' => 'BACK TO WORK!'],
         ],
     ],
     // 02 Metal Slug

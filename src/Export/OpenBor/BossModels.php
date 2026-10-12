@@ -12,6 +12,7 @@ use Vigilante\Sprite\SpriteSheet;
  * summon (deux sbires), throw (projectile), charge (traverse l'écran), teleport (dans ton dos),
  * static (onde de neige autour de lui : elle renverse, on l'évite en sautant), components (un
  * composant qui explose) ; une liste d'attaques donne attack2, attack3... (le moteur choisit).
+ * Garde (guard) : la douleur compte les coups (special.c) et déclenche la poussée (follow1).
  */
 final class BossModels
 {
@@ -90,7 +91,11 @@ final class BossModels
                 Frame::at('attack.0', $t['end']),
             ], extra: ['range	0 ' . (int) round($reach * $scale)]),
             ...$specials,
-            new Animation('pain', [Frame::at('idle.1', 10, commands: ['sound	' . SoundBank::path('heavyHit')])]),
+            new Animation('pain', [Frame::at('idle.1', 10, commands: [
+                'sound	' . SoundBank::path('heavyHit'),
+                ...(isset($boss['guard']) ? ['@cmd	guard ' . (int) $boss['guard']['hits'] . ' ' . (int) $boss['guard']['window']] : []),
+            ])]),
+            ...self::shove($boss, $damage, $reach),
             new Animation('fall', [Frame::at('fall.0', 80)]),
             new Animation('rise', [Frame::at('idle.0', 24)]),
         ]);
@@ -153,5 +158,27 @@ final class BossModels
             ], extra: ['range	40 200', 'custbomb	' . PropModels::modelName(PropModels::COMPONENT)]),
             default => throw new \InvalidArgumentException("Attaque spéciale inconnue : $name"),
         };
+    }
+
+    /**
+     * Garde (BossAI.guards) : la poussée qui suit le dernier coup encaissé, devant comme derrière ;
+     * elle renverse le héros (il recule loin), un saut passe au-dessus.
+     *
+     * @param array<string, mixed> $boss
+     * @return list<Animation>
+     */
+    private static function shove(array $boss, int $damage, int $reach): array
+    {
+        if (!isset($boss['guard'])) {
+            return [];
+        }
+        $range = $reach + 16;
+
+        return [new Animation('follow1', [
+            Frame::at('attack.0', 10),
+            Frame::at('attack.1', 6, new Hit(-$range, $range, intdiv($damage, 2), true, 30, 30), commands: ['sound	' . SoundBank::path('heavyHit')]),
+            Frame::at('attack.1', 8),
+            Frame::at('attack.0', 10),
+        ])];
     }
 }

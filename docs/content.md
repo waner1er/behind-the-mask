@@ -49,6 +49,9 @@ Chaque morceau a son entrée dans `config/levels.php`, indexée par son numéro 
         'special' => 'teleport',  // summon | throw (+ 'projectile') | charge | teleport | static | components, ou une liste
         'every' => 200,           // images entre deux attaques spéciales
         'line' => 'WE WERE BROTHERS IN THE SAME FIGHT',
+        // option : garde. Au bout de 3 coups encaissés coup sur coup (moins de 90 images entre deux),
+        // il ne bronche plus et repousse le héros (push = élan du recul) : on ne le bat plus en martelant
+        'guard' => ['hits' => 3, 'window' => 90, 'push' => 9, 'line' => 'BACK TO WORK!'],
     ],
 ],
 ```

@@ -1,9 +1,10 @@
-import { COMPONENTS, DOOR, STATIC } from '../config.js';
+import { COMPONENTS, DOOR, GUARD, STATIC } from '../config.js';
 import { clamp, pick, rand } from '../util/math.js';
 
 /**
  * Les attaques spéciales des boss (config/levels.php) : charge, lancer, téléportation, appel de sbires,
- * neige télé, salve de composants ; plusieurs attaques se jouent en alternance. Et l'entrée par une porte.
+ * neige télé, salve de composants ; plusieurs attaques se jouent en alternance. Et l'entrée par une porte,
+ * et la garde (cfg.guard) : un boss qu'on martèle finit par repousser le héros.
  */
 export class BossAI {
     static START = { charge: 'charge-wind', throw: 'throw', teleport: 'vanish', summon: 'summon', static: 'static-wind', components: 'spew' };
@@ -24,8 +25,28 @@ export class BossAI {
             case 'static': return this.#static(e);
             case 'spew': return this.#spew(e);
             case 'emerge': return this.#emerge(e);
+            case 'shove': return this.#shove(e);
         }
         return this.#trigger(e);
+    }
+
+    /**
+     * Garde : renvoie true si le boss encaisse sans broncher. Au bout de guard.hits coups reçus
+     * coup sur coup (moins de guard.window images entre deux), il repousse le héros.
+     */
+    guards(e) {
+        const { guard } = e.cfg;
+        if (!guard) return false;
+        if (e.state === 'shove') return true;
+        const { tick } = this.state;
+        e.guardHits = tick > (e.guardUntil ?? 0) ? 1 : (e.guardHits ?? 0) + 1;
+        e.guardUntil = tick + guard.window;
+        if (e.guardHits < guard.hits) return false;
+
+        e.guardHits = 0;
+        e.setState('shove');
+        if (guard.line) this.game.shout(guard.line, e.x, e.y - 50 * e.scale, '#ffffff');
+        return true;
     }
 
     #trigger(e) {
@@ -198,6 +219,32 @@ export class BossAI {
         if (e.y >= target) {
             e.setState('idle');
             game.shout(e.cfg.line, e.x - 40, e.y - 50 * e.scale, '#ffffff');
+        }
+        return true;
+    }
+
+    /** Grand coup qui repousse tous les héros autour de lui, devant comme derrière. */
+    #shove(e) {
+        const { game, state } = this;
+        const { guard } = e.cfg;
+        e.t++;
+        if (e.t < GUARD.wind) {
+            e.faceTowards(state.nearestPlayer(e.x, e.y).x);
+            return true;
+        }
+        if (e.t === GUARD.wind) {
+            const reach = (e.cfg.reach ?? 26) * e.scale + 24;
+            for (const p of state.players) {
+                if (Math.abs(p.x - e.x) > reach || Math.abs(p.y - e.y) > 12) continue;
+                game.combat.shovePlayer(p, e.x, guard.push, Math.round(game.enemyAI.damage(e) / 2));
+                state.sparks.push({ x: (p.x + e.x) / 2, y: p.y - 24, t: 0 });
+            }
+            state.shake = 5;
+            game.sfx('heavyHit');
+        }
+        if (e.t > GUARD.wind + GUARD.recover) {
+            e.setState('idle');
+            e.cooldown = 10; // et il enchaîne
         }
         return true;
     }

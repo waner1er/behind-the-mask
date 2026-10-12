@@ -31,6 +31,9 @@ export const DOOR = { knocks: 60, knockEvery: 20, scale: 2, walk: 0.6 };
 /** Salve de composants (attaque « components ») : un lancer toutes les every images, en éventail. */
 export const COMPONENTS = { sprites: ['tube', 'capacitor', 'chip'], every: 8, spread: 22, flight: 46 };
 
+/** Garde d'un boss (cfg.guard) : élan de la poussée (court : pas le temps de placer un dernier coup), puis reprise. */
+export const GUARD = { wind: 10, recover: 18 };
+
 /** Combo d'un ennemi : le premier coup est plus léger, le second part plus vite (image de départ). */
 export const COMBO = { firstHit: 0.6, restartAt: 12, step: 1.2 };
 

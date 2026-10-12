@@ -66,3 +66,21 @@ void teleportBehind()
     changeentityproperty(self, "position", x, getentityproperty(target, "z"), 0);
     changeentityproperty(self, "direction", right);
 }
+
+// GARDE (cfg.guard) : au bout de « hits » coups encaissés coup sur coup (moins de « frames »
+// images entre deux), il ne bronche plus et repousse (animation follow1).
+void guard(int hits, int frames)
+{
+    void self = getlocalvar("self");
+    int count = getentityvar(self, 3);
+    if (!count || now() > getentityvar(self, 4)) {
+        count = 0;
+    }
+    count = count + 1;
+    setentityvar(self, 4, now() + webFrames(frames));
+    if (count >= hits) {
+        count = 0;
+        performattack(self, openborconstant("ANI_FOLLOW1"));
+    }
+    setentityvar(self, 3, count);
+}

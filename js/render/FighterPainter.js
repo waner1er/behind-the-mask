@@ -1,3 +1,5 @@
+import { GUARD } from '../config.js';
+
 /** Dessine les personnages : choisit l'image de l'animation selon leur état. */
 export class FighterPainter {
     constructor(ctx, sprites) {
@@ -9,7 +11,7 @@ export class FighterPainter {
         if (!this.#visible(f)) return;
 
         const frame = this.#frameOf(f);
-        const winding = ['charge-wind', 'lunge-wind', 'static-wind'].includes(f.state);
+        const winding = ['charge-wind', 'lunge-wind', 'static-wind'].includes(f.state) || (f.state === 'shove' && f.t < GUARD.wind);
         const flashing = (f.state === 'hurt' && f.t < 5) || (winding && Math.floor(f.t / 4) % 2);
         const image = flashing ? frame.flash : frame.normal;
         const { ctx } = this;
@@ -65,6 +67,8 @@ export class FighterPainter {
                 return anims.attack[0];
             case 'throw':
                 return anims.attack[f.t >= 18 ? 1 : 0];
+            case 'shove':
+                return anims.attack[f.t < GUARD.wind ? 0 : 1];
             case 'spew':
                 return anims.attack[Math.floor(f.t / 4) % 2];
             case 'dead':
