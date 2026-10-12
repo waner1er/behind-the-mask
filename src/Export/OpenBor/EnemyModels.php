@@ -8,7 +8,7 @@ use Vigilante\Sprite\SpriteSheet;
 
 /**
  * Les ennemis des vagues (config/game.php) en modèles OpenBOR, avec les coups de js/actors/EnemyAI.js :
- * coup normal (attack1), ruée (attack2, moves.lunge), lancer (attack3, moves.throw ou projectile).
+ * coup normal (attack1), puis selon ses moves : combo, ruée, lancer (moves.throw ou projectile).
  * L'IA d'OpenBOR choisit l'attaque selon la distance (range), comme #chooseMove.
  */
 final class EnemyModels
@@ -50,9 +50,21 @@ final class EnemyModels
                 Frame::at('attack.0', $t['end']),
             ]];
         }
+        if ($strikes && isset($moves['combo'])) {
+            // combo : un premier coup plus léger, puis un second plus vif en avançant (COMBO dans js/config.js)
+            $attacks[] = [["range	0 $reach"], [
+                Frame::at('attack.0', $t['windup']),
+                Frame::at('attack.1', $t['hit'], new Hit(2, $reach, (int) round($config['damage'] * 0.6)), commands: ['sound	' . SoundBank::path('whoosh')]),
+                Frame::at('attack.1', $t['strike']),
+                Frame::at('attack.0', $t['windup'] - 12, move: 17),
+                Frame::at('attack.1', $t['hit'], new Hit(2, $reach, $config['damage']), commands: ['sound	' . SoundBank::path('whoosh')]),
+                Frame::at('attack.1', $t['strike']),
+                Frame::at('attack.0', $t['end']),
+            ]];
+        }
         // EnemyAI.#chooseMove : chaque coup spécial a un poids face au simple coup (strike) ;
         // on en tire un délai moyen entre deux ruées ou deux lancers
-        $weights = array_sum($moves) ?: 1;
+        $weights = array_sum(array_diff_key($moves, ['combo' => 0])) ?: 1; // le combo n'entre pas dans ce tirage
         $cooldown = fn(int $weight, int $every) => '@cmd	special ' . (int) round($every * $weights / max(1, $weight));
         if (isset($moves['lunge'])) {
             // il prend son élan (14 images), puis fonce à 3,2 px par image pendant 18 images

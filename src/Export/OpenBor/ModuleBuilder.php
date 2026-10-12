@@ -65,8 +65,8 @@ final readonly class ModuleBuilder
         foreach ($levels as $level) {
             $files = [...$files, ...$level->files()];
         }
-        foreach ($this->levelData() as $level) {
-            $files[BossModels::spawnScriptPath((string) $level['boss']['sprite'])] = BossModels::spawnScript($level['boss']);
+        foreach ($this->bosses() as $boss) {
+            $files[BossModels::spawnScriptPath((string) $boss['sprite'])] = BossModels::spawnScript($boss);
         }
         $files = [...$files, ...$this->story($work, 'intro', 'prologue', 'introTrack')];
         $files = [...$files, ...$this->story($work, 'ending', 'ending', 'endingTrack')];
@@ -97,11 +97,26 @@ final readonly class ModuleBuilder
         foreach ($game['enemies'] as $type => $config) {
             $models[] = EnemyModels::enemy($type, $this->sheet($sprites, $type), $config);
         }
-        foreach ($this->levelData() as $level) {
-            $models[] = BossModels::boss($this->sheet($sprites, (string) $level['boss']['sprite']), $level['boss']);
+        foreach ($this->bosses() as $boss) {
+            $models[] = BossModels::boss($this->sheet($sprites, (string) $boss['sprite']), $boss);
         }
 
         return [...$models, ...PropModels::all()];
+    }
+
+    /** @return list<array<string, mixed>> les boss de chaque niveau, boss de mi-niveau compris */
+    private function bosses(): array
+    {
+        $bosses = [];
+        foreach ($this->levelData() as $level) {
+            foreach ($level['waves'] as $wave) {
+                if (isset($wave['boss'])) {
+                    $bosses[] = $wave['boss'];
+                }
+            }
+        }
+
+        return $bosses;
     }
 
     /** @return list<array<string, mixed>> les niveaux du jeu web (LevelFactory::build), dans l'ordre de l'album */

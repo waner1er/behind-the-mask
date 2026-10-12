@@ -9,7 +9,8 @@ use Vigilante\Sprite\SpriteSheet;
 /**
  * Les boss (config/levels.php) : sprite agrandi au pixel près (scale), coup ATTACK.boss et
  * attaque spéciale de js/actors/BossAI.js toutes les « every » images (script boss.c) :
- * summon (deux sbires), throw (projectile), charge (traverse l'écran), teleport (dans ton dos).
+ * summon (deux sbires), throw (projectile), charge (traverse l'écran), teleport (dans ton dos),
+ * static (onde de neige autour de lui : elle renverse, on l'évite en sautant).
  */
 final class BossModels
 {
@@ -98,6 +99,20 @@ final class BossModels
                     Frame::at('attack.0', 12),
                 ], extra: ['range	0 400']),
             ],
+            'static' => [
+                new Animation('attack2', [
+                    Frame::at('attack.0', 30, commands: [$cooldown]),
+                    // l'anneau s'élargit de 2,6 px par image jusqu'à 80 px (STATIC dans js/config.js) ;
+                    // il rase le sol (14 px, à l'échelle 1) : un saut passe au-dessus
+                    ...array_map(fn($r) => Frame::at(
+                        'attack.1',
+                        8,
+                        new Hit(-(int) round($r / $scale), (int) round($r / $scale), $damage, true, 14, 14),
+                        commands: $r === 20 ? ['sound	' . SoundBank::path('static')] : [],
+                    ), [20, 40, 60, 80]),
+                    Frame::at('idle.0', 12),
+                ], extra: ['range	0 80']),
+            ],
             default => throw new \InvalidArgumentException("Attaque spéciale inconnue : {$boss['special']}"),
         };
 
@@ -105,7 +120,7 @@ final class BossModels
             'type	enemy',
             'health	' . (int) $boss['hp'] * HeroModels::HP_SCALE,
             'speed	' . max(1, (int) round((float) $boss['speed'] * EnemyModels::SPEED_SCALE)),
-            'score	5000 1',
+            'score	' . (int) ($boss['score'] ?? 5000) . ' 1',
             'shadow	' . min(6, (int) round(3 * $scale)),
             'nodrop	1',
             'diesound	' . SoundBank::bossDeath($scale),
