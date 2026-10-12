@@ -72,6 +72,18 @@ Ensuite : ouvrir `ios/Vigilante.xcodeproj` dans Xcode et lancer (⌘R) sur un si
 
 Le paysage, le nom affiché et l'identifiant (`fr.banvillet.vigilante`) sont dans les réglages de la cible (onglet *Build Settings*, clés `INFOPLIST_KEY_…`). Si `ios/www/` est vide, la compilation s'arrête avec un message qui rappelle la commande à lancer.
 
+### Envoyer une version sur TestFlight
+
+```bash
+composer ios:testflight              # CSS + ios/www + archive + envoi à App Store Connect
+sh tools/ios-testflight.sh --no-upload   # s'arrête à build/ios/Vigilante.ipa signé (vérification)
+```
+
+- Signature automatique avec le compte Apple configuré dans Xcode (équipe `GDFM8ML2BH`). L'archive est faite sans signature, puis l'export la signe pour l'App Store : aucun iPhone n'a besoin d'être enregistré sur le compte.
+- Le numéro de build est la date (`202610121827`) : toujours croissant, rien à commiter. La version affichée (`1.0`) est `MARKETING_VERSION` dans le projet Xcode.
+- Le questionnaire sur le chiffrement est déjà répondu (`ITSAppUsesNonExemptEncryption = NO`).
+- Après l'envoi, Apple traite le build (10 à 30 min) ; il apparaît ensuite dans l'app TestFlight des testeurs internes, sans vérification par Apple.
+
 ## Structure du dépôt
 
 ```
@@ -89,4 +101,5 @@ docs/                    cette documentation
 index.html, scenes/      générés par tools/build.php (GitHub Pages)
 ios/                     l'app iOS (projet Xcode + Swift)
 ios/www/                 généré par tools/build-ios.php (app iOS, non commité)
+build/ios/               archive et .ipa de tools/ios-testflight.sh (non commités)
 ```

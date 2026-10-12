@@ -32,6 +32,10 @@
             "php tools/build-openbor.php"
         ],
         "build:ios": "php tools/build-ios.php",
+        "ios:testflight": [
+            "Composer\\Config::disableProcessTimeout",
+            "sh tools/ios-testflight.sh"
+        ],
         "test": "phpunit",
         "lint": "phpcs",
         "analyse": "phpstan analyse",

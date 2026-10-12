@@ -25,6 +25,7 @@ node tools/screenshot.mjs 4 5 out.png   # capture du niveau 4 après 5 s de jeu 
 composer build                     # index.html + scenes/ pour GitHub Pages
 composer build:openbor             # build/openbor/Vigilante.pak pour la borne Recalbox (OpenBOR)
 composer build:ios                 # ios/www/ : le jeu hors ligne pour l'app iOS (npm run css avant)
+composer ios:testflight            # archive l'app iOS et l'envoie sur TestFlight (demander avant !)
 npm run css                        # style.scss → build/style.css
 ```
 
