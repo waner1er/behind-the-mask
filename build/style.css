@@ -742,6 +742,50 @@ kbd {
     font-size: 0.5rem;
   }
 }
+@media (pointer: coarse) and (orientation: landscape) and (min-aspect-ratio: 2/1) {
+  .cabinet {
+    --band: calc((100vw - 100dvh * 16 / 9) / 2);
+    --btn: min(44px, 12vh);
+  }
+  .touch-stick,
+  .panel__buttons,
+  .system-btn {
+    opacity: 0.85;
+  }
+  .touch-stick {
+    --size: min(100px, 28vh);
+    left: max(4px, (var(--band) - var(--size)) / 2);
+    bottom: 24px;
+  }
+  .panel__buttons {
+    right: max(4px, (var(--band) - 2 * var(--btn) - 8px) / 2);
+    bottom: 20px;
+    gap: 4px 8px;
+  }
+  .arcade-btn {
+    width: var(--btn);
+  }
+  .panel__system {
+    display: contents;
+  }
+  .system-btn {
+    position: fixed;
+    z-index: 5;
+    top: 30px;
+    padding: 8px 6px;
+    font-size: 0.45rem;
+    transform: translateX(-50%);
+  }
+  .system-btn:first-child {
+    left: calc(var(--band) / 2);
+  }
+  .system-btn:last-child {
+    left: calc(100vw - var(--band) / 2);
+  }
+  .system-btn:active, .system-btn.is-pressed {
+    transform: translate(-50%, 2px);
+  }
+}
 @keyframes blink {
   50% {
     opacity: 0;
