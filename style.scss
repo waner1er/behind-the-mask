@@ -430,9 +430,41 @@ body {
     }
 }
 
-// --- pause : l'écran s'assombrit sous le HUD ----------------------------------
+// --- pause : l'écran s'assombrit, les commandes remplacent le score ----------
 .hud--paused {
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 0.8);
+
+    .hud__player,
+    .hud__center,
+    .hud__enemy {
+        visibility: hidden;
+    }
+
+    .hud__message {
+        top: 7%;
+        display: grid;
+        justify-items: center;
+        gap: 2.6cqw;
+    }
+}
+
+.hud__controls {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), auto);
+    gap: 1.1cqw 3cqw;
+    font-size: 1.6cqw;
+    line-height: 1.2;
+    text-align: left;
+}
+
+.hud__control {
+    &--key {
+        color: color.adjust($paper, $lightness: -12%);
+    }
+
+    &--wod {
+        color: var(--accent, #{$red});
+    }
 }
 
 // --- accueil et scènes animées : pas de score à l'écran ----------------------

@@ -58,7 +58,7 @@ main.js
 | | `config.js` | Réglages : fenêtres d'attaque, skate, saut, vinyles, vies, démo… |
 | `core/` | `GameLoop` | Boucle à pas fixe. |
 | | `GameState` | Tout l'état mutable de la partie (voir plus bas). |
-| | `Pause` | START en pleine partie fige tout (jeu, son via `AudioEngine.setPaused`), écran assombri (`hud--paused`) ; pause automatique quand l'onglet ou l'app passe en arrière-plan. |
+| | `Pause` | START en pleine partie fige tout (jeu, son via `AudioEngine.setPaused`), écran assombri (`hud--paused`) avec les commandes (`ControlsHelp`) ; pause automatique quand l'onglet ou l'app passe en arrière-plan. |
 | `input/` | `Input` | Touches maintenues (`held`) et appuyées cette image (`pressed`), `axisX`/`axisY`, `interceptor` (la démo s'interrompt au premier appui). |
 | | `KeyboardControls` | Clavier et boutons de la borne (`data-key`). En duo, les pavés des joueurs (`DUO_KEYS`) vont à `game.pads[slot]`, traduits en touches du solo ; `game.inputOf(p)` donne les commandes d'un héros. |
 | | `GamepadControls` | Manettes (API Gamepad, disposition standard), relues à chaque image → touches du solo (`BUTTONS`). En duo, la n-ième manette va à `game.pads[n]` ; START et musique restent communs. Classe `has-gamepad` sur `<html>` : les commandes tactiles s'effacent. |
@@ -91,6 +91,7 @@ main.js
 | | `FighterPainter` | Image d'animation selon l'état, chute au K.O., traînées de vitesse. |
 | | `EffectPainter`, `WeatherPainter`, `StoryPainter`, `PixelBrush` | Effets, météo, décors de l'intro et de la fin, primitives (disque, ombre, cœur…). |
 | `ui/` | `Hud`, `ControlPanel` | Affichage DOM (score, vies, barres, messages, dialogues, générique) ; joystick et boutons qui réagissent. |
+| | `ControlsHelp` | Les commandes de l'écran de pause selon ce qu'on a en main : manette (Xbox ou PlayStation), tactile, clavier (solo ou duo). Pas de majuscules accentuées : la police pixel n'en a pas. |
 | `util/` | `math.js`, `HiscoreStore` | `rand`, `clamp`, `pick`, `pad` ; meilleur score dans `localStorage`. |
 
 ## L'état (`GameState`)

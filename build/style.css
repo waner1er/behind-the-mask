@@ -324,7 +324,34 @@ body {
 }
 
 .hud--paused {
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.8);
+}
+.hud--paused .hud__player,
+.hud--paused .hud__center,
+.hud--paused .hud__enemy {
+  visibility: hidden;
+}
+.hud--paused .hud__message {
+  top: 7%;
+  display: grid;
+  justify-items: center;
+  gap: 2.6cqw;
+}
+
+.hud__controls {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), auto);
+  gap: 1.1cqw 3cqw;
+  font-size: 1.6cqw;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.hud__control--key {
+  color: rgb(84.1045751634%, 80.7581699346%, 70.7189542484%);
+}
+.hud__control--wod {
+  color: var(--accent, #e8203a);
 }
 
 .hud--story .hud__player,

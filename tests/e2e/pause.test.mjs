@@ -24,6 +24,8 @@ test('START met la partie en pause : rien ne bouge', async () => {
     await game.press('Enter', 2);
     assert.equal(await paused(), true);
     assert.equal(await game.page.locator('.hud__pause').textContent(), 'PAUSE');
+    // les commandes du clavier, WALL OF DEATH en évidence
+    assert.equal(await game.page.locator('.hud__control--wod').first().textContent(), 'ESPACE + V');
 
     const before = await snapshot();
     await game.hold('ArrowRight', 120); // le joueur ne bouge pas non plus

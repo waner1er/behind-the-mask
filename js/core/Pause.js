@@ -1,5 +1,8 @@
+import { ControlsHelp } from '../ui/ControlsHelp.js';
+
 /**
  * Pause pendant une partie : START fige tout (jeu, musique, bruitages), START relance.
+ * L'écran de pause rappelle les commandes (ControlsHelp).
  * La partie se met aussi en pause toute seule quand on quitte l'onglet ou l'app (appel, notification…).
  */
 export class Pause {
@@ -8,6 +11,7 @@ export class Pause {
         this.paused = false;
         /** Le message du HUD recouvert par « PAUSE » et sa fin, rendus à la reprise (vague, boss…). */
         this.hidden = { html: '', until: 0 };
+        this.help = new ControlsHelp(game);
     }
 
     bind(root = document) {
@@ -30,7 +34,7 @@ export class Pause {
         hud.setLayout('paused', paused);
         if (paused) {
             this.hidden = { html: hud.el.message.innerHTML, until: this.game.state.messageUntil };
-            hud.message('<span class="hud__pause">PAUSE</span>');
+            hud.message(`<span class="hud__pause">PAUSE</span>${this.help.html()}`);
         } else {
             // le temps du jeu (state.tick) n'a pas avancé : le message reprend là où il en était
             hud.el.message.innerHTML = this.hidden.html;
