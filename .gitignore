@@ -12,3 +12,7 @@ build/openbor/
 
 # Jeu préparé pour l'app iOS (composer build:ios)
 ios/www/
+
+# Xcode : réglages propres à chaque poste
+xcuserdata/
+DerivedData/

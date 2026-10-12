@@ -61,6 +61,16 @@ composer build:ios   # vide puis remplit ios/www/ (≈ 30 Mo)
 
 `ios/www/` contient tout ce que la page lit (version statique, `js/`, CSS, polices, logo, musiques de l'album) et rien d'autre : ni PHP, ni appel réseau. Xcode le copie tel quel dans l'app. Il n'est **pas commité** (`.gitignore`) : on le régénère avant chaque compilation de l'app.
 
+Ensuite : ouvrir `ios/Vigilante.xcodeproj` dans Xcode et lancer (⌘R) sur un simulateur ou un iPhone branché. L'app Swift (`ios/Vigilante/`) ne connaît pas le jeu :
+
+| Fichier | Rôle |
+|---|---|
+| `VigilanteApp.swift` | Plein écran, sans barre d'état ; session audio `.playback` (la musique joue même en mode silencieux). |
+| `GameView.swift` | La `WKWebView` qui charge `app://localhost/index.html`. En Debug, inspectable depuis Safari › Développement. |
+| `AppSchemeHandler.swift` | Sert les fichiers de `www/` sous `app://` (en `file://`, WebKit bloque les modules ES et les `fetch()`). |
+
+Le paysage, le nom affiché et l'identifiant (`fr.banvillet.vigilante`) sont dans les réglages de la cible (onglet *Build Settings*, clés `INFOPLIST_KEY_…`). Si `ios/www/` est vide, la compilation s'arrête avec un message qui rappelle la commande à lancer.
+
 ## Structure du dépôt
 
 ```
@@ -76,5 +86,6 @@ medias/                  audio, paroles, logo
 tests/                   PHPUnit, snapshots, e2e
 docs/                    cette documentation
 index.html, scenes/      générés par tools/build.php (GitHub Pages)
+ios/                     l'app iOS (projet Xcode + Swift)
 ios/www/                 généré par tools/build-ios.php (app iOS, non commité)
 ```

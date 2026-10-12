@@ -43,6 +43,7 @@ npm run css                        # style.scss → build/style.css
 | changer un bruitage | `js/audio/sounds.js` |
 | changer la borne (HTML / styles) | `templates/page.php`, `style.scss` |
 | adapter la version borne Recalbox (OpenBOR) | `src/Export/OpenBor/`, `docs/recalbox.md` |
+| adapter l'app iOS | `ios/Vigilante/` (Swift), `src/Build/IosBundleBuilder.php`, `docs/workflow.md` |
 
 ## Règles
 
