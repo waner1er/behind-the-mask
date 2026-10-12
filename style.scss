@@ -787,6 +787,17 @@ kbd {
     }
 }
 
+// Manette en main (GamepadControls) : les commandes tactiles ne servent plus
+@media (pointer: coarse) {
+    .has-gamepad {
+        .touch-stick,
+        .panel__buttons,
+        .panel__system {
+            display: none;
+        }
+    }
+}
+
 // Portrait : on demande de tourner le téléphone
 @media (pointer: coarse) and (orientation: portrait) {
     .cabinet {

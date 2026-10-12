@@ -27,7 +27,7 @@ main.js
 
 `Game.update()` :
 
-1. `tick` et `modeTimer` avancent ; en démo, `DemoPilot.play()` simule les touches ;
+1. `GamepadControls.poll()` relit les manettes ; `tick` et `modeTimer` avancent ; en démo, `DemoPilot.play()` simule les touches ;
 2. `M` coupe/rétablit le son ;
 3. `modes[state.mode].update()` ;
 4. ambiance (`Ambience`) : chaos (sauf accueil/menu/chargement), puis étincelles, textes et pluie ;
@@ -61,6 +61,7 @@ main.js
 | | `GameState` | Tout l'état mutable de la partie (voir plus bas). |
 | `input/` | `Input` | Touches maintenues (`held`) et appuyées cette image (`pressed`), `axisX`/`axisY`, `interceptor` (la démo s'interrompt au premier appui). |
 | | `KeyboardControls` | Clavier et boutons de la borne (`data-key`). En duo, les pavés des joueurs (`DUO_KEYS`) vont à `game.pads[slot]`, traduits en touches du solo ; `game.inputOf(p)` donne les commandes d'un héros. |
+| | `GamepadControls` | Manettes (API Gamepad, disposition standard), relues à chaque image → touches du solo (`BUTTONS`). En duo, la n-ième manette va à `game.pads[n]` ; START et musique restent communs. Classe `has-gamepad` sur `<html>` : les commandes tactiles s'effacent. |
 | | `TouchStick` | Stick tactile ou dessiné → flèches. |
 | | `MobileGuard` | Pas de zoom ni de défilement ; plein écran et paysage au premier appui. |
 | `audio/` | `AudioEngine` | Contexte audio créé au premier geste, mixage, `play(nom)`, musique, sourdine. |

@@ -640,6 +640,13 @@ kbd {
     touch-action: auto;
   }
 }
+@media (pointer: coarse) {
+  .has-gamepad .touch-stick,
+  .has-gamepad .panel__buttons,
+  .has-gamepad .panel__system {
+    display: none;
+  }
+}
 @media (pointer: coarse) and (orientation: portrait) {
   .cabinet {
     visibility: hidden;

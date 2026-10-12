@@ -7,7 +7,7 @@ Un niveau par morceau, le morceau en musique de fond et un boss dédié à la fi
 
 ## Commandes
 
-Au clavier, ou sur mobile avec le stick et les boutons dessinés sur la borne (portrait ou paysage).
+Au clavier, à la manette, ou sur mobile avec le stick et les boutons dessinés sur la borne (en paysage).
 
 | Touche | Action |
 |---|---|
@@ -31,6 +31,8 @@ Au clavier, ou sur mobile avec le stick et les boutons dessinés sur la borne (p
 | coup de pied sauté | W | ! |
 | WALL OF DEATH | V + X | , + : |
 | start | Entrée | Entrée |
+
+**À la manette** (Xbox, PlayStation, MFi… ; noms des boutons Xbox) : stick gauche ou croix pour marcher, **A** katana, **B** coup de pied sauté, **X** vinyle, **Y** skate, **A + X** ou **RB** WALL OF DEATH, **Start** start, **Select** musique. À deux, la 1re manette est Pete, la 2e VigiBapt. Sur mobile, les commandes tactiles s'effacent quand une manette est utilisée.
 
 ## Comment c'est fait
 
