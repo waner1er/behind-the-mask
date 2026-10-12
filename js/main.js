@@ -15,6 +15,7 @@ const game = new Game(data);
 new KeyboardControls(game.input, game.pads, () => game.state.duo).bind();
 document.querySelectorAll('[data-joystick], [data-touch-stick]').forEach((pad) => new TouchStick(pad, game.input).bind());
 new MobileGuard().bind();
+game.pause.bind();
 game.audio.unlockOnGesture();
 
 // index.php?debug : le jeu est accessible dans la console (window.game)

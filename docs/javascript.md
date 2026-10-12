@@ -27,12 +27,11 @@ main.js
 
 `Game.update()` :
 
-1. `GamepadControls.poll()` relit les manettes ; `tick` et `modeTimer` avancent ; en démo, `DemoPilot.play()` simule les touches ;
-2. `M` coupe/rétablit le son ;
-3. `modes[state.mode].update()` ;
-4. ambiance (`Ambience`) : chaos (sauf accueil/menu/chargement), puis étincelles, textes et pluie ;
-5. `Campaign.updateScore()` : vie bonus tous les 10 000 points, meilleur score ;
-6. fin du message temporaire, panneau de commandes, `input.endFrame()`.
+1. `GamepadControls.poll()` relit les manettes ; `M` coupe/rétablit le son ; si la partie est en pause (`Pause.update()` : START en mode `playing`, ou onglet/app quitté), l'image s'arrête là ; sinon `tick` et `modeTimer` avancent ; en démo, `DemoPilot.play()` simule les touches ;
+2. `modes[state.mode].update()` ;
+3. ambiance (`Ambience`) : chaos (sauf accueil/menu/chargement), puis étincelles, textes et pluie ;
+4. `Campaign.updateScore()` : vie bonus tous les 10 000 points, meilleur score ;
+5. fin du message temporaire, panneau de commandes, `input.endFrame()`.
 
 `Renderer.draw()` : parallaxe du décor SVG (`Backdrop.scroll`), puis sur le canvas (avec la caméra) : otages, bonus, (data center de l'intro), caisses « ? », personnages triés par `y` avec leurs ombres, projectiles, explosions, (figurants de la fin), notes, étincelles, textes ; enfin la météo, le flash blanc et le HUD.
 
@@ -59,6 +58,7 @@ main.js
 | | `config.js` | Réglages : fenêtres d'attaque, skate, saut, vinyles, vies, démo… |
 | `core/` | `GameLoop` | Boucle à pas fixe. |
 | | `GameState` | Tout l'état mutable de la partie (voir plus bas). |
+| | `Pause` | START en pleine partie fige tout (jeu, son via `AudioEngine.setPaused`), écran assombri (`hud--paused`) ; pause automatique quand l'onglet ou l'app passe en arrière-plan. |
 | `input/` | `Input` | Touches maintenues (`held`) et appuyées cette image (`pressed`), `axisX`/`axisY`, `interceptor` (la démo s'interrompt au premier appui). |
 | | `KeyboardControls` | Clavier et boutons de la borne (`data-key`). En duo, les pavés des joueurs (`DUO_KEYS`) vont à `game.pads[slot]`, traduits en touches du solo ; `game.inputOf(p)` donne les commandes d'un héros. |
 | | `GamepadControls` | Manettes (API Gamepad, disposition standard), relues à chaque image → touches du solo (`BUTTONS`). En duo, la n-ième manette va à `game.pads[n]` ; START et musique restent communs. Classe `has-gamepad` sur `<html>` : les commandes tactiles s'effacent. |

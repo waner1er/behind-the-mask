@@ -364,6 +364,11 @@ body {
         color: $paper;
     }
 
+    &__pause {
+        font-size: 5cqw;
+        animation: blink 1s steps(1) infinite;
+    }
+
     &__warning {
         font-size: 5cqw;
         color: var(--accent, #{$red});
@@ -423,6 +428,11 @@ body {
         color: #fff;
         text-shadow: 0.3cqw 0.3cqw 0 #000, 0 0 1.5cqw var(--accent, #{$red});
     }
+}
+
+// --- pause : l'écran s'assombrit sous le HUD ----------------------------------
+.hud--paused {
+    background: rgba(0, 0, 0, 0.55);
 }
 
 // --- accueil et scènes animées : pas de score à l'écran ----------------------
