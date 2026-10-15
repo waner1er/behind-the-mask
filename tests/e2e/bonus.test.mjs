@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { openGame } from './harness.mjs';
 
-/** Après le boss de Beer Church : le niveau bonus, Pete ivre contre le conteneur à verre. */
+/** Beer Church : tout le niveau, c'est Pete ivre contre le conteneur à verre (façon Street Fighter II). */
 let game;
 before(async () => {
     game = await openGame();
@@ -14,11 +14,10 @@ const bonus = () => game.page.evaluate(() => {
     return { mode: state.mode, level: state.levelIndex, hp: state.bonus?.hp, drunk: state.players[0]?.drunk };
 });
 
-test('MISSION COMPLETE à Beer Church, puis le niveau bonus', async () => {
+test('Beer Church commence directement par la casse du conteneur', async () => {
     await game.page.evaluate(() => window.game.campaign.startLevel(3));
-    await game.run(260);
-    await game.page.evaluate(() => window.game.campaign.levelClear());
-    assert.ok(await game.until((s) => s.mode === 'bonus', 10 * 60), 'le niveau bonus démarre');
+    assert.ok(await game.until((s) => s.mode === 'bonus', 10 * 60), 'la casse démarre après le titre');
+    assert.equal(await game.page.evaluate(() => window.game.state.enemies.length), 0, 'pas de vagues');
     const start = await bonus();
     assert.equal(start.drunk, true, 'Pete est ivre');
     assert.ok(start.hp > 0);
@@ -35,7 +34,7 @@ test('un coup de katana entame le conteneur', async () => {
     assert.ok((await bonus()).hp < before.hp);
 });
 
-test('TIME OVER : on passe quand même au niveau suivant, dessoûlé', async () => {
+test('TIME OVER : MISSION COMPLETE quand même, puis le niveau 5, dessoûlé', async () => {
     await game.page.evaluate(() => { window.game.state.bonus.time = 1; });
     const next = await game.until((s) => s.mode === 'intro' && s.level === 4, 10 * 60);
     assert.ok(next, 'le niveau 5 démarre');

@@ -46,8 +46,8 @@ main.js
 | `intro` | `modes/IntroMode` | Titre du niveau et premières paroles. |
 | `playing` | `modes/PlayingMode` | La partie. |
 | `race` | `modes/RaceMode` | La descente en skate d'un niveau qui a une clé `race` (voir `race/`) ; à l'arrivée, passe à `playing` pour le boss. |
-| `clear` | `modes/ClearMode` | MISSION COMPLETE, puis le niveau bonus s'il y en a un, sinon le niveau suivant. |
-| `bonus` | `modes/BonusMode` | Le niveau bonus (voir `bonus/BonusStage`) : casser le conteneur avant la fin du chrono. |
+| `clear` | `modes/ClearMode` | MISSION COMPLETE, puis niveau suivant. |
+| `bonus` | `modes/BonusMode` | Un niveau de casse (clé `bonus`, Beer Church), lancé à la fin du titre au lieu de `playing` (voir `bonus/BonusStage`) : casser le conteneur avant la fin du chrono. |
 | `gameover` | `modes/GameOverMode` | START recommence le niveau. |
 
 `modes/Campaign` enchaîne la partie : `playIntro()`, `startLevel(n)`, `levelClear()`, `nextLevel()`, `respawn()`, `updateScore()`.
@@ -84,7 +84,7 @@ main.js
 | | `EnemyAI` | File d'attaque, approche, ruée, lancer. |
 | | `BossAI` | Attaques spéciales : `charge`, `throw`, `teleport`, `summon`. |
 | | `DemoPilot`, `RacePilot` | Le « cerveau » de Pete en mode démo ; pendant la descente : il pousse, frappe, saute les obstacles, ramasse les bonus. |
-| `bonus/` | `BonusStage` | Le niveau bonus (`game.bonus`) : conteneur au milieu de l'écran (barre de vie de boss, collision), chrono, coups (via `Combat.heroHits`), éclats de verre, prime ou TIME OVER, puis niveau suivant. `state.bonus` = le niveau bonus en cours, sinon `null`. Les héros y sont ivres (`p.drunk` : `PlayerController` les fait tanguer et hoqueter, `FighterPainter` les penche). |
+| `bonus/` | `BonusStage` | Le niveau de casse (`game.bonus`) : conteneur au milieu de l'écran (barre de vie de boss, collision), chrono, coups (via `Combat.heroHits`), éclats de verre, prime ou TIME OVER, puis MISSION COMPLETE. `state.bonus` = la casse en cours, sinon `null`. Les héros y sont ivres (`p.drunk` : `PlayerController` les fait tanguer et hoqueter, `FighterPainter` les penche). |
 | `race/` | `Race` | La descente en skate (`game.race`) : démarrage, vitesse commune (HAUT/BAS, virages qui déportent), ennemis qui débarquent aux segments prévus, arrivée au skatepark puis retour en vue de côté pour le boss. `state.race` = la course en cours, sinon `null`. |
 | | `Road` | La route découpée en segments (virage, altitude) à partir des sections du niveau, avec le bord de la route et les obstacles. |
 | | `SkaterController` | Les héros sur leur planche (`game.skater`) : se faufiler, katana, ollie, poussée, vinyle, Wall of Death. |

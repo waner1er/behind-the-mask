@@ -53,7 +53,7 @@ export class Combat {
         }
         if (state.bonus && !p.hits.has(state.bonus) && this.game.bonus.inReach(p, minReach, maxReach)) {
             p.hits.add(state.bonus);
-            this.game.bonus.hit(p, damage);
+            this.game.bonus.hit(p);
         }
         for (const box of state.boxes) {
             if (box.hp > 0 && !p.hits.has(box) && inReach(box.x) && Math.abs(box.y - p.y) < 12) {

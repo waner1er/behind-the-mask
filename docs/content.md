@@ -78,16 +78,16 @@ Un niveau peut aussi être **plus long** et décrire ses vagues une à une (c'es
 
 `special` = `static` : l'écran grésille puis lâche une onde de neige en anneau qui étourdit le héros qu'elle traverse (on l'esquive en sautant ou en s'éloignant ; réglages `STATIC` dans `js/config.js`). `components` : il crache trois composants électroniques en éventail, qui explosent en retombant avec un « PLING! » (`COMPONENTS`). L'entrée par la porte se règle avec `DOOR`.
 
-### Un niveau bonus (*Beer Church*)
+### Un niveau de casse (*Beer Church*)
 
-Avec une clé `bonus`, le niveau se termine (après le boss et MISSION COMPLETE) par un **niveau bonus** façon voiture de *Street Fighter II* : Pete, ivre, titube et a un temps limité pour démolir un gros conteneur à verre. S'il y arrive, il touche la prime plus 100 points par seconde restante ; sinon TIME OVER, sans pénalité. Puis niveau suivant.
+Avec une clé `bonus`, **tout le niveau** est une casse façon voiture de *Street Fighter II* (pas de vagues ni de boss) : Pete, ivre, titube et a un temps limité pour démolir un gros conteneur à verre. S'il y arrive, il touche la prime plus 100 points par seconde restante ; sinon TIME OVER, sans pénalité. Puis MISSION COMPLETE et niveau suivant. Le `boss` du niveau reste dans la config : seule la borne OpenBOR, qui garde Beer Church en vue de côté, s'en sert.
 
 ```php
 'bonus' => [
-    'title' => 'BONUS STAGE',
+    'title' => 'HAPPY HOUR!',
     'target' => 'BOTTLE BANK',          // nom affiché (barre de vie et consigne)
-    'hp' => 36,                         // coups à encaisser (le katana fait 1, les armes plus)
-    'time' => 40,                       // secondes
+    'hp' => 240,                        // coups à encaisser (chaque coup enlève 1, quelle que soit l'attaque)
+    'time' => 100,                      // secondes : à peu près la durée du morceau
     'score' => 10000,                   // prime si le conteneur est détruit
     'line' => 'HIC! MORE AND MORE...',  // la réplique de Pete
 ],

@@ -1,9 +1,9 @@
 import { pad, pick, rand } from '../util/math.js';
 
 /**
- * Le niveau bonus d'un niveau qui a une clé « bonus » (config/levels.php), comme la voiture de
- * Street Fighter II : après le boss, les héros (ivres, à Beer Church) ont un temps limité pour
- * démolir le conteneur à verre. Prime s'ils y arrivent, puis niveau suivant.
+ * Un niveau de casse (clé « bonus » de config/levels.php), comme la voiture de Street Fighter II :
+ * à Beer Church, tout le niveau, c'est ça. Les héros (ivres) ont un temps limité pour démolir
+ * le conteneur à verre. Prime s'ils y arrivent, puis MISSION COMPLETE et niveau suivant.
  *
  * state.bonus : { cfg, x, y, hp, maxHp, time (images restantes), shake, over (images depuis la fin), won }
  */
@@ -62,10 +62,14 @@ export class BonusStage {
         return reach >= minReach - 14 && reach <= maxReach + 6 && Math.abs(bonus.y - p.y) < 14;
     }
 
-    /** Un coup dans le conteneur : il tremble, perd du verre, et finit en miettes. */
-    hit(p, damage) {
+    /**
+     * Un coup dans le conteneur : il tremble, perd du verre, et finit en miettes.
+     * Il encaisse : chaque coup ne lui enlève qu'un point, quelle que soit l'attaque (il doit durer tout le morceau).
+     */
+    hit(p) {
         const { game, state } = this;
         const bonus = state.bonus;
+        const damage = 1;
         bonus.hp = Math.max(0, bonus.hp - damage);
         bonus.shake = 8;
         state.score += 100 * damage;
@@ -119,11 +123,11 @@ export class BonusStage {
         }
     }
 
-    /** Les héros dessoûlent, place au niveau suivant. */
+    /** Les héros dessoûlent : MISSION COMPLETE. */
     #leave() {
         const { game, state } = this;
         for (const p of state.players) p.drunk = false;
         state.bonus = null;
-        game.campaign.nextLevel();
+        game.campaign.levelClear();
     }
 }

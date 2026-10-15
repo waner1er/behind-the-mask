@@ -10,7 +10,8 @@ export class IntroMode extends Mode {
         const skipped = state.modeTimer > 30 && input.wasPressed('Enter', 'Space');
         if (state.modeTimer > IntroMode.DURATION || skipped) {
             game.hud.message('', 0);
-            game.setMode(state.race ? 'race' : 'playing');
+            if (state.level.bonus) game.bonus.start(); // Beer Church : tout le niveau, c'est la casse du conteneur
+            else game.setMode(state.race ? 'race' : 'playing');
         }
     }
 }
