@@ -162,6 +162,14 @@ return [
             'time' => 100,
             'score' => 10000,
             'line' => 'HIC! MORE AND MORE...',
+            // des ennemis débarquent toutes les « every » secondes pour embêter Pete (au plus « max » debout) :
+            // d'abord « first » (le flic et le CRS, qui le repoussent loin du conteneur), puis tirés dans « pool »
+            'hecklers' => [
+                'every' => 9,
+                'max' => 3,
+                'first' => ['cop', 'riot'],
+                'pool' => ['hooligan', 'skinhead', 'batter', 'cop', 'riot'],
+            ],
         ],
         'boss' => [
             'scale' => 2,

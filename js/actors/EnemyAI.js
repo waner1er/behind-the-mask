@@ -154,7 +154,10 @@ export class EnemyAI {
             const reach = (p.x - e.x) * e.dir;
             if (reach > 2 && reach < (e.cfg.reach ?? 26) * e.scale && Math.abs(p.y - e.y) < 6 + e.scale * 2) {
                 const damage = this.damage(e) * (e.combo === 'first' ? COMBO.firstHit : 1);
-                e.landed = this.game.combat.damagePlayer(p, Math.round(damage), e.x);
+                // le flic et le CRS ne frappent pas pour faire mal : ils repoussent (cfg.shove)
+                e.landed = e.cfg.shove
+                    ? this.game.combat.shovePlayer(p, e.x, e.cfg.shove, Math.round(damage))
+                    : this.game.combat.damagePlayer(p, Math.round(damage), e.x);
                 // le premier coup du combo ne protège presque pas : le second peut suivre
                 if (e.landed && e.combo === 'first') p.invuln = Math.min(p.invuln, 10);
             }

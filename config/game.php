@@ -83,6 +83,27 @@ return [
             'moves' => ['strike' => 2, 'lunge' => 2, 'throw' => 1],
             'throws' => 'knife',
         ],
+        // shove = force de la poussée : leur coup repousse le héros (Beer Church : loin du conteneur)
+        'cop' => [
+            'name' => 'COP',
+            'hp' => 5,
+            'speed' => 0.75,
+            'damage' => 7,
+            'reach' => 34,
+            'score' => 200,
+            'moves' => ['strike' => 3, 'lunge' => 1],
+            'shove' => 6,
+        ],
+        'riot' => [
+            'name' => 'RIOT COP',
+            'hp' => 9,
+            'speed' => 0.5,
+            'damage' => 9,
+            'reach' => 32,
+            'score' => 300,
+            'moves' => ['strike' => 3],
+            'shove' => 10,
+        ],
         'gymbro' => [
             'name' => 'GYM BRO',
             'hp' => 9,

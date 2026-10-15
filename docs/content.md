@@ -90,10 +90,15 @@ Avec une clé `bonus`, **tout le niveau** est une casse façon voiture de *Stree
     'time' => 100,                      // secondes : à peu près la durée du morceau
     'score' => 10000,                   // prime si le conteneur est détruit
     'line' => 'HIC! MORE AND MORE...',  // la réplique de Pete
+    'hecklers' => ['every' => 9, 'max' => 3, 'first' => ['cop', 'riot'], 'pool' => ['hooligan', 'skinhead', 'batter', 'cop', 'riot']],
 ],
 ```
 
-L'ivresse (roulis, hoquets « HIC! » qui le déportent, inclinaison) se règle avec `DRUNK` dans `js/config.js`. Le sprite du conteneur et ses quatre états d'usure sont dessinés par `Sprite\BottleBank`. Les textes affichés en jeu restent en anglais.
+Le conteneur se casse au fil des coups (neuf états d'usure dessinés par `Sprite\BottleBank` : fissures, trous qui montrent les bouteilles, bord arraché, puis il n'en reste que le bas) ; chaque coup projette des éclats de verre, et parfois une bouteille entière qui éclate en retombant.
+
+Des ennemis viennent embêter Pete pendant la casse (`hecklers` : `every` = secondes entre deux arrivées, `max` = ennemis debout au plus, `first` = le premier groupe, `pool` = la suite, tirée au sort). Le **flic** (`cop`) et le **CRS** (`riot`) ont un réglage `shove` dans `config/game.php` : leur coup repousse le héros (loin du conteneur) plutôt que de faire mal.
+
+L'ivresse (roulis, hoquets « HIC! » qui le déportent, inclinaison) se règle avec `DRUNK` dans `js/config.js`. Les textes affichés en jeu restent en anglais.
 
 ### Une descente en skate (*Skate is a Drug*)
 

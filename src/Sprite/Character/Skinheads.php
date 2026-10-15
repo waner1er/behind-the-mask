@@ -76,4 +76,15 @@ final class Skinheads
     {
         return new Layer(self::BEANIE, 0, 4);
     }
+
+    /** Casquette de flic : bandeau sombre, insigne doré, visière noire (couleurs U, D, X du skinhead). */
+    public static function policeCap(): Layer
+    {
+        return new Layer([
+            '............UUUUUU',
+            '..........UUUUUUUUUU',
+            '..........UUUUUXUUUUU',
+            '..........DDDDDDDDDDDDDD',
+        ], 0, 4);
+    }
 }

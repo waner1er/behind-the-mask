@@ -98,6 +98,7 @@ tools/build-ios.php ─► SiteBundleBuilder::build()   → ios/www/ (app iOS)
 | `Boss\BossDesign` | Classe abstraite d'un boss : `palette()`, `head()`, `torso()` + options (`armColors()`, `weapon()`, `back()`, `over()`, `front()`). |
 | `Boss\Manager` … `Boss\Mask` | Un boss par morceau. `Boss\Nightmare` réutilise le sprite du héros avec une autre palette. |
 | `Boss\BossRoster` | Les boss indexés par leur identifiant de sprite (`config/levels.php` → `boss.sprite`). |
+| `Boss\Cop` | Le CRS (casque, bouclier, matraque) : un `BossDesign`, mais utilisé comme ennemi ordinaire (`riot` dans `EnemyRoster`). |
 | `Boss\Bonebreaker` | Le boss de *Skate is a Drug* : tête de mort sous la capuche, chaîne ; toutes ses images sont posées sur un skate (`skate` = sa charge). |
 | `Race\RearLook`, `RearBuilder`, `RearPose` | Les pilotes de la descente **vus de dos** : interface (engin, corps, bras selon la pose), animations `ride`, `attack` (élan, coup vers la droite ; le JS retourne l'image), `hurt`. |
 | `Race\PeteRear`, `BaptRear`, `SkaterParts` | Les héros en skate (katana, guitare) et leurs pièces communes. |

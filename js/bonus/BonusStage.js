@@ -28,6 +28,7 @@ export class BonusStage {
         state.bonus = {
             cfg: { ...cfg, name: cfg.target }, state: 'idle', x: state.cam + Math.round(width * 0.66), y,
             hp: cfg.hp, maxHp: cfg.hp, time: cfg.time * 60, shake: 0, over: 0, won: false,
+            bottles: [], nextHeckler: 6 * 60,
         };
         Object.assign(state, { enemies: [], projectiles: [], pickups: [], pows: [], boxes: [], boss: state.bonus, locked: true });
         state.players.forEach((p) => {
@@ -46,12 +47,52 @@ export class BonusStage {
         const { state } = this;
         const bonus = state.bonus;
         bonus.shake = Math.max(0, bonus.shake - 1);
+        this.#flyingBottles();
         if (bonus.hp > 0) state.players.forEach((p) => this.#block(p));
         if (bonus.over) {
             if (++bonus.over > BonusStage.OUTRO) this.#leave();
             return;
         }
+        this.#hecklers();
         if (--bonus.time <= 0) this.#end(false);
+    }
+
+    /** Des ennemis débarquent par les bords pour embêter Pete (config : hecklers). */
+    #hecklers() {
+        const { game, state } = this;
+        const bonus = state.bonus;
+        const { every, max, first = [], pool } = bonus.cfg.hecklers;
+        if (--bonus.nextHeckler > 0) return;
+        bonus.nextHeckler = every * 60;
+        const standing = state.enemies.filter((e) => !e.isDown).length;
+        const { floor, width } = game.data;
+        // la première fois, ceux de « first » (un de chaque côté), ensuite au hasard
+        const group = bonus.firstDone ? [pick(pool), pick(pool)] : first;
+        bonus.firstDone = true;
+        group.slice(0, Math.max(0, max - standing)).forEach((type, i) => {
+            const fromRight = i % 2 === 0;
+            const enemy = game.spawn(type, fromRight ? state.cam + width + 16 : state.cam - 16, rand(floor.min, floor.max));
+            enemy.dir = fromRight ? -1 : 1;
+            state.enemies.push(enemy);
+        });
+    }
+
+    /** Les bouteilles éjectées tournoient, retombent et éclatent en morceaux. */
+    #flyingBottles() {
+        const { game, state } = this;
+        const bonus = state.bonus;
+        for (const bottle of bonus.bottles) {
+            bottle.t++;
+            bottle.x += bottle.vx;
+            bottle.y += bottle.vy;
+            bottle.z += bottle.vz;
+            bottle.vz -= 0.2;
+            if (bottle.z > 0) continue;
+            bottle.broken = true;
+            this.#shards(bottle.x, bottle.y, 8, 1.2);
+            game.sfx('glass');
+        }
+        bonus.bottles = bonus.bottles.filter((bottle) => !bottle.broken);
     }
 
     /** Le conteneur est-il à portée d'un coup du héros ? */
@@ -75,7 +116,14 @@ export class BonusStage {
         state.score += 100 * damage;
         state.shake = 2;
         state.sparks.push({ x: bonus.x - p.dir * 14, y: bonus.y - rand(10, 34), t: 0 });
-        this.#shards(bonus.x - p.dir * 12, 6 + damage * 3);
+        this.#shards(bonus.x - p.dir * 16, bonus.y, 14, 1);
+        // de temps en temps, une bouteille entière jaillit du conteneur
+        if (Math.random() < 0.3) {
+            bonus.bottles.push({
+                x: bonus.x + rand(-10, 10), y: bonus.y + rand(-2, 4), z: rand(30, 44),
+                vx: rand(-3.2, 3.2), vy: rand(-0.6, 0.8), vz: rand(2, 4), t: 0, sprite: pick(['bottle', 'beer']),
+            });
+        }
         game.sfx('glass');
         game.haptics.pulse('hit', p);
         if (bonus.hp === 0) this.#end(true);
@@ -95,6 +143,8 @@ export class BonusStage {
         bonus.over = 1;
         bonus.won = won;
         state.boss = null;
+        // la fête est finie : les gêneurs détalent K.O.
+        for (const e of state.enemies) if (!e.isDown) game.combat.killEnemy(e, e.x < bonus.x ? -1 : 1);
         if (!won) {
             game.hud.message(`TIME OVER<br><br><span class="hud__small">BONUS ${pad(0)}</span>`, BonusStage.OUTRO);
             game.sfx('empty');
@@ -104,21 +154,23 @@ export class BonusStage {
         state.score += prize;
         state.flash = 10;
         state.shake = 8;
-        this.#shards(bonus.x, 60);
+        this.#shards(bonus.x, bonus.y, 90, 1.6);
+        for (let i = 0; i < 8; i++) {
+            bonus.bottles.push({ x: bonus.x + rand(-16, 16), y: bonus.y, z: rand(20, 50), vx: rand(-4, 4), vy: rand(-0.8, 0.8), vz: rand(2, 5), t: 0, sprite: pick(['bottle', 'beer']) });
+        }
         game.sfx('explosion');
         game.sfx('clear');
         game.hud.message(`<span class="hud__warning">PERFECT!</span><br><br><span class="hud__small">BONUS ${pad(prize)}</span>`, BonusStage.OUTRO);
     }
 
-    /** Éclats de verre vert et blanc, et quelques bouteilles qui volent. */
-    #shards(x, count) {
+    /** Éclats de verre vert, brun et blanc projetés tout autour (force = jusqu'où ils volent). */
+    #shards(x, y, count, force) {
         const { state } = this;
-        const bonus = state.bonus;
         for (let i = 0; i < count; i++) {
             state.debris.push({
-                x: x + rand(-14, 14), y: bonus.y + rand(0, 6), z: rand(6, 40),
-                vx: rand(-2.6, 2.6), vy: rand(-0.4, 1.2), vz: rand(0.6, 3.2),
-                size: pick([1, 1, 2, 2, 3]), color: pick(['#3f8a3a', '#a8e0a0', '#f4f4f4', '#7a8a40', '#c08a1a']), t: 0,
+                x: x + rand(-12, 12), y: y + rand(-4, 6), z: rand(6, 44),
+                vx: rand(-4, 4) * force, vy: rand(-1, 1.4) * force, vz: rand(0.8, 4.5) * force,
+                size: pick([1, 1, 1, 2, 2, 3]), color: pick(['#3f8a3a', '#a8e0a0', '#f4f4f4', '#7a8a40', '#c08a1a', '#8a6538']), t: 0,
             });
         }
     }

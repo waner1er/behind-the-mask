@@ -76,11 +76,22 @@ export class Renderer {
     #bottleBank() {
         const { bonus } = this.state;
         if (!bonus) return;
-        const stage = bonus.hp <= 0 ? 3 : Math.min(2, Math.floor((1 - bonus.hp / bonus.maxHp) * 3));
+        const last = this.#bottleBankStages() - 1;
+        const stage = bonus.hp <= 0 ? last : Math.min(last - 1, Math.floor((1 - bonus.hp / bonus.maxHp) * last));
         const image = this.sprites.items[`bottlebank${stage}`];
         const wobble = bonus.shake > 0 ? Math.round(rand(-2, 2)) : 0;
         this.brush.shadow(bonus.x, bonus.y, 20);
         this.ctx.drawImage(image, Math.round(bonus.x - image.width / 2) + wobble, Math.round(bonus.y - image.height + 1));
+        for (const bottle of bonus.bottles) {
+            this.brush.shadow(bottle.x, bottle.y, 3);
+            this.brush.spinning(this.sprites.items[bottle.sprite], bottle.x, bottle.y - bottle.z, bottle.t * 0.5);
+        }
+    }
+
+    /** Nombre d'états d'usure du conteneur (bottlebank0, bottlebank1...) envoyés par PHP. */
+    #bottleBankStages() {
+        this.bottleBankStages ??= Object.keys(this.sprites.items).filter((name) => name.startsWith('bottlebank')).length;
+        return this.bottleBankStages;
     }
 
     /** Le chrono du niveau bonus, en haut au milieu ; il clignote en rouge les 10 dernières secondes. */

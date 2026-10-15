@@ -7,6 +7,8 @@ const VOICES = {
     masculinist: { pitch: 150, vowel: 'o' },
     knifer: { pitch: 280, vowel: 'e' },
     gymbro: { pitch: 110, vowel: 'u' },
+    cop: { pitch: 170, vowel: 'e' },
+    riot: { pitch: 130, vowel: 'o' },
 };
 
 const arpeggio = (s, notes, { duration, step, volume = 0.12, offset = 0 }) => notes.forEach(

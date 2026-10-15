@@ -1,10 +1,12 @@
-import { Mode } from './Mode.js';
+import { PlayingMode } from './PlayingMode.js';
 
-/** Le niveau bonus (voir js/bonus/BonusStage.js) : les héros frappent le conteneur, le chrono tourne. */
-export class BonusMode extends Mode {
+/**
+ * Un niveau de casse (voir js/bonus/BonusStage.js) : la partie tourne comme d'habitude
+ * (héros, ennemis qui viennent embêter, projectiles, bonus), plus le conteneur et le chrono.
+ */
+export class BonusMode extends PlayingMode {
     update() {
-        const { game, state } = this;
-        state.players.forEach((p) => game.player.update(p));
-        game.bonus.update();
+        super.update();
+        this.game.bonus.update();
     }
 }

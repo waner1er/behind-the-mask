@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vigilante\Sprite\Character;
 
+use Vigilante\Sprite\Boss\Cop;
 use Vigilante\Sprite\Weapon\WeaponCatalog;
 
 /**
@@ -32,6 +33,14 @@ final class EnemyRoster
                 ['C' => '#ececf2', 'c' => '#a8a8b8', 'Q' => '#b0202a', 'I' => '#e04050'],
                 WeaponCatalog::get('knife'),
             ),
+            // le flic et le CRS (Beer Church) : ils repoussent Pete loin du conteneur
+            'cop' => Skinheads::look(
+                ['C' => '#2a3a6a', 'c' => '#1a2648', 'R' => '#2a3a6a', 'z' => '#ffd23f', 'D' => '#101014', 'U' => '#1a2648',
+                    'A' => '#1a2648', 'a' => '#121a34', 'v' => '#0c1224', 'O' => '#101014', 'o' => '#2a2a34', 'q' => '#050506', 'X' => '#ffd23f'],
+                WeaponCatalog::get('baton'),
+                [Skinheads::policeCap()],
+            ),
+            'riot' => (new Cop())->look(),
             'gymbro' => Masculinists::look(
                 ['S' => '#c8804e', 's' => '#93562e', 'C' => '#1c1c24', 'c' => '#101016', 'A' => '#3a1a5a', 'a' => '#28103e'],
                 WeaponCatalog::get('dumbbell'),

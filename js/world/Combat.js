@@ -121,16 +121,20 @@ export class Combat {
         return true;
     }
 
-    /** Repousse le héros loin de fromX (garde d'un boss) : il encaisse un peu et recule en titubant. */
+    /**
+     * Repousse le héros loin de fromX (garde d'un boss, flic, CRS) : il encaisse un peu et recule en titubant.
+     * Renvoie false s'il esquive (en l'air, au tapis).
+     */
     shovePlayer(p, fromX, force, damage) {
-        if (p.isDown || p.z > 10) return; // un saut passe au-dessus
+        if (p.isDown || p.z > 10) return false; // un saut passe au-dessus
         this.damagePlayer(p, damage, fromX);
-        if (p.isDown) return;
+        if (p.isDown) return true;
         const dir = p.x > fromX ? 1 : -1;
         p.setState('hurt');
         p.t = 0;
         p.dir = -dir;
         p.vx = dir * force;
+        return true;
     }
 
     /** L'arme de l'ennemi lui échappe ; sinon une bière ou des vinyles, et un cœur tous les 10 K.O. */
