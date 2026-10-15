@@ -28,7 +28,7 @@ export class BonusStage {
         state.bonus = {
             cfg: { ...cfg, name: cfg.target }, state: 'idle', x: state.cam + Math.round(width * 0.66), y,
             hp: cfg.hp, maxHp: cfg.hp, time: cfg.time * 60, shake: 0, over: 0, won: false,
-            bottles: [], nextHeckler: 6 * 60,
+            bottles: [], chips: [], nextHeckler: 6 * 60,
         };
         Object.assign(state, { enemies: [], projectiles: [], pickups: [], pows: [], boxes: [], boss: state.bonus, locked: true });
         state.players.forEach((p) => {
@@ -116,6 +116,13 @@ export class BonusStage {
         state.score += 100 * damage;
         state.shake = 2;
         state.sparks.push({ x: bonus.x - p.dir * 14, y: bonus.y - rand(10, 34), t: 0 });
+        // chaque coup laisse sa marque (éclat, fissure), du côté où il frappe : on le voit s'abîmer coup après coup
+        for (let i = 0; i < 3; i++) {
+            bonus.chips.push({
+                x: Math.round(-p.dir * rand(-10, 25)), y: Math.round(rand(-52, -6)),
+                length: Math.round(rand(3, 6)), slope: pick([-1, 1]),
+            });
+        }
         this.#shards(bonus.x - p.dir * 16, bonus.y, 14, 1);
         // de temps en temps, une bouteille entière jaillit du conteneur
         if (Math.random() < 0.3) {

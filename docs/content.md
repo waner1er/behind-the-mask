@@ -86,7 +86,7 @@ Avec une clé `bonus`, **tout le niveau** est une casse façon voiture de *Stree
 'bonus' => [
     'title' => 'HAPPY HOUR!',
     'target' => 'BOTTLE BANK',          // nom affiché (barre de vie et consigne)
-    'hp' => 240,                        // coups à encaisser (chaque coup enlève 1, quelle que soit l'attaque)
+    'hp' => 160,                        // coups à encaisser (chaque coup enlève 1, quelle que soit l'attaque)
     'time' => 100,                      // secondes : à peu près la durée du morceau
     'score' => 10000,                   // prime si le conteneur est détruit
     'line' => 'HIC! MORE AND MORE...',  // la réplique de Pete

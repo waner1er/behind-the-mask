@@ -36,7 +36,10 @@ test('un coup de katana entame le conteneur', async () => {
 
 test('TIME OVER : MISSION COMPLETE quand même, puis le niveau 5, dessoûlé', async () => {
     await game.page.evaluate(() => { window.game.state.bonus.time = 1; });
-    const next = await game.until((s) => s.mode === 'intro' && s.level === 4, 10 * 60);
+    assert.ok(await game.until((s) => s.mode === 'loading', 15 * 60), 'MISSION COMPLETE, puis chargement du niveau 5');
+    // le décor du niveau 5 se télécharge en temps réel (plus lent sur le serveur d'intégration)
+    await game.page.waitForFunction(() => window.game.state.mode !== 'loading', null, { timeout: 60000, polling: 100 });
+    const next = await game.until((s) => s.mode === 'intro' && s.level === 4, 2 * 60);
     assert.ok(next, 'le niveau 5 démarre');
     assert.equal((await bonus()).drunk, false);
     assert.deepEqual(game.errors, []);

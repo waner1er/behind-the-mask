@@ -81,11 +81,39 @@ export class Renderer {
         const image = this.sprites.items[`bottlebank${stage}`];
         const wobble = bonus.shake > 0 ? Math.round(rand(-2, 2)) : 0;
         this.brush.shadow(bonus.x, bonus.y, 20);
-        this.ctx.drawImage(image, Math.round(bonus.x - image.width / 2) + wobble, Math.round(bonus.y - image.height + 1));
+        const left = Math.round(bonus.x - image.width / 2) + wobble;
+        const top = Math.round(bonus.y - image.height + 1);
+        this.ctx.drawImage(image, left, top);
+        // les marques des coups, seulement là où il reste de la paroi
+        const solid = this.#opaque(image);
+        for (const chip of bonus.chips) {
+            // une fissure en biais, avec un reflet de verre clair juste au-dessus
+            for (let i = 0; i < chip.length; i++) {
+                const x = Math.round(bonus.x + chip.x) + wobble + i;
+                const y = Math.round(bonus.y + chip.y) + Math.round(i * chip.slope * 0.7);
+                if (!solid(x - left, y - top)) continue;
+                this.ctx.fillStyle = '#120a18';
+                this.ctx.fillRect(x, y, 1, 1);
+                if (i % 2 === 0 && solid(x - left, y - top - 1)) {
+                    this.ctx.fillStyle = '#a8e0a0';
+                    this.ctx.fillRect(x, y - 1, 1, 1);
+                }
+            }
+        }
         for (const bottle of bonus.bottles) {
             this.brush.shadow(bottle.x, bottle.y, 3);
             this.brush.spinning(this.sprites.items[bottle.sprite], bottle.x, bottle.y - bottle.z, bottle.t * 0.5);
         }
+    }
+
+    /** Les pixels pleins d'une image (lus une fois par image, puis gardés en cache). */
+    #opaque(image) {
+        this.opacity ??= new Map();
+        if (!this.opacity.has(image)) {
+            const { data, width, height } = image.getContext('2d').getImageData(0, 0, image.width, image.height);
+            this.opacity.set(image, (x, y) => x >= 0 && y >= 0 && x < width && y < height && data[(y * width + x) * 4 + 3] > 0);
+        }
+        return this.opacity.get(image);
     }
 
     /** Nombre d'états d'usure du conteneur (bottlebank0, bottlebank1...) envoyés par PHP. */

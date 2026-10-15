@@ -157,8 +157,8 @@ return [
         'bonus' => [
             'title' => 'HAPPY HOUR!',
             'target' => 'BOTTLE BANK',
-            // costaud : on le casse vers la fin du morceau (1 h 45), même en tapant sans arrêt
-            'hp' => 240,
+            // costaud : il faut une bonne partie du morceau (1 min 45) pour en venir à bout
+            'hp' => 160,
             'time' => 100,
             'score' => 10000,
             'line' => 'HIC! MORE AND MORE...',
