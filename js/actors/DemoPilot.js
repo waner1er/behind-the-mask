@@ -40,6 +40,12 @@ export class DemoPilot {
             this.racer.play(p);
             return;
         }
+        if (state.mode === 'bonus' && p && state.bonus?.hp > 0 && !['dead', 'hurt'].includes(p.state)) {
+            // niveau bonus : se placer à gauche du conteneur et cogner
+            const { x, y } = state.bonus;
+            this.#steer(p, { x: x - 36, y, face: x, scale: 1.6, strike: true }, 1);
+            return;
+        }
         if (state.mode !== 'playing' || !p || ['dead', 'hurt'].includes(p.state)) return;
 
         // les ennemis juste hors champ comptent aussi : Pete se place au bord et frappe

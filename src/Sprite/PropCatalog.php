@@ -188,7 +188,7 @@ final class PropCatalog implements JsonSerializable
     {
         return $this->grids ??= array_map(
             fn(array $rows) => Compositor::compose(max(array_map('strlen', $rows)), count($rows), [new Layer($rows)]),
-            self::SPRITES,
+            self::SPRITES + BottleBank::stages(),
         );
     }
 

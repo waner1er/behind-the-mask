@@ -51,6 +51,10 @@ export class Combat {
         for (const pow of state.pows) {
             if (!pow.freed && inReach(pow.x) && Math.abs(pow.y - p.y) < 10) this.game.hostages.free(pow);
         }
+        if (state.bonus && !p.hits.has(state.bonus) && this.game.bonus.inReach(p, minReach, maxReach)) {
+            p.hits.add(state.bonus);
+            this.game.bonus.hit(p, damage);
+        }
         for (const box of state.boxes) {
             if (box.hp > 0 && !p.hits.has(box) && inReach(box.x) && Math.abs(box.y - p.y) < 12) {
                 p.hits.add(box);

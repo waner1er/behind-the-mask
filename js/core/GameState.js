@@ -4,7 +4,7 @@ import { rand } from '../util/math.js';
 /**
  * Tout l'état mutable de la partie, partagé par les systèmes du jeu.
  *
- * mode : title | select | story | loading | intro | playing | race | clear | gameover
+ * mode : title | select | story | loading | intro | playing | race | clear | bonus | gameover
  */
 export class GameState {
     constructor(data, hiscore) {
@@ -25,6 +25,8 @@ export class GameState {
         this.waveIndex = 0;
         /** La descente en skate en cours (voir js/race/Race.js), sinon null. */
         this.race = null;
+        /** Le niveau bonus en cours (voir js/bonus/BonusStage.js), sinon null. */
+        this.bonus = null;
         // vague en cours : renforts déjà arrivés ? attaquants en tenaille ?
         this.reinforced = false;
         this.pincer = false;

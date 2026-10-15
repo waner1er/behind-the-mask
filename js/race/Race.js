@@ -124,7 +124,7 @@ export class Race {
         const { race } = state;
         if (!race.finishing && this.playerZ >= race.road.finishZ) {
             race.finishing = 1;
-            game.hud.message(`SKATEPARK!<br><br><span class="hud__small">${state.level.boss.name} T'ATTEND</span>`, RACE.finishTime);
+            game.hud.message(`SKATEPARK!<br><br><span class="hud__small">${state.level.boss.name} IS WAITING</span>`, RACE.finishTime);
             game.sfx('clear');
         }
         if (race.finishing && ++race.finishing > RACE.finishTime) this.#enterArena();

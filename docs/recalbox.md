@@ -51,6 +51,7 @@ Recalbox transmet lui-même à OpenBOR le stick et les boutons de chaque joueur 
 - Pas de **prise en tenaille** (`pincer`) : l'IA du moteur place ses attaquants elle-même.
 - La **garde** du Manager : la douleur compte les coups (`guard()` dans `special.c`) et lance la poussée (`follow1`) ; contrairement au web, un coup placé pendant son élan peut encore l'interrompre.
 - La télé entre par la droite (pas de porte défoncée) et ne lance qu'**un** composant explosif par salve (le moteur n'a qu'un projectile par animation), sans « PLING! ».
+- Pas de **niveau bonus** après Beer Church (le conteneur à verre) : on passe directement au niveau suivant.
 - **Skate is a Drug** n'a pas sa descente en skate vue de dos (OpenBOR ne sait pas dessiner une route en perspective) : le niveau reste une rue en vue de côté, avec ses vagues tirées au sort, et Bonebreaker au bout.
 - La **neige télé** n'est pas dessinée : c'est une zone de coup qui s'élargit au ras du sol (un saut l'évite) et renverse le héros.
 

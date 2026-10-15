@@ -1,4 +1,4 @@
-import { GUARD } from '../config.js';
+import { DRUNK, GUARD } from '../config.js';
 
 /** Dessine les personnages : choisit l'image de l'animation selon leur état. */
 export class FighterPainter {
@@ -23,6 +23,8 @@ export class FighterPainter {
             const fall = Math.min(1, f.t / 16); // tombe à la renverse
             ctx.translate(0, -6 * fall);
             ctx.rotate(-fall * Math.PI / 2);
+        } else if (f.drunk) {
+            ctx.rotate(Math.sin(f.anim / 19) * DRUNK.tilt); // il tangue, les pieds plantés
         }
         ctx.drawImage(image, -this.sprites.anchor.x, -this.sprites.anchor.y);
         ctx.restore();

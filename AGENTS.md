@@ -35,6 +35,7 @@ npm run css                        # style.scss → build/style.css
 |---|---|
 | régler un niveau, un boss (stats, attaque spéciale) | `config/levels.php` |
 | régler les ennemis, les armes ramassables | `config/game.php` |
+| régler un niveau bonus (conteneur à casser, ivresse de Pete) | `config/levels.php` → `bonus`, `DRUNK` dans `js/config.js` ; code dans `js/bonus/` |
 | régler la descente en skate (tracé, trafic, ennemis à moto…) | `config/levels.php` → `race`, `config/game.php` → `riders`, `RACE` dans `js/config.js` ; code dans `js/race/` |
 | changer l'intro, la fin, le générique | `config/story.php` (+ `js/story/directors/` pour un nouveau plan) |
 | dessiner un boss / un ennemi / le héros | `src/Sprite/Boss/`, `src/Sprite/Character/` |

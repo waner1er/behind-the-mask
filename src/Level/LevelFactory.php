@@ -71,6 +71,7 @@ final readonly class LevelFactory
             'chaos' => $theme->chaos,
             'length' => $length,
             'boss' => $config['boss'],
+            'bonus' => $config['bonus'] ?? null,
             'race' => isset($config['race']) ? RaceTrack::build($config['race'], $theme->signs) : null,
             'waves' => WaveGenerator::generate($number, $config),
             'wodBox' => $this->mysteryBox($number, $length),

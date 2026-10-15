@@ -21,6 +21,8 @@
  *            'midboss' = le boss de mi-niveau.
  * midboss  : un boss comme les autres (score = points rapportés, 5000 par défaut).
  *
+ * bonus    : niveau bonus après le boss, façon Street Fighter II : casser un objet avant la fin du temps
+ *            (title, target = nom affiché, hp, time en secondes, score = prime, line = réplique de Pete).
  * race     : le niveau commence par une descente en skate vue de dos (façon Out Run) ;
  *            le boss attend au bout (voir le niveau 7 et docs/content.md).
  *
@@ -148,6 +150,16 @@ return [
             'signs' => ['BAR', 'PUB', 'LIQUOR', 'CHURCH', 'BEER'],
         ],
         'tags' => ['GOD BLESS BEER', 'MORE AND MORE'],
+        // niveau bonus après le boss (comme la voiture de Street Fighter II) : Pete, ivre, titube
+        // et a « time » secondes pour casser le conteneur à verre ; score = prime s'il y arrive
+        'bonus' => [
+            'title' => 'BONUS STAGE',
+            'target' => 'BOTTLE BANK',
+            'hp' => 36,
+            'time' => 40,
+            'score' => 10000,
+            'line' => 'HIC! MORE AND MORE...',
+        ],
         'boss' => [
             'scale' => 2,
             'sprite' => 'priest',

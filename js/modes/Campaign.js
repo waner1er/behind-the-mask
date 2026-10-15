@@ -34,6 +34,8 @@ export class Campaign {
         state.lives = state.lives.map((lives) => (lives > 0 ? lives : LIVES.start));
         state.players = game.spawnPlayers(70, 158);
         state.race = null;
+        state.bonus = null;
+        state.players.forEach((p) => { p.drunk = false; });
         if (level.race) game.race.start(level);
 
         game.hud.showGo(false);

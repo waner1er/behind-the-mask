@@ -78,6 +78,23 @@ Un niveau peut aussi être **plus long** et décrire ses vagues une à une (c'es
 
 `special` = `static` : l'écran grésille puis lâche une onde de neige en anneau qui étourdit le héros qu'elle traverse (on l'esquive en sautant ou en s'éloignant ; réglages `STATIC` dans `js/config.js`). `components` : il crache trois composants électroniques en éventail, qui explosent en retombant avec un « PLING! » (`COMPONENTS`). L'entrée par la porte se règle avec `DOOR`.
 
+### Un niveau bonus (*Beer Church*)
+
+Avec une clé `bonus`, le niveau se termine (après le boss et MISSION COMPLETE) par un **niveau bonus** façon voiture de *Street Fighter II* : Pete, ivre, titube et a un temps limité pour démolir un gros conteneur à verre. S'il y arrive, il touche la prime plus 100 points par seconde restante ; sinon TIME OVER, sans pénalité. Puis niveau suivant.
+
+```php
+'bonus' => [
+    'title' => 'BONUS STAGE',
+    'target' => 'BOTTLE BANK',          // nom affiché (barre de vie et consigne)
+    'hp' => 36,                         // coups à encaisser (le katana fait 1, les armes plus)
+    'time' => 40,                       // secondes
+    'score' => 10000,                   // prime si le conteneur est détruit
+    'line' => 'HIC! MORE AND MORE...',  // la réplique de Pete
+],
+```
+
+L'ivresse (roulis, hoquets « HIC! » qui le déportent, inclinaison) se règle avec `DRUNK` dans `js/config.js`. Le sprite du conteneur et ses quatre états d'usure sont dessinés par `Sprite\BottleBank`. Les textes affichés en jeu restent en anglais.
+
 ### Une descente en skate (*Skate is a Drug*)
 
 Avec une clé `race`, le niveau commence par une **descente en skate vue de dos**, en perspective façon *Out Run* : Pete (et VigiBapt à deux) dévale une rue de Los Angeles au coucher du soleil, se faufile entre les skinheads en rollers, les gym bros en BMX et les flics à moto, et les frappe au katana à gauche ou à droite (comme dans *Street Racer*). À l'arche **SKATEPARK**, le jeu repasse en vue de côté, au bout de la rue du niveau, pour le boss (la dernière vague, celle de `boss`).

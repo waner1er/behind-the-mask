@@ -53,6 +53,7 @@ export class Renderer {
         this.#pickups();
         if (inStory && this.game.story.scene === 'mask') this.story.dataCenter();
         this.#mysteryBoxes();
+        this.#bottleBank();
         this.#door();
         this.#actors();
         this.#projectiles();
@@ -66,8 +67,29 @@ export class Renderer {
         ctx.restore();
 
         this.weather.draw();
+        this.#bonusClock();
         this.#whiteFlash();
         this.game.hud.update();
+    }
+
+    /** Le conteneur à verre du niveau bonus : de plus en plus abîmé, il tremble sous les coups. */
+    #bottleBank() {
+        const { bonus } = this.state;
+        if (!bonus) return;
+        const stage = bonus.hp <= 0 ? 3 : Math.min(2, Math.floor((1 - bonus.hp / bonus.maxHp) * 3));
+        const image = this.sprites.items[`bottlebank${stage}`];
+        const wobble = bonus.shake > 0 ? Math.round(rand(-2, 2)) : 0;
+        this.brush.shadow(bonus.x, bonus.y, 20);
+        this.ctx.drawImage(image, Math.round(bonus.x - image.width / 2) + wobble, Math.round(bonus.y - image.height + 1));
+    }
+
+    /** Le chrono du niveau bonus, en haut au milieu ; il clignote en rouge les 10 dernières secondes. */
+    #bonusClock() {
+        const { bonus } = this.state;
+        if (!bonus || bonus.over) return;
+        const seconds = Math.ceil(bonus.time / 60);
+        if (seconds <= 10 && Math.floor(bonus.time / 10) % 2) return;
+        this.brush.text(`TIME ${seconds}`, this.width / 2, 34, { color: seconds <= 10 ? '#e8203a' : '#ffffff' });
     }
 
     /** La descente en skate : la route en perspective, puis les effets par-dessus. */

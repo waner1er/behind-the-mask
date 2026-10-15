@@ -85,3 +85,9 @@ export const RACE = {
     /** Fin de course : temps de freinage avant le skatepark. */
     finishTime: 150,
 };
+
+/**
+ * Niveau bonus (Beer Church) : Pete a trop bu. Il titube (sway, en pixels par image),
+ * un hoquet le déporte de temps en temps (hiccup : entre min et max images), et il penche (tilt, en radians).
+ */
+export const DRUNK = { sway: 0.45, swayY: 0.25, hiccup: [150, 300], lurch: 2.2, tilt: 0.12 };

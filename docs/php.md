@@ -85,6 +85,7 @@ tools/build-ios.php ─► SiteBundleBuilder::build()   → ios/www/ (app iOS)
 |---|---|
 | `CharacterCatalog` | `all()` : toutes les animations envoyées au JS (`hero`, ennemis, `tough1-3`, `hero-<arme>`, boss, `pow`, `anchor`, `weaponIcons`). |
 | `PropCatalog` | Accessoires du trottoir, projectiles et bonus (palette + grilles). |
+| `BottleBank` | Le conteneur à verre du niveau bonus, en quatre états (`bottlebank0` neuf à `bottlebank3` en miettes), ajoutés aux grilles de `PropCatalog`. |
 | `SpriteSheet` | Palette + animations (`idle`, `walk`, `attack`, `dead`, `skate`, `jump`, `kick`…). |
 | `Pose` | Enum `Walk` / `Windup` / `Strike` : position d'une arme tenue. |
 | `Character\Skeleton` | Squelette commun : jambes, bras, cycle de marche, ancrage, positions des mains. |

@@ -3,6 +3,7 @@ import { DemoPilot } from './actors/DemoPilot.js';
 import { EnemyAI } from './actors/EnemyAI.js';
 import { PlayerController } from './actors/PlayerController.js';
 import { AudioEngine } from './audio/AudioEngine.js';
+import { BonusStage } from './bonus/BonusStage.js';
 import { HERO_HP, HEROES, HISCORE_KEY } from './config.js';
 import { GameState } from './core/GameState.js';
 import { Pause } from './core/Pause.js';
@@ -10,6 +11,7 @@ import { GamepadControls } from './input/GamepadControls.js';
 import { Haptics } from './input/Haptics.js';
 import { Input } from './input/Input.js';
 import { Campaign } from './modes/Campaign.js';
+import { BonusMode } from './modes/BonusMode.js';
 import { ClearMode } from './modes/ClearMode.js';
 import { GameOverMode } from './modes/GameOverMode.js';
 import { IntroMode } from './modes/IntroMode.js';
@@ -84,6 +86,8 @@ export class Game {
         this.skater = new SkaterController(this);
         this.riderAI = new RiderAI(this);
         this.brawl = new Brawl(this);
+        // le niveau bonus (niveaux avec une clé « bonus »)
+        this.bonus = new BonusStage(this);
 
         this.cast = new Cast(this);
         this.story = new StoryPlayer(this, createDirectors(this));
@@ -97,6 +101,7 @@ export class Game {
             playing: new PlayingMode(this),
             race: new RaceMode(this),
             clear: new ClearMode(this),
+            bonus: new BonusMode(this),
             gameover: new GameOverMode(this),
         };
 
@@ -141,7 +146,7 @@ export class Game {
 
     goHome() {
         const { state, hud } = this;
-        Object.assign(state, { demo: false, duo: false, players: [], enemies: [], cast: [], menu: 0, race: null });
+        Object.assign(state, { demo: false, duo: false, players: [], enemies: [], cast: [], menu: 0, race: null, bonus: null });
         hud.showDialog(false);
         hud.showCredits(null);
         hud.setLayout('story', false);

@@ -1,5 +1,5 @@
-import { ATTACK, JUMP, SKATE, VINYL } from '../config.js';
-import { clamp } from '../util/math.js';
+import { ATTACK, DRUNK, JUMP, SKATE, VINYL } from '../config.js';
+import { clamp, pick, rand } from '../util/math.js';
 
 /** Chaque héros obéit à ses commandes : marcher, katana (ou guitare), coup de pied sauté, vinyle, skate, Wall of Death. */
 export class PlayerController {
@@ -21,6 +21,7 @@ export class PlayerController {
         }
 
         if (p.z > 0 && (p.isDown || p.state === 'hurt')) p.z = Math.max(0, p.z - 2); // touché en l'air : il retombe
+        if (p.drunk && !p.isDown) this.#stagger(p);
 
         switch (p.state) {
             case 'dead': return this.#dying(p);
@@ -88,6 +89,21 @@ export class PlayerController {
         }
         this.keepOnScreen(p);
         game.pickups.collect(p);
+    }
+
+    /** Ivre (niveau bonus de Beer Church) : il tangue, et un hoquet le déporte de temps en temps. */
+    #stagger(p) {
+        const { game } = this;
+        p.lurch = (p.lurch ?? 0) * 0.9;
+        p.x += Math.sin(p.anim / 19) * DRUNK.sway + p.lurch;
+        p.y += Math.sin(p.anim / 27) * DRUNK.swayY;
+        if (--p.hiccup <= 0) {
+            p.hiccup = Math.round(rand(...DRUNK.hiccup));
+            p.lurch = pick([-1, 1]) * DRUNK.lurch;
+            game.shout('HIC!', p.x, p.y - 50, '#ffb020');
+            game.sfx('hic');
+        }
+        this.keepOnScreen(p);
     }
 
     #reachForVinyl(p) {

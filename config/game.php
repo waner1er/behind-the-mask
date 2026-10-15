@@ -101,15 +101,15 @@ return [
     // attack = strike (coup quand ils sont à côté) ou ram (ils se jettent sur le côté), every = images entre deux attaques
     'riders' => [
         'roller' => [
-            'name' => 'SKIN EN ROLLERS', 'hp' => 2, 'speed' => 0.8, 'damage' => 8, 'score' => 150,
+            'name' => 'ROLLER SKIN', 'hp' => 2, 'speed' => 0.8, 'damage' => 8, 'score' => 150,
             'from' => 'front', 'attack' => 'strike', 'every' => 80,
         ],
         'bmx' => [
-            'name' => 'GYM BRO EN BMX', 'hp' => 4, 'speed' => 0.75, 'damage' => 14, 'score' => 250,
+            'name' => 'BMX GYM BRO', 'hp' => 4, 'speed' => 0.75, 'damage' => 14, 'score' => 250,
             'from' => 'front', 'attack' => 'ram', 'every' => 110,
         ],
         'moto' => [
-            'name' => 'FLIC À MOTO', 'hp' => 3, 'speed' => 1.25, 'damage' => 12, 'score' => 300,
+            'name' => 'MOTOR COP', 'hp' => 3, 'speed' => 1.25, 'damage' => 12, 'score' => 300,
             'from' => 'behind', 'attack' => 'strike', 'every' => 70,
         ],
     ],
