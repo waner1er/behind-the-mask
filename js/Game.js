@@ -15,9 +15,14 @@ import { GameOverMode } from './modes/GameOverMode.js';
 import { IntroMode } from './modes/IntroMode.js';
 import { Mode } from './modes/Mode.js';
 import { PlayingMode } from './modes/PlayingMode.js';
+import { RaceMode } from './modes/RaceMode.js';
 import { SelectMode } from './modes/SelectMode.js';
 import { StoryMode } from './modes/StoryMode.js';
 import { TitleMode } from './modes/TitleMode.js';
+import { Brawl } from './race/Brawl.js';
+import { Race } from './race/Race.js';
+import { RiderAI } from './race/RiderAI.js';
+import { SkaterController } from './race/SkaterController.js';
 import { Renderer } from './render/Renderer.js';
 import { SpriteBank } from './render/SpriteBank.js';
 import { Cast } from './story/Cast.js';
@@ -74,6 +79,12 @@ export class Game {
         this.bossAI = new BossAI(this);
         this.demo = new DemoPilot(this);
 
+        // la descente en skate (niveaux avec une clé « race »)
+        this.race = new Race(this);
+        this.skater = new SkaterController(this);
+        this.riderAI = new RiderAI(this);
+        this.brawl = new Brawl(this);
+
         this.cast = new Cast(this);
         this.story = new StoryPlayer(this, createDirectors(this));
         this.campaign = new Campaign(this);
@@ -84,6 +95,7 @@ export class Game {
             loading: new Mode(this),
             intro: new IntroMode(this),
             playing: new PlayingMode(this),
+            race: new RaceMode(this),
             clear: new ClearMode(this),
             gameover: new GameOverMode(this),
         };
@@ -129,7 +141,7 @@ export class Game {
 
     goHome() {
         const { state, hud } = this;
-        Object.assign(state, { demo: false, duo: false, players: [], enemies: [], cast: [], menu: 0 });
+        Object.assign(state, { demo: false, duo: false, players: [], enemies: [], cast: [], menu: 0, race: null });
         hud.showDialog(false);
         hud.showCredits(null);
         hud.setLayout('story', false);

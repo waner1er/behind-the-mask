@@ -6,7 +6,8 @@ namespace Vigilante\Http;
 
 use Vigilante\Level\SceneCatalog;
 
-/** scene.php?level=3 : le décor SVG d'un niveau ; scene.php?level=peace : la ville libérée. */
+/** scene.php?level=3 : le décor SVG d'un niveau ; scene.php?level=peace : la ville libérée ;
+ * scene.php?level=race-6 : le ciel de la descente en skate du niveau 7. */
 final readonly class SceneController
 {
     public function __construct(private SceneCatalog $scenes)
@@ -21,6 +22,19 @@ final readonly class SceneController
         if ($level === SceneCatalog::PEACE) {
             header('Content-Type: text/html; charset=utf-8');
             echo $this->scenes->peace();
+
+            return;
+        }
+
+        if (str_starts_with($level, SceneCatalog::RACE)) {
+            $index = (int) substr($level, strlen(SceneCatalog::RACE));
+            if (!$this->scenes->hasRace($index)) {
+                http_response_code(404);
+
+                return;
+            }
+            header('Content-Type: text/html; charset=utf-8');
+            echo $this->scenes->race($index);
 
             return;
         }

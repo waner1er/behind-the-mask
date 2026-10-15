@@ -37,13 +37,14 @@ export class Pickups {
     collect(p) {
         this.state.pickups = this.state.pickups.filter((item) => {
             if (item.z !== 0 || Math.abs(item.x - p.x) >= 10 || Math.abs(item.y - p.y) >= 6) return true;
-            this.#apply(item, p);
+            this.apply(item, p);
             this.game.sfx('pickup');
             return false;
         });
     }
 
-    #apply(item, p) {
+    /** L'effet d'un bonus (aussi ramassé en roulant pendant la descente en skate). */
+    apply(item, p) {
         const shout = (text, color) => this.game.shout(text, p.x, p.y - 48, color);
         switch (item.kind) {
             case 'wod':

@@ -53,3 +53,35 @@ export const PICKUP_LIFETIME = { life: 1800, default: 600 };
 export const DEMO = { damage: 3 };
 
 export const HISCORE_KEY = 'vigilante-hiscore';
+
+/**
+ * La descente en skate, en perspective façon Out Run (unités du monde : un segment de route = 200).
+ * Pete reste à playerDistance devant la caméra ; à cette profondeur, 1 pixel du sprite = 1 pixel d'écran.
+ * Vitesses en unités par image ; les positions en travers sont en pixels d'écran à la profondeur de Pete.
+ */
+export const RACE = {
+    segment: 200,
+    roadWidth: 870,
+    cameraHeight: 900,
+    cameraDepth: 1 / Math.tan((50 * Math.PI) / 180),
+    playerDistance: 945,
+    drawDistance: 110,
+    maxSpeed: 150,
+    cruise: 0.72,
+    brake: 0.35,
+    offRoad: 0.45,
+    accel: 0.6,
+    decel: 1.6,
+    steer: 2.2,
+    centrifugal: 0.35,
+    boost: 1.3,
+    /** Portée du katana en travers, et longueur (en profondeur) où un coup porte. */
+    reach: 64,
+    depthReach: 220,
+    /** Un ennemi s'accroche aux héros quand il est à moins de N segments. */
+    engage: 4,
+    /** Au bout de 15 s à se battre, un ennemi lâche l'affaire et décroche. */
+    stamina: 900,
+    /** Fin de course : temps de freinage avant le skatepark. */
+    finishTime: 150,
+};

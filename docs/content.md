@@ -78,6 +78,29 @@ Un niveau peut aussi être **plus long** et décrire ses vagues une à une (c'es
 
 `special` = `static` : l'écran grésille puis lâche une onde de neige en anneau qui étourdit le héros qu'elle traverse (on l'esquive en sautant ou en s'éloignant ; réglages `STATIC` dans `js/config.js`). `components` : il crache trois composants électroniques en éventail, qui explosent en retombant avec un « PLING! » (`COMPONENTS`). L'entrée par la porte se règle avec `DOOR`.
 
+### Une descente en skate (*Skate is a Drug*)
+
+Avec une clé `race`, le niveau commence par une **descente en skate vue de dos**, en perspective façon *Out Run* : Pete (et VigiBapt à deux) dévale une rue de Los Angeles au coucher du soleil, se faufile entre les skinheads en rollers, les gym bros en BMX et les flics à moto, et les frappe au katana à gauche ou à droite (comme dans *Street Racer*). À l'arche **SKATEPARK**, le jeu repasse en vue de côté, au bout de la rue du niveau, pour le boss (la dernière vague, celle de `boss`).
+
+```php
+'race' => [
+    'seed' => 717,                       // bord de la route, obstacles et bonus (reproductibles)
+    'sections' => [                      // le tracé : [longueur en segments, virage, dénivelé]
+        [100, 0, 0],                     // virage : -6 (à gauche) à 6 (à droite)
+        [150, 2, -20],                   // dénivelé en segments : négatif = ça descend
+    ],
+    'traffic' => [                       // qui débarque quand Pete atteint le segment « at »
+        ['at' => 60, 'riders' => ['roller', 'roller']],
+        ['at' => 480, 'riders' => ['moto']],     // « COPS ARE BEHIND! » : ils arrivent par-derrière
+    ],
+    'obstacles' => ['every' => 38, 'pool' => ['cone', 'barrier', 'trash']],   // à éviter, ou à sauter d'un ollie
+],
+```
+
+Un segment fait à peu près 1/36 de seconde à vitesse de croisière : 2 000 segments ≈ une minute de descente. Les ennemis de la course sont dans `config/game.php` → `riders` (vie, dégâts, vitesse par rapport à Pete, `from` = `front` ou `behind`, `attack` = `strike` ou `ram`). Le bord de la route (palmiers, lampadaires, donut géant, panneaux aux enseignes du thème), les obstacles, les cœurs, les vinyles et le Wall of Death (à mi-parcours, pour le boss) sont placés par `Level\RaceTrack`. Les réglages de conduite (vitesses, portée du katana, virages) sont dans `RACE` (`js/config.js`).
+
+Commandes pendant la descente : GAUCHE/DROITE pour se faufiler, HAUT pour pousser, BAS pour freiner, ESPACE pour un coup de katana (du côté de l'ennemi le plus proche), B pour un **ollie** (au-dessus des obstacles et des coups), C pour une poussée qui renverse tout, V pour un vinyle lancé droit devant, ESPACE + V pour le Wall of Death.
+
 Pour un **nouveau morceau** : l'ajouter à `paroles.md` avec son fichier audio, puis une entrée dans `config/levels.php` (sinon il reprend la config du niveau 1). Le dernier morceau de l'album déclenche la scène de fin.
 
 ## Les ennemis et les armes

@@ -20,9 +20,9 @@ export class Campaign {
         const { data } = game;
         game.setMode('loading');
         game.hud.message('LOADING...');
-        await game.backdrop.load(index);
-
         const level = data.levels[index];
+        await game.backdrop.load(level.race ? `race-${index}` : index);
+
         Object.assign(state, {
             levelIndex: index, level, cam: 0, locked: false, waveIndex: 0, reinforced: false, pincer: false,
             enemies: [], projectiles: [], pickups: [], explosions: [], statics: [], debris: [], door: null, notes: [], particles: [], flashes: [],
@@ -33,6 +33,8 @@ export class Campaign {
         // un joueur à court de vies revient au niveau suivant
         state.lives = state.lives.map((lives) => (lives > 0 ? lives : LIVES.start));
         state.players = game.spawnPlayers(70, 158);
+        state.race = null;
+        if (level.race) game.race.start(level);
 
         game.hud.showGo(false);
         game.hud.setLevelLabel(state.demo ? `DÉMO · LEVEL ${level.number}` : `LEVEL ${level.number}`);

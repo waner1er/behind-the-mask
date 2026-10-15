@@ -25,6 +25,9 @@ final readonly class StaticSiteBuilder
         $scenes = $this->app->scenes();
         foreach (array_keys($this->app->album()->tracks) as $index) {
             $written[] = $this->write("scenes/level-$index.html", $scenes->level($index));
+            if ($scenes->hasRace($index)) {
+                $written[] = $this->write('scenes/level-' . SceneCatalog::RACE . "$index.html", $scenes->race($index));
+            }
         }
         $written[] = $this->write('scenes/level-' . SceneCatalog::PEACE . '.html', $scenes->peace());
 

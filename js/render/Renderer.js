@@ -3,6 +3,7 @@ import { rand } from '../util/math.js';
 import { EffectPainter } from './EffectPainter.js';
 import { FighterPainter } from './FighterPainter.js';
 import { PixelBrush } from './PixelBrush.js';
+import { RoadPainter } from './RoadPainter.js';
 import { StoryPainter } from './StoryPainter.js';
 import { WeatherPainter } from './WeatherPainter.js';
 
@@ -28,17 +29,22 @@ export class Renderer {
         this.effects = new EffectPainter(this.ctx, this.brush, state, this.width);
         this.weather = new WeatherPainter(this.ctx, this.brush, state, this.width);
         this.story = new StoryPainter(this.ctx, this.brush, state);
+        this.road = new RoadPainter(this.ctx, sprites, game);
     }
 
     draw() {
         const { ctx, state } = this;
         const shake = state.shake > 0 ? Math.round(rand(-state.shake, state.shake)) : 0;
         state.shake = Math.max(0, state.shake - 0.4);
-        this.game.backdrop.scroll(state.cam, shake);
+        this.game.backdrop.scroll(state.race ? state.race.sky : state.cam, shake);
 
         ctx.setTransform(Renderer.SCALE, 0, 0, Renderer.SCALE, 0, 0);
         ctx.imageSmoothingEnabled = false;
         ctx.clearRect(0, 0, this.width, this.height);
+        if (state.race) {
+            this.#race(shake);
+            return;
+        }
         ctx.save();
         ctx.translate(-Math.round(state.cam) + shake, 0);
 
@@ -59,6 +65,20 @@ export class Renderer {
         state.texts.forEach((t) => this.effects.text(t));
         ctx.restore();
 
+        this.weather.draw();
+        this.#whiteFlash();
+        this.game.hud.update();
+    }
+
+    /** La descente en skate : la route en perspective, puis les effets par-dessus. */
+    #race(shake) {
+        const { ctx, state } = this;
+        ctx.save();
+        ctx.translate(shake, 0);
+        this.road.draw();
+        state.sparks.forEach((s) => this.effects.spark(s));
+        state.texts.forEach((t) => this.effects.text(t));
+        ctx.restore();
         this.weather.draw();
         this.#whiteFlash();
         this.game.hud.update();

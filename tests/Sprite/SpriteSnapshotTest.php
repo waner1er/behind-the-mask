@@ -7,6 +7,8 @@ namespace Vigilante\Tests\Sprite;
 use Vigilante\Sprite\CharacterCatalog;
 use Vigilante\Sprite\PropCatalog;
 use Vigilante\Sprite\SpriteSheet;
+use Vigilante\Sprite\Race\RiderCatalog;
+use Vigilante\Sprite\Race\RoadsideCatalog;
 use Vigilante\Tests\SnapshotTestCase;
 
 final class SpriteSnapshotTest extends SnapshotTestCase
@@ -19,6 +21,21 @@ final class SpriteSnapshotTest extends SnapshotTestCase
     public function testPropSpritesAreUnchanged(): void
     {
         self::assertMatchesSnapshot('props', json_encode(new PropCatalog(), JSON_THROW_ON_ERROR));
+    }
+
+    public function testRaceSpritesAreUnchanged(): void
+    {
+        $race = ['riders' => RiderCatalog::all(), 'roadside' => new RoadsideCatalog(['SKATE', 'POLICE'])];
+        self::assertMatchesSnapshot('race', json_encode($race, JSON_THROW_ON_ERROR));
+    }
+
+    /** Chaque ennemi de la descente (config/game.php → riders) a son sprite vu de dos. */
+    public function testEveryRiderHasASprite(): void
+    {
+        $game = require dirname(__DIR__, 2) . '/config/game.php';
+        foreach (array_keys($game['riders']) as $type) {
+            self::assertArrayHasKey($type, RiderCatalog::all(), $type);
+        }
     }
 
     public function testEveryBossOfTheLevelsHasASprite(): void

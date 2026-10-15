@@ -4,7 +4,7 @@ import { rand } from '../util/math.js';
 /**
  * Tout l'état mutable de la partie, partagé par les systèmes du jeu.
  *
- * mode : title | select | story | loading | intro | playing | clear | gameover
+ * mode : title | select | story | loading | intro | playing | race | clear | gameover
  */
 export class GameState {
     constructor(data, hiscore) {
@@ -23,6 +23,8 @@ export class GameState {
         this.cam = 0;
         this.locked = false;
         this.waveIndex = 0;
+        /** La descente en skate en cours (voir js/race/Race.js), sinon null. */
+        this.race = null;
         // vague en cours : renforts déjà arrivés ? attaquants en tenaille ?
         this.reinforced = false;
         this.pincer = false;
@@ -95,7 +97,7 @@ export class GameState {
     /** Vide la scène avant une séquence animée. */
     clearScene() {
         Object.assign(this, {
-            players: [], cast: [], enemies: [], projectiles: [], pickups: [], pows: [], boxes: [], toughGuys: [],
+            race: null, players: [], cast: [], enemies: [], projectiles: [], pickups: [], pows: [], boxes: [], toughGuys: [],
             explosions: [], statics: [], debris: [], door: null, notes: [], texts: [], birds: [], fx: [], citizens: [],
         });
     }

@@ -1,4 +1,5 @@
 import { clamp } from '../util/math.js';
+import { RacePilot } from './RacePilot.js';
 
 /**
  * Le « cerveau » de Pete en mode démo : à chaque image, il simule les touches qu'un joueur appuierait.
@@ -15,6 +16,7 @@ export class DemoPilot {
         this.targetId = null;
         this.lastScore = null;
         this.idle = 0;
+        this.racer = new RacePilot(game);
     }
 
     start() {
@@ -34,6 +36,10 @@ export class DemoPilot {
         const { state, input } = this;
         input.releaseAll();
         const [p] = state.players;
+        if (state.mode === 'race' && p) {
+            this.racer.play(p);
+            return;
+        }
         if (state.mode !== 'playing' || !p || ['dead', 'hurt'].includes(p.state)) return;
 
         // les ennemis juste hors champ comptent aussi : Pete se place au bord et frappe

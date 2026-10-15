@@ -10,7 +10,7 @@ export class IntroMode extends Mode {
         const skipped = state.modeTimer > 30 && input.wasPressed('Enter', 'Space');
         if (state.modeTimer > IntroMode.DURATION || skipped) {
             game.hud.message('', 0);
-            game.setMode('playing');
+            game.setMode(state.race ? 'race' : 'playing');
         }
     }
 }

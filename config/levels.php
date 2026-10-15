@@ -21,6 +21,9 @@
  *            'midboss' = le boss de mi-niveau.
  * midboss  : un boss comme les autres (score = points rapportés, 5000 par défaut).
  *
+ * race     : le niveau commence par une descente en skate vue de dos (façon Out Run) ;
+ *            le boss attend au bout (voir le niveau 7 et docs/content.md).
+ *
  * Options d'un boss : special peut être une liste (attaques en alternance) ;
  *   static = onde de neige télé qui étourdit à courte portée,
  *   components = salve de trois composants électroniques qui explosent à l'atterrissage.
@@ -217,16 +220,54 @@ return [
             'signs' => ['SKATE', 'POLICE', 'SHOP', 'DONUTS'],
         ],
         'tags' => ['MAKE AN OLLIE', 'SKATE IS A DRUG', 'NEVERMIND'],
+        // la descente en skate, vue de dos ; le boss attend au skatepark, en bas de la rue
+        'race' => [
+            'seed' => 717,
+            // [longueur en segments, virage (-6 gauche à 6 droite), dénivelé en segments (négatif = ça descend)]
+            'sections' => [
+                [100, 0, 0],
+                [150, 2, -20],
+                [150, -3, -30],
+                [100, 0, 15],
+                [200, 4, -40],
+                [150, 0, -10],
+                [150, -4, 25],
+                [200, 2, -50],
+                [150, -2, 0],
+                [200, 5, -30],
+                [150, 0, 10],
+                [150, -3, -40],
+                [120, 0, 0],
+            ],
+            // les ennemis qui débarquent quand Pete atteint le segment « at » (riders : config/game.php)
+            'traffic' => [
+                ['at' => 60, 'riders' => ['roller', 'roller']],
+                ['at' => 200, 'riders' => ['roller', 'roller', 'roller']],
+                ['at' => 350, 'riders' => ['bmx']],
+                ['at' => 480, 'riders' => ['moto']],
+                ['at' => 600, 'riders' => ['roller', 'bmx']],
+                ['at' => 750, 'riders' => ['moto', 'moto']],
+                ['at' => 880, 'riders' => ['roller', 'roller', 'roller']],
+                ['at' => 1000, 'riders' => ['bmx', 'roller']],
+                ['at' => 1150, 'riders' => ['moto', 'roller']],
+                ['at' => 1280, 'riders' => ['bmx', 'bmx']],
+                ['at' => 1420, 'riders' => ['moto', 'moto', 'roller']],
+                ['at' => 1560, 'riders' => ['roller', 'roller', 'bmx']],
+                ['at' => 1700, 'riders' => ['moto', 'bmx', 'moto']],
+            ],
+            // un obstacle sur la chaussée tous les « every » segments environ : on l'évite ou on fait un ollie
+            'obstacles' => ['every' => 38, 'pool' => ['cone', 'cone', 'barrier', 'trash']],
+        ],
         'boss' => [
             'scale' => 2.5,
-            'sprite' => 'cop',
-            'name' => 'RIOT COP',
+            'sprite' => 'bonebreaker',
+            'name' => 'BONEBREAKER',
             'hp' => 64,
-            'speed' => 0.7,
+            'speed' => 0.8,
             'damage' => 18,
             'special' => 'charge',
             'every' => 140,
-            'line' => 'COPS ARE BEHIND',
+            'line' => "I'M NOT AFRAID TO BREAK MY BONES",
         ],
     ],
     // 08 Junkie Heart

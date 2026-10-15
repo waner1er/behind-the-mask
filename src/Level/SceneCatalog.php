@@ -7,6 +7,7 @@ namespace Vigilante\Level;
 use OutOfRangeException;
 use Vigilante\Album\Album;
 use Vigilante\Scene\Celestial;
+use Vigilante\Scene\RaceSceneRenderer;
 use Vigilante\Scene\SceneRenderer;
 use Vigilante\Scene\Sky;
 use Vigilante\Scene\Theme;
@@ -16,12 +17,16 @@ final readonly class SceneCatalog
 {
     public const PEACE = 'peace';
 
+    /** Préfixe des décors de descente en skate : « race-6 » pour le niveau 7. */
+    public const RACE = 'race-';
+
     private const PEACE_TAGS = ['MERCI PETE', 'LIBRES !', 'BYE BYE IA', 'TOUT EST GRATUIT', 'PEACE'];
 
     public function __construct(
         private Album $album,
         private LevelFactory $levels,
         private SceneRenderer $renderer,
+        private RaceSceneRenderer $raceRenderer = new RaceSceneRenderer(),
     ) {
     }
 
@@ -36,6 +41,25 @@ final readonly class SceneCatalog
         $track = $this->album->track($index) ?? throw new OutOfRangeException("Pas de niveau $index");
 
         return $this->renderer->render($this->levels->theme($track), $this->levels->tags($track));
+    }
+
+    /** Le niveau commence-t-il par une descente en skate ? */
+    public function hasRace(int $index): bool
+    {
+        $track = $this->album->track($index);
+
+        return $track !== null && $this->levels->hasRace($track);
+    }
+
+    /** Le ciel de la descente en skate d'un niveau (la route est dessinée par le JavaScript). */
+    public function race(int $index): string
+    {
+        $track = $this->album->track($index);
+        if ($track === null || !$this->levels->hasRace($track)) {
+            throw new OutOfRangeException("Pas de descente au niveau $index");
+        }
+
+        return $this->raceRenderer->render($this->levels->theme($track));
     }
 
     public function peace(): string

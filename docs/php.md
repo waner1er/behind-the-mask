@@ -51,6 +51,7 @@ tools/build-ios.php ─► SiteBundleBuilder::build()   → ios/www/ (app iOS)
 | `Compositor` | `compose(largeur, hauteur, calques)` : empile les calques et détoure chacun d'un contour `K` (look « Metal Slug »). |
 | `Line` | `Line::between(x0, y0, x1, y1, couleur, ombre)` : trait de 2 px (armes longues, katana). |
 | `SvgRenderer` | `render(grille, palette, x, y)` : grille → `<rect>` SVG, pixels identiques fusionnés. |
+| `PixelFont` | Police 3 × 5 : `write(texte, couleur)` → lignes de pixels (panneaux, lettres sur la colline). |
 | `Grid` | Grille vide, rognage des colonnes vides. Constante `Grid::EMPTY = '.'`. |
 
 ### `Scene` — les décors SVG
@@ -75,6 +76,7 @@ tools/build-ios.php ─► SiteBundleBuilder::build()   → ios/www/ (app iOS)
 | `Painter\RooftopPainter` | Château d'eau, climatiseur. |
 | `Painter\CelestialPainter` | Soleil rayé et lune à cratères. |
 | `Painter\LampPainter`, `Painter\FirePainter` | Lampadaire et cône de lumière ; feu animé en CSS. |
+| `RaceSceneRenderer` | Le ciel de la descente en skate (la route est dessinée par le JS) : `Layer\SunsetLayer` (coucher de soleil en bandes tramées, soleil rayé), `Layer\HillsLayer` (collines et grandes lettres VIGILANTE), `Layer\DowntownLayer` (centre-ville et palmiers en contre-jour). |
 | `Painter\DecorSprites` | Petits sprites du décor (feu, épave, baril, gravats, arbre) et leurs palettes. |
 
 ### `Sprite` — les personnages et objets
@@ -95,6 +97,11 @@ tools/build-ios.php ─► SiteBundleBuilder::build()   → ios/www/ (app iOS)
 | `Boss\BossDesign` | Classe abstraite d'un boss : `palette()`, `head()`, `torso()` + options (`armColors()`, `weapon()`, `back()`, `over()`, `front()`). |
 | `Boss\Manager` … `Boss\Mask` | Un boss par morceau. `Boss\Nightmare` réutilise le sprite du héros avec une autre palette. |
 | `Boss\BossRoster` | Les boss indexés par leur identifiant de sprite (`config/levels.php` → `boss.sprite`). |
+| `Boss\Bonebreaker` | Le boss de *Skate is a Drug* : tête de mort sous la capuche, chaîne ; toutes ses images sont posées sur un skate (`skate` = sa charge). |
+| `Race\RearLook`, `RearBuilder`, `RearPose` | Les pilotes de la descente **vus de dos** : interface (engin, corps, bras selon la pose), animations `ride`, `attack` (élan, coup vers la droite ; le JS retourne l'image), `hurt`. |
+| `Race\PeteRear`, `BaptRear`, `SkaterParts` | Les héros en skate (katana, guitare) et leurs pièces communes. |
+| `Race\RollerSkin`, `BmxBro`, `MotoCop` | Les ennemis de la course (`config/game.php` → `riders`). `RiderCatalog::all()` les rassemble. |
+| `Race\RoadsideCatalog` | Bord de la route (palmier, lampadaire, donut géant, panneaux `sign-<ENSEIGNE>`), obstacles (cône, barrière de police) et l'arche d'arrivée `gate`. |
 | `Weapon\Weapon` | Interface : `layer(Pose, main): ?Layer`. |
 | `Weapon\LineWeapon`, `Weapon\HeldSprite` | Arme tracée d'un trait / objet tenu en main, positions relatives à la main pour chaque pose. |
 | `Weapon\WeaponCatalog` | Toutes les armes (`get('bat')`), couleurs, armes ramassables, icônes au sol. |
@@ -105,7 +112,8 @@ tools/build-ios.php ─► SiteBundleBuilder::build()   → ios/www/ (app iOS)
 |---|---|
 | `LevelFactory` | Un niveau JS par morceau (`build(Track)`), thème et graffitis d'un morceau. `LENGTH` = longueur d'une rue. |
 | `WaveGenerator` | Trois vagues d'ennemis (déblocage progressif des types), puis le boss. Reproductible. |
-| `SceneCatalog` | Décor SVG d'un niveau (`level(n)`) ou de la ville libérée (`peace()`). |
+| `RaceTrack` | La descente en skate d'un niveau telle que la lit le JS : sections, longueur, arrivée, bord de la route, obstacles, bonus et trafic. Reproductible (graine). |
+| `SceneCatalog` | Décor SVG d'un niveau (`level(n)`), du ciel de sa descente en skate (`race(n)`, servi par `scene.php?level=race-N`) ou de la ville libérée (`peace()`). |
 
 ### `Game`, `View`, `Http`, `Build`, `Support`
 

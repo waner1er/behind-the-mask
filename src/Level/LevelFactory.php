@@ -29,6 +29,11 @@ final readonly class LevelFactory
         return Theme::fromArray($this->configFor($track)['theme']);
     }
 
+    public function hasRace(Track $track): bool
+    {
+        return isset($this->configFor($track)['race']);
+    }
+
     /**
      * Graffitis du décor : ceux du thème d'abord, puis des phrases courtes des paroles.
      *
@@ -66,6 +71,7 @@ final readonly class LevelFactory
             'chaos' => $theme->chaos,
             'length' => $length,
             'boss' => $config['boss'],
+            'race' => isset($config['race']) ? RaceTrack::build($config['race'], $theme->signs) : null,
             'waves' => WaveGenerator::generate($number, $config),
             'wodBox' => $this->mysteryBox($number, $length),
             // otages à libérer (position x dans le niveau), écartés d'autant que la rue est longue
@@ -74,6 +80,23 @@ final readonly class LevelFactory
                 [480 + $number * 7, 1040 - $number * 5],
             ),
         ];
+    }
+
+    /**
+     * Les enseignes des niveaux qui ont une descente en skate : textes des panneaux du bord de route.
+     *
+     * @return list<string>
+     */
+    public function signs(): array
+    {
+        $signs = [];
+        foreach ($this->config as $level) {
+            if (isset($level['race'])) {
+                array_push($signs, ...$level['theme']['signs'] ?? []);
+            }
+        }
+
+        return array_values(array_unique($signs));
     }
 
     /**

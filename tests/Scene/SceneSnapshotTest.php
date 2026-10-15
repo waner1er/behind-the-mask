@@ -30,6 +30,11 @@ final class SceneSnapshotTest extends SnapshotTestCase
         self::assertMatchesSnapshot('scene-peace', self::app()->scenes()->peace());
     }
 
+    public function testRaceSceneIsUnchanged(): void
+    {
+        self::assertMatchesSnapshot('scene-race-6', self::app()->scenes()->race(6));
+    }
+
     private static function app(): Application
     {
         return new Application(dirname(__DIR__, 2));

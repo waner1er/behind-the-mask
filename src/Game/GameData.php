@@ -9,6 +9,8 @@ use Vigilante\Level\LevelFactory;
 use Vigilante\Scene\Screen;
 use Vigilante\Sprite\CharacterCatalog;
 use Vigilante\Sprite\PropCatalog;
+use Vigilante\Sprite\Race\RiderCatalog;
+use Vigilante\Sprite\Race\RoadsideCatalog;
 use Vigilante\Support\ConfigRepository;
 
 /**
@@ -40,6 +42,7 @@ final readonly class GameData
             'enemies' => $game['enemies'],
             'weaponDuration' => $game['weaponDuration'],
             'weapons' => $game['weapons'],
+            'riders' => $game['riders'],
             'levels' => array_map($this->levels->build(...), $this->album->tracks),
             'links' => $this->album->links,
             'story' => $this->config->get('story'),
@@ -47,6 +50,7 @@ final readonly class GameData
             'sceneUrl' => $static ? 'scenes/level-%d.html' : 'scene.php?level=%d',
             'sprites' => CharacterCatalog::all(),
             'items' => $this->props,
+            'race' => ['riders' => RiderCatalog::all(), 'roadside' => new RoadsideCatalog($this->levels->signs())],
         ];
     }
 

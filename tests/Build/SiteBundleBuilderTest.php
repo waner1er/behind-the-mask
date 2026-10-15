@@ -35,9 +35,11 @@ final class SiteBundleBuilderTest extends TestCase
         preg_match_all('/(?:src|href)="([^"?#]+)/', $page, $tags);
         preg_match_all('/"audio":"([^"]+)"/', $page, $music);
         $scenes = glob(self::$target . '/scenes/level-*.html') ?: [];
+        $races = glob(self::$target . '/scenes/level-race-*.html') ?: [];
 
         self::assertNotEmpty($music[1]);
-        self::assertCount(count($music[1]) + 1, $scenes, 'un décor par morceau, plus la ville en paix');
+        self::assertNotEmpty($races, 'le ciel de la descente en skate');
+        self::assertCount(count($music[1]) + 1 + count($races), $scenes, 'un décor par morceau, la ville en paix et les descentes');
         foreach ([...$tags[1], ...$music[1], 'js/main.js', 'medias/fonts/PermanentMarker-Regular.ttf'] as $url) {
             $file = rawurldecode(stripslashes($url));
             self::assertFileExists(self::$target . '/' . $file, $file);

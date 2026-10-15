@@ -96,6 +96,24 @@ return [
         ],
     ],
 
+    // la descente en skate (niveaux avec « race ») : ennemis vus de dos qui roulent avec Pete.
+    // speed = vitesse par rapport à Pete lancé (au-dessus de 1, ils le rattrapent), from = front | behind,
+    // attack = strike (coup quand ils sont à côté) ou ram (ils se jettent sur le côté), every = images entre deux attaques
+    'riders' => [
+        'roller' => [
+            'name' => 'SKIN EN ROLLERS', 'hp' => 2, 'speed' => 0.8, 'damage' => 8, 'score' => 150,
+            'from' => 'front', 'attack' => 'strike', 'every' => 80,
+        ],
+        'bmx' => [
+            'name' => 'GYM BRO EN BMX', 'hp' => 4, 'speed' => 0.75, 'damage' => 14, 'score' => 250,
+            'from' => 'front', 'attack' => 'ram', 'every' => 110,
+        ],
+        'moto' => [
+            'name' => 'FLIC À MOTO', 'hp' => 3, 'speed' => 1.25, 'damage' => 12, 'score' => 300,
+            'from' => 'behind', 'attack' => 'strike', 'every' => 70,
+        ],
+    ],
+
     // durée d'une arme ramassée, en images (60 par seconde)
     'weaponDuration' => 15 * 60,
     'weapons' => [

@@ -45,6 +45,7 @@ main.js
 | `loading` | `modes/Mode` | Chargement du décor d'un niveau (rien à faire). |
 | `intro` | `modes/IntroMode` | Titre du niveau et premières paroles. |
 | `playing` | `modes/PlayingMode` | La partie. |
+| `race` | `modes/RaceMode` | La descente en skate d'un niveau qui a une clé `race` (voir `race/`) ; à l'arrivée, passe à `playing` pour le boss. |
 | `clear` | `modes/ClearMode` | MISSION COMPLETE, puis niveau suivant. |
 | `gameover` | `modes/GameOverMode` | START recommence le niveau. |
 
@@ -81,13 +82,19 @@ main.js
 | `actors/` | `PlayerController` | Commandes du héros (marche, katana, saut, vinyle, skate, Wall of Death). |
 | | `EnemyAI` | File d'attaque, approche, ruée, lancer. |
 | | `BossAI` | Attaques spéciales : `charge`, `throw`, `teleport`, `summon`. |
-| | `DemoPilot` | Le « cerveau » de Pete en mode démo. |
+| | `DemoPilot`, `RacePilot` | Le « cerveau » de Pete en mode démo ; pendant la descente : il pousse, frappe, saute les obstacles, ramasse les bonus. |
+| `race/` | `Race` | La descente en skate (`game.race`) : démarrage, vitesse commune (HAUT/BAS, virages qui déportent), ennemis qui débarquent aux segments prévus, arrivée au skatepark puis retour en vue de côté pour le boss. `state.race` = la course en cours, sinon `null`. |
+| | `Road` | La route découpée en segments (virage, altitude) à partir des sections du niveau, avec le bord de la route et les obstacles. |
+| | `SkaterController` | Les héros sur leur planche (`game.skater`) : se faufiler, katana, ollie, poussée, vinyle, Wall of Death. |
+| | `Rider`, `RiderAI` | Un ennemi de la course et son pilotage (`game.riderAI`) : il se cale à côté d'un héros, arme son coup, frappe ou se jette sur lui, décroche quand il est fatigué. |
+| | `Brawl` | Tout ce qui se touche en roulant (`game.brawl`) : coups dans les deux sens, obstacles, bonus, vinyles. |
 | `story/` | `StoryPlayer` | Déroule les étapes de `config/story.php`. |
 | | `Typewriter` | Texte lettre par lettre, `[PAUSE n]`. |
 | | `Cast` | Figurants des scènes animées. |
 | `story/directors/` | `Director` et un réalisateur par plan | `pete`, `villains`, `mask`, `go`, `boom`, `peace`, `credits` (registre : `index.js`). |
 | `render/` | `Renderer` | Ordre de dessin de chaque image. |
 | | `SpriteBank` | Grilles PHP → canvas (normal + flash), notes, icônes d'armes, citoyens. |
+| | `RoadPainter` | La descente en perspective façon Out Run : route projetée segment par segment et dessinée ligne d'écran par ligne d'écran (pixels nets), puis décors, ennemis et héros vus de dos, du plus loin au plus près, cachés par les bosses ; distance jusqu'au skatepark. |
 | | `FighterPainter` | Image d'animation selon l'état, chute au K.O., traînées de vitesse. |
 | | `EffectPainter`, `WeatherPainter`, `StoryPainter`, `PixelBrush` | Effets, météo, décors de l'intro et de la fin, primitives (disque, ombre, cœur…). |
 | `ui/` | `Hud`, `ControlPanel` | Affichage DOM (score, vies, barres, messages, dialogues, générique) ; joystick et boutons qui réagissent. |

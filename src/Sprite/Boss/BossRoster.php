@@ -20,12 +20,11 @@ final class BossRoster
             'priest' => new Priest(),
             'champion' => new Champion(),
             'troll' => new Troll(),
-            'cop' => new Cop(),
             'dealer' => new Dealer(),
             'mask' => new Mask(),
         ];
         $sheets = array_map(fn(BossDesign $design) => EnemyBuilder::build($design->look()), $designs);
 
-        return ['nightmare' => Nightmare::build()] + $sheets;
+        return ['nightmare' => Nightmare::build(), 'bonebreaker' => Bonebreaker::build()] + $sheets;
     }
 }

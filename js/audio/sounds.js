@@ -63,6 +63,10 @@ export const SOUNDS = {
         s.noise({ duration: 0.55, volume: 0.25, filter: 'lowpass', from: 500, to: 250 });
         s.tone({ type: 'sawtooth', from: 90, to: 70, duration: 0.5, volume: 0.06 });
     },
+    // sirène deux tons des flics à moto qui débarquent par-derrière
+    siren: (s) => [0, 0.3, 0.6, 0.9].forEach((delay, i) => {
+        s.tone({ type: 'square', from: i % 2 ? 660 : 880, duration: 0.28, volume: 0.07, delay });
+    }),
     pickup: (s) => arpeggio(s, [660, 880, 1320], { duration: 0.07, step: 0.06 }),
     select: (s) => s.tone({ type: 'square', from: 520, to: 780, duration: 0.06, volume: 0.1 }),
     start: (s) => arpeggio(s, [440, 660, 880], { duration: 0.12, step: 0.1 }),

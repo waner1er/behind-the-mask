@@ -29,6 +29,10 @@ export class SpriteBank {
         this.weaponIcons = SpriteBank.#images(weaponIcons.sprites, weaponIcons.palette);
         this.notes = SpriteBank.#notes();
         this.citizens = SpriteBank.#citizens(data.sprites.pow);
+        this.race = {
+            riders: SpriteBank.#animations(data.race.riders),
+            roadside: SpriteBank.#images(data.race.roadside.sprites, data.race.roadside.palette),
+        };
     }
 
     static toCanvas(grid, palette, tint = null) {

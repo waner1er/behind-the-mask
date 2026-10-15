@@ -28,6 +28,13 @@ export class Backdrop {
         this.layers = this.#readLayers();
     }
 
+    /** Télécharge un décor à l'avance, sans l'afficher (la rue du boss pendant la descente en skate). */
+    async preload(index) {
+        if (this.cache.has(index)) return;
+        const response = await fetch(this.urlPattern.replace('%d', index));
+        this.cache.set(index, await response.text());
+    }
+
     scroll(cam, shake) {
         for (const { el, factor } of this.layers) {
             const offset = Math.round(cam * factor) % this.width;
