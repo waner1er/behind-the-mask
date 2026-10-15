@@ -39,7 +39,8 @@ Recalbox transmet lui-même à OpenBOR le stick et les boutons de chaque joueur 
 
 - L'**intro** et la **fin** (scènes filmées dans le jeu web, texte en machine à écrire), le **générique** qui défile.
 - Les **9 niveaux** : décors en parallaxe, musique de chaque morceau, titre de mission et paroles au départ, « WAVE n », vagues qui bloquent la caméra, paroles criées par les ennemis qui tombent.
-- Tous les **ennemis** (coups, ruées, lancers, armes lâchées, bières), les **9 boss** agrandis comme sur le web, avec leur attaque spéciale (sbires, projectiles, charge, téléportation), « WARNING! » et leur réplique.
+- Tous les **ennemis** (coups, combos, ruées, lancers, armes lâchées, bières), les **9 boss** et le **boss de mi-niveau** de *Walk Straight* (la télé) agrandis comme sur le web, avec leur attaque spéciale (sbires, projectiles, charge, téléportation, neige télé), « WARNING! » et leur réplique.
+- Les niveaux plus longs (`length`) et leurs **renforts** (« MORE OF THEM! », retenus par `group` jusqu'à ce qu'il ne reste qu'un ennemi debout).
 - **Vinyles** (5 au départ, 20 au plus) qui éclatent en notes de musique, objets **ramassés en passant dessus**, armes pendant 15 s, **otages** à libérer, **caisse « ? »** et **Wall of Death**, **armes** ramassables, **cœur** tous les 10 K.O., **vie en plus** tous les 10 000 points.
 - Les **bruitages** du jeu web (enregistrés depuis son synthé), la police Press Start 2P, les menus en français.
 
@@ -47,6 +48,10 @@ Recalbox transmet lui-même à OpenBOR le stick et les boutons de chaque joueur 
 
 - Score par joueur (le web additionne les deux joueurs), menus et tableau des scores d'OpenBOR.
 - L'IA d'OpenBOR choisit ses coups selon la distance : mêmes coups et mêmes délais moyens que le web, mais pas exactement les mêmes décisions.
+- Pas de **prise en tenaille** (`pincer`) : l'IA du moteur place ses attaquants elle-même.
+- La **garde** du Manager : la douleur compte les coups (`guard()` dans `special.c`) et lance la poussée (`follow1`) ; contrairement au web, un coup placé pendant son élan peut encore l'interrompre.
+- La télé entre par la droite (pas de porte défoncée) et ne lance qu'**un** composant explosif par salve (le moteur n'a qu'un projectile par animation), sans « PLING! ».
+- La **neige télé** n'est pas dessinée : c'est une zone de coup qui s'élargit au ras du sol (un saut l'évite) et renverse le héros.
 
 ## Comment c'est fait
 

@@ -23,6 +23,10 @@ export class GameState {
         this.cam = 0;
         this.locked = false;
         this.waveIndex = 0;
+        // vague en cours : renforts déjà arrivés ? attaquants en tenaille ?
+        this.reinforced = false;
+        this.pincer = false;
+        this.pincerSide = 1;
 
         // score commun aux deux joueurs, vies par joueur
         this.score = 0;
@@ -41,6 +45,7 @@ export class GameState {
         this.pickups = [];
         this.boxes = [];
         this.pows = [];
+        this.door = null; // porte défoncée par un boss (entrance: 'door')
 
         // scènes animées (intro et fin)
         this.cast = [];
@@ -50,6 +55,8 @@ export class GameState {
 
         // effets visuels
         this.explosions = [];
+        this.statics = [];
+        this.debris = [];
         this.notes = [];
         this.particles = [];
         this.flashes = [];
@@ -89,7 +96,7 @@ export class GameState {
     clearScene() {
         Object.assign(this, {
             players: [], cast: [], enemies: [], projectiles: [], pickups: [], pows: [], boxes: [], toughGuys: [],
-            explosions: [], notes: [], texts: [], birds: [], fx: [], citizens: [],
+            explosions: [], statics: [], debris: [], door: null, notes: [], texts: [], birds: [], fx: [], citizens: [],
         });
     }
 

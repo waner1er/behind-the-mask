@@ -2,7 +2,8 @@ import { clamp, pick, rand } from '../util/math.js';
 
 /**
  * La caméra avance avec les héros (à deux, sans laisser le dernier hors champ), seulement vers la droite (comme dans Final Fight).
- * À chaque déclencheur, elle se bloque le temps d'une vague d'ennemis ; la dernière vague est le boss.
+ * À chaque déclencheur, elle se bloque le temps d'une vague d'ennemis ; la dernière vague est le boss
+ * (une vague du milieu peut aussi en être un : le boss de mi-niveau).
  */
 export class Camera {
     /** Le héros reste à cette distance du bord gauche quand la caméra le suit. */
@@ -21,7 +22,7 @@ export class Camera {
         if (!state.locked && state.players.length) {
             const xs = state.players.map((p) => p.x);
             const lead = Math.min(Math.max(...xs) - Camera.LEAD, Math.min(...xs) - 10);
-            const target = clamp(lead, 0, game.data.levelLength - this.width);
+            const target = clamp(lead, 0, state.level.length - this.width);
             state.cam = Math.max(state.cam, target);
             if (wave) state.cam = Math.min(state.cam, wave.at);
         }
@@ -30,6 +31,14 @@ export class Camera {
             state.locked = true;
             game.hud.showGo(false);
             this.#spawnWave(wave);
+        }
+
+        // des renforts déboulent quand il n'en reste qu'un debout
+        if (state.locked && wave?.reinforcements && !state.reinforced
+            && state.enemies.filter((e) => !e.isDown).length <= 1) {
+            state.reinforced = true;
+            this.#spawnGroup(wave.reinforcements);
+            game.hud.message('<span class="hud__warning">MORE OF THEM!</span>', 90);
         }
 
         if (state.locked && state.enemies.every((e) => e.isDown)) {
@@ -50,13 +59,9 @@ export class Camera {
             game.pickups.spawn('vinyls', state.cam + rand(80, W - 60), rand(floor.min, floor.max));
         }
 
-        wave.enemies.forEach((type, i) => {
-            const fromRight = i % 2 === 0;
-            const x = fromRight ? state.cam + W + 16 + i * 14 : state.cam - 16 - i * 14;
-            const enemy = game.spawn(type, x, rand(floor.min, floor.max));
-            enemy.dir = fromRight ? -1 : 1;
-            state.enemies.push(enemy);
-        });
+        state.reinforced = false;
+        state.pincer = Boolean(wave.pincer);
+        this.#spawnGroup(wave.enemies);
 
         if (wave.boss) {
             this.#spawnBoss(wave.boss);
@@ -66,10 +71,27 @@ export class Camera {
         }
     }
 
+    /** Des ennemis qui entrent par les deux bords de l'écran, en alternance. */
+    #spawnGroup(types) {
+        const { game, state } = this;
+        const { floor } = game.data;
+        const W = this.width;
+        types.forEach((type, i) => {
+            const fromRight = i % 2 === 0;
+            const x = fromRight ? state.cam + W + 16 + i * 14 : state.cam - 16 - i * 14;
+            const enemy = game.spawn(type, x, rand(floor.min, floor.max));
+            enemy.dir = fromRight ? -1 : 1;
+            state.enemies.push(enemy);
+        });
+    }
+
+    /** Le boss entre par la droite, ou défonce une porte du décor (entrance: 'door', voir BossAI). */
     #spawnBoss(cfg) {
         const { game, state } = this;
         const { floor } = game.data;
-        const boss = game.spawn(cfg.sprite, state.cam + this.width + 20 * cfg.scale, (floor.min + floor.max) / 2, cfg);
+        const byDoor = cfg.entrance === 'door';
+        const x = byDoor ? state.cam + Math.round(this.width * 0.62) : state.cam + this.width + 20 * cfg.scale;
+        const boss = game.spawn(cfg.sprite, x, byDoor ? floor.min - 2 : (floor.min + floor.max) / 2, cfg);
         boss.boss = true;
         boss.dir = -1;
         boss.special = 180;
@@ -78,6 +100,11 @@ export class Camera {
         state.lastEnemy = boss;
         game.hud.message(`<span class="hud__warning">WARNING!</span><br><br>${cfg.name}`, 160);
         game.sfx('warning');
+        if (byDoor) {
+            state.door = { x, y: floor.min - 4, shake: 0, broken: false };
+            boss.setState('emerge');
+            return;
+        }
         setTimeout(() => game.shout(cfg.line, boss.x - 40, boss.y - 50 * boss.scale, '#ffffff'), 2800);
     }
 }

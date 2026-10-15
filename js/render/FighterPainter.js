@@ -1,3 +1,5 @@
+import { GUARD } from '../config.js';
+
 /** Dessine les personnages : choisit l'image de l'animation selon leur état. */
 export class FighterPainter {
     constructor(ctx, sprites) {
@@ -9,7 +11,7 @@ export class FighterPainter {
         if (!this.#visible(f)) return;
 
         const frame = this.#frameOf(f);
-        const winding = f.state === 'charge-wind' || f.state === 'lunge-wind';
+        const winding = ['charge-wind', 'lunge-wind', 'static-wind'].includes(f.state) || (f.state === 'shove' && f.t < GUARD.wind);
         const flashing = (f.state === 'hurt' && f.t < 5) || (winding && Math.floor(f.t / 4) % 2);
         const image = flashing ? frame.flash : frame.normal;
         const { ctx } = this;
@@ -32,6 +34,7 @@ export class FighterPainter {
     #visible(f) {
         if (f.state === 'dead' && f.t > 60 && Math.floor(f.t / 4) % 2) return false;
         if (f.invuln && !['hurt', 'dead', 'skate'].includes(f.state) && Math.floor(f.invuln / 3) % 2) return false;
+        if (f.isHidden) return false;
         return !(f.state === 'vanish' && Math.floor(f.t / 2) % 2);
     }
 
@@ -42,6 +45,7 @@ export class FighterPainter {
 
         switch (f.state) {
             case 'walk':
+            case 'emerge':
                 return anims.walk[Math.floor(f.anim / 8) % anims.walk.length];
             case 'attack':
                 return anims.attack[f.t >= timing.hitFrom && f.t < timing.strikeUntil ? 1 : 0];
@@ -52,15 +56,21 @@ export class FighterPainter {
             case 'vinyl':
                 return anims.attack[f.t < 6 ? 0 : 1];
             case 'lunge':
+            case 'static':
                 return anims.attack[1];
             case 'charge':
                 return anims.skate ? anims.skate[0] : anims.attack[1];
             case 'lunge-wind':
             case 'charge-wind':
+            case 'static-wind':
             case 'summon':
                 return anims.attack[0];
             case 'throw':
                 return anims.attack[f.t >= 18 ? 1 : 0];
+            case 'shove':
+                return anims.attack[f.t < GUARD.wind ? 0 : 1];
+            case 'spew':
+                return anims.attack[Math.floor(f.t / 4) % 2];
             case 'dead':
                 return (anims.dead ?? anims.idle)[0];
             case 'hurt':

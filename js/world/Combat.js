@@ -34,6 +34,8 @@ export class Combat {
                 this.killEnemy(e, p.dir);
             } else if (e.boss && e.state === 'charge') {
                 this.game.sfx('heavyHit'); // le boss encaisse sans s'arrêter
+            } else if (this.game.bossAI.guards(e)) {
+                this.game.sfx('heavyHit'); // il a vu venir le coup : il repousse
             } else {
                 e.dir = -p.dir;
                 e.setState('hurt');
@@ -63,7 +65,7 @@ export class Combat {
         e.dir = -fromDir;
         e.setState('dead');
         e.vx = fromDir * 2.4;
-        state.score += e.boss ? 5000 : e.cfg.score;
+        state.score += e.boss ? (e.cfg.score ?? 5000) : e.cfg.score;
         game.sfx(e.boss ? 'heavyHit' : 'hit');
 
         if (e.boss) {
@@ -113,6 +115,18 @@ export class Combat {
             game.haptics.pulse('hurt', p);
         }
         return true;
+    }
+
+    /** Repousse le héros loin de fromX (garde d'un boss) : il encaisse un peu et recule en titubant. */
+    shovePlayer(p, fromX, force, damage) {
+        if (p.isDown || p.z > 10) return; // un saut passe au-dessus
+        this.damagePlayer(p, damage, fromX);
+        if (p.isDown) return;
+        const dir = p.x > fromX ? 1 : -1;
+        p.setState('hurt');
+        p.t = 0;
+        p.dir = -dir;
+        p.vx = dir * force;
     }
 
     /** L'arme de l'ennemi lui échappe ; sinon une bière ou des vinyles, et un cœur tous les 10 K.O. */

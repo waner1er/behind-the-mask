@@ -51,7 +51,8 @@ try {
             await game.run(every);
         }
         manifest.push({ ...info, every, frames });
-        if (!info.duration) await game.page.keyboard.press('Enter'); // plan suivant
+        // ESPACE : plan suivant (START passerait toute la séquence)
+        if (!info.duration) await game.page.keyboard.press('Space');
         // attend que l'histoire soit vraiment passée au plan suivant (ou terminée)
         for (let wait = 0; wait < 600; wait++) {
             await game.run(1);

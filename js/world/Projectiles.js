@@ -30,6 +30,10 @@ export class Projectiles {
         const { game } = this;
         if (shot.sprite === 'grenade' || shot.sprite === 'vinyl') {
             game.explosions.blast(shot.x, shot.y, shot.owner === 'hero');
+        } else if (shot.pling) {
+            game.explosions.blast(shot.x, shot.y, false);
+            game.sfx('pling');
+            game.shout('PLING!', shot.x, shot.y - 30, '#ffffff');
         } else if (game.sprites.weaponIcons[shot.sprite]) {
             // une arme lancée qui rate sa cible reste par terre : à ramasser !
             game.sfx('metal');

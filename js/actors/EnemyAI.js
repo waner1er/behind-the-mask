@@ -1,8 +1,10 @@
+import { COMBO } from '../config.js';
 import { clamp, rand } from '../util/math.js';
 
 /**
  * Comportement des ennemis. Les plus proches du héros attaquent (2, puis 3 à partir du niveau 6),
- * les autres tournent autour en attendant leur tour. Attaques spéciales : ruée et lancer.
+ * les autres tournent autour en attendant leur tour. Attaques spéciales : ruée, lancer et combo.
+ * Dans une vague « en tenaille », le deuxième attaquant passe de l'autre côté du héros.
  */
 export class EnemyAI {
     constructor(game) {
@@ -54,7 +56,11 @@ export class EnemyAI {
             return;
         }
 
-        const side = e.x < p.x ? -1 : 1;
+        let side = e.x < p.x ? -1 : 1;
+        if (state.pincer && !e.boss) {
+            if (rank === 0) state.pincerSide = side;
+            else if (rank === 1) side = -state.pincerSide;
+        }
         const far = Math.abs(p.x - e.x);
         const attackers = state.levelIndex >= 5 ? 3 : 2;
 
@@ -86,6 +92,7 @@ export class EnemyAI {
         if (rank < attackers && Math.abs(dx) < 4 && Math.abs(p.y - e.y) < 5 && e.cooldown <= 0) {
             e.setState('attack');
             e.landed = false;
+            e.combo = this.#wantsCombo(e);
             return;
         }
 
@@ -146,8 +153,21 @@ export class EnemyAI {
         if (e.t >= timing.hitFrom && e.t <= timing.hitTo && !e.landed) {
             const reach = (p.x - e.x) * e.dir;
             if (reach > 2 && reach < (e.cfg.reach ?? 26) * e.scale && Math.abs(p.y - e.y) < 6 + e.scale * 2) {
-                e.landed = this.game.combat.damagePlayer(p, this.damage(e), e.x);
+                const damage = this.damage(e) * (e.combo === 'first' ? COMBO.firstHit : 1);
+                e.landed = this.game.combat.damagePlayer(p, Math.round(damage), e.x);
+                // le premier coup du combo ne protège presque pas : le second peut suivre
+                if (e.landed && e.combo === 'first') p.invuln = Math.min(p.invuln, 10);
             }
+        }
+        if (e.combo === 'first' && e.landed && e.t >= timing.strikeUntil) {
+            // second coup, plus vif : il avance sur le héros repoussé
+            e.combo = 'second';
+            e.landed = false;
+            e.t = COMBO.restartAt;
+            return;
+        }
+        if (e.combo === 'second' && e.t < timing.hitFrom) {
+            e.x += e.dir * COMBO.step;
         }
         if (e.t >= timing.end) {
             e.setState('idle');
@@ -198,5 +218,12 @@ export class EnemyAI {
             e.setState('idle');
             e.cooldown = e.cfg.every ?? 90;
         }
+    }
+
+    /** Un ennemi qui connaît le combo (cfg.moves.combo = poids face au coup simple) l'enchaîne parfois. */
+    #wantsCombo(e) {
+        const moves = e.cfg.moves ?? {};
+        if (!moves.combo) return null;
+        return Math.random() * (moves.combo + (moves.strike ?? 2)) < moves.combo ? 'first' : null;
     }
 }

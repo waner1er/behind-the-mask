@@ -1,4 +1,4 @@
-import { PAPER } from '../config.js';
+import { INK, PAPER, STATIC } from '../config.js';
 import { clamp } from '../util/math.js';
 
 const FIREBALL = ['#ffffff', '#fff6b0', '#ffd23f', '#ff8a1e', '#e8203a', '#5a2a1e', '#2e2b28'];
@@ -20,6 +20,28 @@ export class EffectPainter {
         const y = ex.y - radius - t * 0.6;
         this.brush.disc(ex.x, y, Math.round(radius), color);
         if (t < 16) this.brush.disc(ex.x, y, Math.round(radius * 0.5), FIREBALL[Math.max(0, Math.floor(t / 4) - 2)]);
+    }
+
+    /** Onde de neige télé : deux anneaux de pixels qui grésillent, aplatis par la perspective du sol. */
+    staticWave(wave) {
+        const { ctx } = this;
+        const snow = [INK, '#ffffff', '#8a8a96', this.state.level.accent];
+        for (const r of [wave.t * STATIC.speed, wave.t * STATIC.speed - 5]) {
+            if (r <= 0) continue;
+            const steps = Math.max(16, Math.round(r * 2));
+            for (let i = 0; i < steps; i++) {
+                if (Math.random() < 0.25) continue;
+                const angle = (i / steps) * Math.PI * 2;
+                ctx.fillStyle = snow[Math.floor(Math.random() * snow.length)];
+                ctx.fillRect(Math.round(wave.x + Math.cos(angle) * r), Math.round(wave.y - 12 + Math.sin(angle) * r / 3), 2, 2);
+            }
+        }
+    }
+
+    /** Éclat de porte qui retombe. */
+    debris(bit) {
+        this.ctx.fillStyle = bit.color;
+        this.ctx.fillRect(Math.round(bit.x), Math.round(bit.y - bit.z), bit.size, bit.size);
     }
 
     /** Étoile d'impact (t < 0 : apparition différée). */

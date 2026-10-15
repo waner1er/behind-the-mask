@@ -1,8 +1,13 @@
+import { COMPONENTS, DOOR, GUARD, STATIC } from '../config.js';
 import { clamp, pick, rand } from '../util/math.js';
 
-/** Les attaques spéciales des boss (config/levels.php) : charge, lancer, téléportation, appel de sbires. */
+/**
+ * Les attaques spéciales des boss (config/levels.php) : charge, lancer, téléportation, appel de sbires,
+ * neige télé, salve de composants ; plusieurs attaques se jouent en alternance. Et l'entrée par une porte,
+ * et la garde (cfg.guard) : un boss qu'on martèle finit par repousser le héros.
+ */
 export class BossAI {
-    static START = { charge: 'charge-wind', throw: 'throw', teleport: 'vanish', summon: 'summon' };
+    static START = { charge: 'charge-wind', throw: 'throw', teleport: 'vanish', summon: 'summon', static: 'static-wind', components: 'spew' };
 
     constructor(game) {
         this.game = game;
@@ -16,8 +21,32 @@ export class BossAI {
             case 'charge': return this.#charge(e);
             case 'vanish': return this.#teleport(e);
             case 'summon': return this.#summon(e);
+            case 'static-wind':
+            case 'static': return this.#static(e);
+            case 'spew': return this.#spew(e);
+            case 'emerge': return this.#emerge(e);
+            case 'shove': return this.#shove(e);
         }
         return this.#trigger(e);
+    }
+
+    /**
+     * Garde : renvoie true si le boss encaisse sans broncher. Au bout de guard.hits coups reçus
+     * coup sur coup (moins de guard.window images entre deux), il repousse le héros.
+     */
+    guards(e) {
+        const { guard } = e.cfg;
+        if (!guard) return false;
+        if (e.state === 'shove') return true;
+        const { tick } = this.state;
+        e.guardHits = tick > (e.guardUntil ?? 0) ? 1 : (e.guardHits ?? 0) + 1;
+        e.guardUntil = tick + guard.window;
+        if (e.guardHits < guard.hits) return false;
+
+        e.guardHits = 0;
+        e.setState('shove');
+        if (guard.line) this.game.shout(guard.line, e.x, e.y - 50 * e.scale, '#ffffff');
+        return true;
     }
 
     #trigger(e) {
@@ -26,8 +55,11 @@ export class BossAI {
         if (e.special > 0 || p.isDown) return false;
         e.special = e.cfg.every;
 
-        e.setState(BossAI.START[e.cfg.special]);
-        if (e.cfg.special === 'summon' || Math.random() < 0.3) this.game.shout(e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
+        const specials = [e.cfg.special].flat();
+        const special = specials[(e.specialCount = (e.specialCount ?? -1) + 1) % specials.length];
+        e.setState(BossAI.START[special]);
+        if (special === 'static') this.game.shout(e.cfg.staticLine ?? e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
+        else if (special === 'summon' || Math.random() < 0.3) this.game.shout(e.cfg.line, e.x, e.y - 50 * e.scale, '#ffffff');
         return true;
     }
 
@@ -94,6 +126,126 @@ export class BossAI {
             }
         }
         if (e.t > 40) e.setState('idle');
+        return true;
+    }
+
+    /**
+     * L'écran grésille (il clignote, on a le temps de s'écarter ou de sauter), puis une onde
+     * de neige part en anneau : le héros qu'elle traverse reste étourdi.
+     */
+    #static(e) {
+        const { game, state } = this;
+        e.t++;
+        if (e.state === 'static-wind') {
+            if (e.t > STATIC.wind) {
+                e.setState('static');
+                e.hits.clear();
+                state.statics.push({ x: e.x, y: e.y, t: 0 });
+                game.sfx('static');
+                state.shake = 3;
+            }
+            return true;
+        }
+
+        const r = e.t * STATIC.speed;
+        for (const p of state.players) {
+            // l'anneau est aplati par la perspective : la profondeur compte triple
+            const distance = Math.hypot(p.x - e.x, (p.y - e.y) * 3);
+            if (e.hits.has(p) || Math.abs(distance - r) > STATIC.speed * 2) continue;
+            e.hits.add(p);
+            if (game.combat.damagePlayer(p, game.enemyAI.damage(e), e.x)) {
+                p.t = -STATIC.stun; // il titube plus longtemps qu'un coup normal
+                game.shout('ZZZT!', p.x, p.y - 40, '#ffffff');
+            }
+        }
+        if (r >= STATIC.reach) e.setState('idle');
+        return true;
+    }
+
+    /** Crache trois composants en éventail autour du héros ; ils explosent en retombant (Projectiles). */
+    #spew(e) {
+        const { game, state } = this;
+        const p = state.nearestPlayer(e.x, e.y);
+        e.t++;
+        e.faceTowards(p.x);
+        const shot = e.t / COMPONENTS.every - 1;
+        if (Number.isInteger(shot) && shot >= 0 && shot < COMPONENTS.sprites.length) {
+            // visée en cloche : il retombe pile sur sa cible au bout de « flight » images
+            const z = 26 * e.scale;
+            const T = COMPONENTS.flight;
+            const tx = p.x + (shot - 1) * COMPONENTS.spread;
+            state.projectiles.push({
+                sprite: COMPONENTS.sprites[shot], x: e.x + e.dir * 8 * e.scale, y: e.y, z,
+                vx: (tx - e.x) / T, vy: (p.y - e.y) / T, vz: (0.08 * T) / 2 - z / T,
+                damage: game.enemyAI.damage(e), spin: true, pling: true,
+            });
+            game.sfx('throw');
+        }
+        if (e.t > COMPONENTS.every * (COMPONENTS.sprites.length + 1)) e.setState('idle');
+        return true;
+    }
+
+    /** Entrée par la porte : il cogne (elle tremble), la porte vole en éclats, il vient vers nous. */
+    #emerge(e) {
+        const { game, state } = this;
+        const { door } = state;
+        const { floor } = game.data;
+        e.t++;
+        if (e.t < DOOR.knocks) {
+            if (e.t % DOOR.knockEvery === 0) {
+                door.shake = 8;
+                state.shake = 2;
+                game.sfx('heavyHit');
+            }
+            return true;
+        }
+        if (e.t === DOOR.knocks) {
+            door.broken = true;
+            state.shake = 7;
+            game.sfx('heavyHit');
+            game.sfx('glass');
+            for (let i = 0; i < 18; i++) {
+                state.debris.push({
+                    x: door.x + rand(-12, 12), y: door.y + rand(0, 6), z: rand(4, 50),
+                    vx: rand(-2, 2), vy: rand(0.2, 1.4), vz: rand(0.5, 2.5),
+                    size: pick([1, 2, 2, 3]), color: pick(['#c79a62', '#8a6538', '#2e2c28']), t: 0,
+                });
+            }
+        }
+        const p = state.nearestPlayer(e.x, e.y);
+        e.faceTowards(p.x);
+        const target = (floor.min + floor.max) / 2;
+        e.y = Math.min(target, e.y + DOOR.walk);
+        if (e.y >= target) {
+            e.setState('idle');
+            game.shout(e.cfg.line, e.x - 40, e.y - 50 * e.scale, '#ffffff');
+        }
+        return true;
+    }
+
+    /** Grand coup qui repousse tous les héros autour de lui, devant comme derrière. */
+    #shove(e) {
+        const { game, state } = this;
+        const { guard } = e.cfg;
+        e.t++;
+        if (e.t < GUARD.wind) {
+            e.faceTowards(state.nearestPlayer(e.x, e.y).x);
+            return true;
+        }
+        if (e.t === GUARD.wind) {
+            const reach = (e.cfg.reach ?? 26) * e.scale + 24;
+            for (const p of state.players) {
+                if (Math.abs(p.x - e.x) > reach || Math.abs(p.y - e.y) > 12) continue;
+                game.combat.shovePlayer(p, e.x, guard.push, Math.round(game.enemyAI.damage(e) / 2));
+                state.sparks.push({ x: (p.x + e.x) / 2, y: p.y - 24, t: 0 });
+            }
+            state.shake = 5;
+            game.sfx('heavyHit');
+        }
+        if (e.t > GUARD.wind + GUARD.recover) {
+            e.setState('idle');
+            e.cooldown = 10; // et il enchaîne
+        }
         return true;
     }
 }

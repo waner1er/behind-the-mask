@@ -20,8 +20,11 @@ final class PropModels
     /** Projectiles lancés par les ennemis et les boss : sprite => dégâts (×10, comme les PV). */
     public const THROWN = [
         'bottle' => 12, 'grenade' => 14, 'phone' => 15, 'heart' => 16,
-        'knife' => 15, 'bat' => 14, 'dumbbell' => 22,
+        'knife' => 15, 'bat' => 14, 'dumbbell' => 22, 'tube' => 14,
     ];
+
+    /** Le composant que lance la télé de Walk Straight (BossAI.#spew en lance trois sur le web). */
+    public const COMPONENT = 'tube';
 
     /** Armes qu'on peut ramasser, dans l'ordre de « weapons » des héros (weapnum 1, 2...). */
     public const PICKABLE = WeaponCatalog::PICKABLE;
@@ -125,7 +128,7 @@ final class PropModels
             self::spinFrames(),
         );
         $landing = match ($sprite) {
-            'grenade' => [
+            'grenade', self::COMPONENT => [
                 Frame::at('blast.0', 6, new Hit(-20, 20, $damage, true, 20, 20), commands: ['sound	' . SoundBank::path('explosion')]),
                 Frame::at('blast.1', 12),
             ],

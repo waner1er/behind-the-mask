@@ -46,14 +46,37 @@ Chaque morceau a son entrée dans `config/levels.php`, indexée par son numéro 
         'sprite' => 'nightmare',  // identifiant dans Sprite\Boss\BossRoster
         'name' => 'THE NIGHTMARE',
         'hp' => 42, 'speed' => 0.9, 'damage' => 14, 'reach' => 36,
-        'special' => 'teleport',  // summon | throw (+ 'projectile') | charge | teleport
+        'special' => 'teleport',  // summon | throw (+ 'projectile') | charge | teleport | static | components, ou une liste
         'every' => 200,           // images entre deux attaques spéciales
         'line' => 'WE WERE BROTHERS IN THE SAME FIGHT',
+        // option : garde. Au bout de 3 coups encaissés coup sur coup (moins de 90 images entre deux),
+        // il ne bronche plus et repousse le héros (push = élan du recul) : on ne le bat plus en martelant
+        'guard' => ['hits' => 3, 'window' => 90, 'push' => 9, 'line' => 'BACK TO WORK!'],
     ],
 ],
 ```
 
-Les vagues d'ennemis ne se configurent pas : `Level\WaveGenerator` en crée trois, de plus en plus nombreuses, en débloquant des ennemis au fil de l'album (`UNLOCKS`). La caisse « ? » et les otages sont placés automatiquement.
+Par défaut, les vagues d'ennemis ne se configurent pas : `Level\WaveGenerator` en crée trois, de plus en plus nombreuses, en débloquant des ennemis au fil de l'album (`UNLOCKS`). La caisse « ? » et les otages sont placés automatiquement.
+
+Un niveau peut aussi être **plus long** et décrire ses vagues une à une (c'est le cas de *Walk Straight*) :
+
+```php
+'length' => 9,                    // longueur de la rue, en écrans (5 par défaut)
+'stages' => [                     // réparties régulièrement, le boss reste au bout de la rue
+    ['enemies' => 3, 'reinforcements' => 2],     // renforts quand il n'en reste qu'un debout
+    'midboss',                                   // le boss de mi-niveau
+    ['enemies' => 3, 'extra' => ['knifer'], 'pincer' => true],
+],                                // extra = ennemis imposés, pincer = attaque en tenaille
+'midboss' => [                    // mêmes clés qu'un boss, + 'score' (5000 par défaut)
+    'sprite' => 'tv', 'name' => 'WALK STRAIGHT',
+    'entrance' => 'door',         // il défonce une porte du décor au lieu d'entrer par la droite
+    'special' => ['static', 'components'],       // une liste = attaques en alternance
+    /* … */
+    'staticLine' => 'WATCHING TV... NOW FORGET IT!',
+],
+```
+
+`special` = `static` : l'écran grésille puis lâche une onde de neige en anneau qui étourdit le héros qu'elle traverse (on l'esquive en sautant ou en s'éloignant ; réglages `STATIC` dans `js/config.js`). `components` : il crache trois composants électroniques en éventail, qui explosent en retombant avec un « PLING! » (`COMPONENTS`). L'entrée par la porte se règle avec `DOOR`.
 
 Pour un **nouveau morceau** : l'ajouter à `paroles.md` avec son fichier audio, puis une entrée dans `config/levels.php` (sinon il reprend la config du niveau 1). Le dernier morceau de l'album déclenche la scène de fin.
 
@@ -61,7 +84,7 @@ Pour un **nouveau morceau** : l'ajouter à `paroles.md` avec son fichier audio, 
 
 `config/game.php` → `enemies` : nom affiché, `hp`, `speed`, `damage`, `reach` (portée), `score`, et :
 
-- `moves` : attaques possibles et leur poids (`strike` = continuer d'approcher, `lunge` = ruée, `throw` = lancer) ;
+- `moves` : attaques possibles et leur poids (`strike` = continuer d'approcher, `lunge` = ruée, `throw` = lancer, `combo` = deux coups enchaînés, poids face à `strike`) ;
 - `weapon` : arme lâchée au K.O. (ramassable par le héros) ; `throws` : arme lancée ;
 - `projectile` + `every` : lanceur pur (bouteilles du hooligan).
 

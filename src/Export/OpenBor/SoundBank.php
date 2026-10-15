@@ -19,7 +19,7 @@ final class SoundBank
     private const SOUNDS = [
         'hit', 'heavyHit', 'hurt', 'metal', 'glass', 'explosion', 'throw', 'skate', 'pickup', 'select', 'start',
         'warning', 'teleport', 'clear', 'scratch', 'slash', 'whoosh', 'oneup', 'wod', 'kick', 'land', 'lunge',
-        'empty', 'freed', 'gameOver', 'heroDeath',
+        'empty', 'freed', 'gameOver', 'heroDeath', 'static',
     ];
 
     /** Sons du moteur => bruitage du jeu web. */

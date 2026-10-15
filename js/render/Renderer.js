@@ -1,4 +1,4 @@
-import { PICKUP_LIFETIME } from '../config.js';
+import { DOOR, PICKUP_LIFETIME } from '../config.js';
 import { rand } from '../util/math.js';
 import { EffectPainter } from './EffectPainter.js';
 import { FighterPainter } from './FighterPainter.js';
@@ -47,9 +47,12 @@ export class Renderer {
         this.#pickups();
         if (inStory && this.game.story.scene === 'mask') this.story.dataCenter();
         this.#mysteryBoxes();
+        this.#door();
         this.#actors();
         this.#projectiles();
         state.explosions.forEach((ex) => this.effects.explosion(ex));
+        state.statics.forEach((wave) => this.effects.staticWave(wave));
+        state.debris.forEach((bit) => this.effects.debris(bit));
         if (inStory) this.story.extras();
         state.notes.forEach((note) => this.effects.note(note));
         state.sparks.forEach((s) => this.effects.spark(s));
@@ -92,12 +95,24 @@ export class Renderer {
         }
     }
 
+    /** La porte que défonce un boss : elle tremble sous les coups, puis il n'en reste que le cadre. */
+    #door() {
+        const { door } = this.state;
+        if (!door) return;
+        const image = this.sprites.items[door.broken ? 'doorBroken' : 'door'];
+        const w = image.width * DOOR.scale;
+        const h = image.height * DOOR.scale;
+        const wobble = door.shake > 0 ? Math.round(rand(-1, 1)) : 0;
+        door.shake = Math.max(0, door.shake - 1);
+        this.ctx.drawImage(image, Math.round(door.x - w / 2) + wobble, Math.round(door.y - h), w, h);
+    }
+
     #actors() {
         const { state } = this;
         const actors = [...state.enemies, ...state.cast, ...state.toughGuys, ...state.players]
             .filter(Boolean)
             .sort((a, b) => a.y - b.y);
-        actors.forEach((a) => this.brush.shadow(a.x, a.y, 10 * a.scale));
+        actors.filter((a) => !a.isHidden).forEach((a) => this.brush.shadow(a.x, a.y, 10 * a.scale));
         actors.forEach((a) => this.fighters.draw(a));
     }
 

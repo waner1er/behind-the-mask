@@ -13,7 +13,7 @@ use Vigilante\Support\SeededRandom;
 /** Assemble chaque niveau (un par morceau) à partir de l'album et de config/levels.php. */
 final readonly class LevelFactory
 {
-    /** Longueur de la rue d'un niveau, en pixels. */
+    /** Longueur de la rue d'un niveau, en pixels (sauf « length » dans sa config). */
     public const LENGTH = Screen::WIDTH * 5;
 
     private const GRAFFITI_LENGTH = 14;
@@ -51,6 +51,7 @@ final readonly class LevelFactory
         $config = $this->configFor($track);
         $theme = Theme::fromArray($config['theme']);
         $number = $track->number;
+        $length = self::length($config);
 
         return [
             'number' => $number,
@@ -63,12 +64,26 @@ final readonly class LevelFactory
             'rain' => $theme->rain,
             'fog' => $theme->fog,
             'chaos' => $theme->chaos,
+            'length' => $length,
             'boss' => $config['boss'],
-            'waves' => WaveGenerator::generate($number, $config['boss']),
-            'wodBox' => $this->mysteryBox($number),
-            // otages à libérer (position x dans le niveau)
-            'pows' => [480 + $number * 7, 1040 - $number * 5],
+            'waves' => WaveGenerator::generate($number, $config),
+            'wodBox' => $this->mysteryBox($number, $length),
+            // otages à libérer (position x dans le niveau), écartés d'autant que la rue est longue
+            'pows' => array_map(
+                fn(int $x) => intdiv($x * $length, self::LENGTH),
+                [480 + $number * 7, 1040 - $number * 5],
+            ),
         ];
+    }
+
+    /**
+     * Longueur de la rue d'un niveau, en pixels.
+     *
+     * @param array<string, mixed> $config le niveau de config/levels.php
+     */
+    public static function length(array $config): int
+    {
+        return isset($config['length']) ? Screen::WIDTH * (int) $config['length'] : self::LENGTH;
     }
 
     /**
@@ -76,11 +91,11 @@ final readonly class LevelFactory
      *
      * @return array{x: int, y: int} x dans le niveau, y = profondeur sous le trottoir
      */
-    private function mysteryBox(int $number): array
+    private function mysteryBox(int $number, int $length): array
     {
         $random = new SeededRandom($number * 131 + 7);
 
-        return ['x' => $random->int(140, self::LENGTH - Screen::WIDTH - 40), 'y' => $random->int(2, 26)];
+        return ['x' => $random->int(140, $length - Screen::WIDTH - 40), 'y' => $random->int(2, 26)];
     }
 
     /** @return array<string, mixed> */

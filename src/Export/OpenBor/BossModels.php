@@ -9,7 +9,10 @@ use Vigilante\Sprite\SpriteSheet;
 /**
  * Les boss (config/levels.php) : sprite agrandi au pixel près (scale), coup ATTACK.boss et
  * attaque spéciale de js/actors/BossAI.js toutes les « every » images (script boss.c) :
- * summon (deux sbires), throw (projectile), charge (traverse l'écran), teleport (dans ton dos).
+ * summon (deux sbires), throw (projectile), charge (traverse l'écran), teleport (dans ton dos),
+ * static (onde de neige autour de lui : elle renverse, on l'évite en sautant), components (un
+ * composant qui explose) ; une liste d'attaques donne attack2, attack3... (le moteur choisit).
+ * Garde (guard) : la douleur compte les coups (special.c) et déclenche la poussée (follow1).
  */
 final class BossModels
 {
@@ -63,49 +66,16 @@ final class BossModels
         $t = self::STRIKE;
         $cooldown = '@cmd	special ' . (int) $boss['every'];
 
-        $special = match ((string) $boss['special']) {
-            'summon' => [
-                new Animation('attack2', [
-                    Frame::at('attack.0', 20, commands: [$cooldown]),
-                    Frame::at('attack.1', 16, commands: ['@cmd	summonMinions', 'sound	' . SoundBank::path('warning')]),
-                ], extra: ['range	0 400']),
-            ],
-            'throw' => [
-                new Animation('attack2', [
-                    Frame::at('attack.0', 18, commands: [$cooldown, 'tossframe	1 ' . (int) (26 * $scale)]),
-                    Frame::at('attack.1', 14, commands: ['sound	' . SoundBank::path('throw')]),
-                ], extra: ['range	40 260', 'custbomb	' . PropModels::modelName((string) $boss['projectile'])]),
-            ],
-            'charge' => [
-                new Animation('attack2', [
-                    Frame::at('attack.0', 34, commands: [$cooldown]),
-                    // elle fonce à 3,4 px par image et renverse ce qu'elle traverse (dégâts × 1,5)
-                    ...array_map(fn($i) => Frame::at(
-                        'attack.1',
-                        4,
-                        new Hit(-14, 14, (int) round($damage * 1.5), true, 30, 24),
-                        14,
-                        $i === 0 ? ['sound	' . SoundBank::path('skate')] : [],
-                    ), range(0, 14)),
-                    Frame::at('idle.0', 12),
-                ], extra: ['range	0 320']),
-            ],
-            'teleport' => [
-                new Animation('attack2', [
-                    Frame::at('idle.0', 26, commands: [$cooldown, 'sound	' . SoundBank::path('teleport')]),
-                    Frame::at('attack.0', 6, commands: ['@cmd	teleportBehind']),
-                    Frame::at('attack.1', 6, new Hit(2, $reach, $damage), commands: ['sound	' . SoundBank::path('whoosh')]),
-                    Frame::at('attack.0', 12),
-                ], extra: ['range	0 400']),
-            ],
-            default => throw new \InvalidArgumentException("Attaque spéciale inconnue : {$boss['special']}"),
-        };
+        $specials = [];
+        foreach (array_values((array) $boss['special']) as $i => $name) {
+            $specials[] = self::special((string) $name, 'attack' . ($i + 2), $boss, $cooldown);
+        }
 
         return new CharacterModel(self::modelName((string) $boss['sprite']), ModelSheet::from($sheet, $scale), [
             'type	enemy',
             'health	' . (int) $boss['hp'] * HeroModels::HP_SCALE,
             'speed	' . max(1, (int) round((float) $boss['speed'] * EnemyModels::SPEED_SCALE)),
-            'score	5000 1',
+            'score	' . (int) ($boss['score'] ?? 5000) . ' 1',
             'shadow	' . min(6, (int) round(3 * $scale)),
             'nodrop	1',
             'diesound	' . SoundBank::bossDeath($scale),
@@ -120,10 +90,95 @@ final class BossModels
                 Frame::at('attack.1', $t['strike']),
                 Frame::at('attack.0', $t['end']),
             ], extra: ['range	0 ' . (int) round($reach * $scale)]),
-            ...$special,
-            new Animation('pain', [Frame::at('idle.1', 10, commands: ['sound	' . SoundBank::path('heavyHit')])]),
+            ...$specials,
+            new Animation('pain', [Frame::at('idle.1', 10, commands: [
+                'sound	' . SoundBank::path('heavyHit'),
+                ...(isset($boss['guard']) ? ['@cmd	guard ' . (int) $boss['guard']['hits'] . ' ' . (int) $boss['guard']['window']] : []),
+            ])]),
+            ...self::shove($boss, $damage, $reach),
             new Animation('fall', [Frame::at('fall.0', 80)]),
             new Animation('rise', [Frame::at('idle.0', 24)]),
         ]);
+    }
+
+    /**
+     * Une attaque spéciale de BossAI, jouée par l'animation $anim (attack2, attack3...).
+     *
+     * @param array<string, mixed> $boss
+     */
+    private static function special(string $name, string $anim, array $boss, string $cooldown): Animation
+    {
+        $scale = (float) $boss['scale'];
+        $damage = (int) $boss['damage'];
+        $reach = (int) ($boss['reach'] ?? 26);
+
+        return match ($name) {
+            'summon' => new Animation($anim, [
+                Frame::at('attack.0', 20, commands: [$cooldown]),
+                Frame::at('attack.1', 16, commands: ['@cmd	summonMinions', 'sound	' . SoundBank::path('warning')]),
+            ], extra: ['range	0 400']),
+            'throw' => new Animation($anim, [
+                Frame::at('attack.0', 18, commands: [$cooldown, 'tossframe	1 ' . (int) (26 * $scale)]),
+                Frame::at('attack.1', 14, commands: ['sound	' . SoundBank::path('throw')]),
+            ], extra: ['range	40 260', 'custbomb	' . PropModels::modelName((string) $boss['projectile'])]),
+            'charge' => new Animation($anim, [
+                Frame::at('attack.0', 34, commands: [$cooldown]),
+                // elle fonce à 3,4 px par image et renverse ce qu'elle traverse (dégâts × 1,5)
+                ...array_map(fn($i) => Frame::at(
+                    'attack.1',
+                    4,
+                    new Hit(-14, 14, (int) round($damage * 1.5), true, 30, 24),
+                    14,
+                    $i === 0 ? ['sound	' . SoundBank::path('skate')] : [],
+                ), range(0, 14)),
+                Frame::at('idle.0', 12),
+            ], extra: ['range	0 320']),
+            'teleport' => new Animation($anim, [
+                Frame::at('idle.0', 26, commands: [$cooldown, 'sound	' . SoundBank::path('teleport')]),
+                Frame::at('attack.0', 6, commands: ['@cmd	teleportBehind']),
+                Frame::at('attack.1', 6, new Hit(2, $reach, $damage), commands: ['sound	' . SoundBank::path('whoosh')]),
+                Frame::at('attack.0', 12),
+            ], extra: ['range	0 400']),
+            'static' => new Animation($anim, [
+                Frame::at('attack.0', 30, commands: [$cooldown]),
+                // l'anneau s'élargit de 2,6 px par image jusqu'à 80 px (STATIC dans js/config.js) ;
+                // il rase le sol (14 px, à l'échelle 1) : un saut passe au-dessus
+                ...array_map(fn($r) => Frame::at(
+                    'attack.1',
+                    8,
+                    new Hit(-(int) round($r / $scale), (int) round($r / $scale), $damage, true, 14, 14),
+                    commands: $r === 20 ? ['sound	' . SoundBank::path('static')] : [],
+                ), [20, 40, 60, 80]),
+                Frame::at('idle.0', 12),
+            ], extra: ['range	0 80']),
+            // le moteur ne lance qu'un projectile par animation : un seul composant, qui explose
+            'components' => new Animation($anim, [
+                Frame::at('attack.0', 18, commands: [$cooldown, 'tossframe	1 ' . (int) (26 * $scale)]),
+                Frame::at('attack.1', 14, commands: ['sound	' . SoundBank::path('throw')]),
+            ], extra: ['range	40 200', 'custbomb	' . PropModels::modelName(PropModels::COMPONENT)]),
+            default => throw new \InvalidArgumentException("Attaque spéciale inconnue : $name"),
+        };
+    }
+
+    /**
+     * Garde (BossAI.guards) : la poussée qui suit le dernier coup encaissé, devant comme derrière ;
+     * elle renverse le héros (il recule loin), un saut passe au-dessus.
+     *
+     * @param array<string, mixed> $boss
+     * @return list<Animation>
+     */
+    private static function shove(array $boss, int $damage, int $reach): array
+    {
+        if (!isset($boss['guard'])) {
+            return [];
+        }
+        $range = $reach + 16;
+
+        return [new Animation('follow1', [
+            Frame::at('attack.0', 10),
+            Frame::at('attack.1', 6, new Hit(-$range, $range, intdiv($damage, 2), true, 30, 30), commands: ['sound	' . SoundBank::path('heavyHit')]),
+            Frame::at('attack.1', 8),
+            Frame::at('attack.0', 10),
+        ])];
     }
 }

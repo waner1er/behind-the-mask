@@ -16,6 +16,27 @@ export const SKATE = { duration: 34, speed: 3.2, cooldown: 70 };
 export const JUMP = { impulse: 3.4, gravity: 0.22, speed: 1.7 };
 export const VINYL = { start: 5, perCrate: 5, max: 20, radius: 30, damage: 4 };
 
+/**
+ * Onde de neige télé (attaque spéciale « static ») : elle part du boss et s'élargit de speed
+ * pixels par image jusqu'à reach ; elle étourdit le héros qu'elle traverse pendant stun images.
+ */
+export const STATIC = { wind: 30, speed: 2.6, reach: 80, stun: 40 };
+
+/**
+ * Entrée d'un boss par une porte du décor (entrance: 'door') : il cogne pendant knocks images,
+ * la porte vole en éclats, puis il marche vers nous. La porte est dessinée à l'échelle scale.
+ */
+export const DOOR = { knocks: 60, knockEvery: 20, scale: 2, walk: 0.6 };
+
+/** Salve de composants (attaque « components ») : un lancer toutes les every images, en éventail. */
+export const COMPONENTS = { sprites: ['tube', 'capacitor', 'chip'], every: 8, spread: 22, flight: 46 };
+
+/** Garde d'un boss (cfg.guard) : élan de la poussée (court : pas le temps de placer un dernier coup), puis reprise. */
+export const GUARD = { wind: 10, recover: 18 };
+
+/** Combo d'un ennemi : le premier coup est plus léger, le second part plus vite (image de départ). */
+export const COMBO = { firstHit: 0.6, restartAt: 12, step: 1.2 };
+
 export const LIVES = { start: 3, extraEvery: 10000 };
 export const HERO_HP = 100;
 

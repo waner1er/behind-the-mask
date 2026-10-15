@@ -4,7 +4,8 @@
  * Réglages généraux du jeu, envoyés au JavaScript.
  *
  * Ennemis : reach = portée du coup, projectile = attaque à distance (toutes les « every » images),
- * moves = attaques possibles et leur poids (strike = coup normal, lunge = ruée, throw = lancer d'arme),
+ * moves = attaques possibles et leur poids (strike = coup normal, lunge = ruée, throw = lancer d'arme,
+ *         combo = deux coups enchaînés, le second plus vif),
  * throws = sprite de l'arme lancée.
  * Armes : celles que le héros ramasse sur un ennemi (staff = son katana, l'arme par défaut).
  */
@@ -28,7 +29,7 @@ return [
             'damage' => 9,
             'reach' => 26,
             'score' => 100,
-            'moves' => ['strike' => 3, 'lunge' => 1],
+            'moves' => ['strike' => 3, 'lunge' => 1, 'combo' => 2],
         ],
         'batter' => [
             'name' => 'SKIN À BATTE',

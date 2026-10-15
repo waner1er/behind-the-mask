@@ -36,7 +36,6 @@ final readonly class GameData
         return [
             'width' => Screen::WIDTH,
             'height' => Screen::HEIGHT,
-            'levelLength' => LevelFactory::LENGTH,
             'floor' => ['min' => Screen::GROUND + 6, 'max' => Screen::HEIGHT - 6],
             'enemies' => $game['enemies'],
             'weaponDuration' => $game['weaponDuration'],

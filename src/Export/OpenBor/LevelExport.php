@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Vigilante\Export\OpenBor;
 
-use Vigilante\Level\LevelFactory;
 use Vigilante\Scene\Screen;
 use Vigilante\Support\SeededRandom;
 
 /**
  * Un niveau OpenBOR, comme dans le jeu web : les plans du décor (fond fixe, parallaxe, rue),
  * la musique, les textes (intro de mission, « WAVE n », paroles criées par les ennemis),
- * les vagues qui bloquent la caméra (Camera.js), les otages, la caisse « ? » et le boss.
+ * les vagues qui bloquent la caméra (Camera.js) et leurs renforts, les otages, la caisse « ? »,
+ * le boss de mi-niveau et le boss.
  */
 final readonly class LevelExport
 {
@@ -62,7 +62,7 @@ final readonly class LevelExport
                 default => "bglayer\t$file\t$factor\t0\t0\t0\t0\t0\t-1\t1\t1\t0",
             };
         }
-        $lines[] = "order\t" . str_repeat('a', intdiv(LevelFactory::LENGTH, Screen::WIDTH));
+        $lines[] = "order\t" . str_repeat('a', intdiv((int) $this->level['length'], Screen::WIDTH));
         $lines[] = "direction\tright";
         // pas de chrono, comme dans le jeu web (il ne compte que le « continue » après un game over)
         $lines[] = "settime\t0";
@@ -92,6 +92,11 @@ final readonly class LevelExport
                 $groups[] = [$wave['at'], $this->event($script, $wave['at'])];
             }
             $groups[] = [$wave['at'], $this->wave($wave, $random)];
+            if (isset($wave['reinforcements'])) {
+                $script = sprintf('data/scripts/levels/%02d-wave%d-more.c', $this->number(), $i + 1);
+                $files[$script] = self::messageScript('MORE OF THEM!', 1.5);
+                $groups[] = [$wave['at'], $this->reinforcements($wave, $script, $random)];
+            }
         }
         usort($groups, fn($a, $b) => $a[0] <=> $b[0]);
         foreach ($groups as [, $group]) {
@@ -136,6 +141,28 @@ final readonly class LevelExport
         }
 
         return $lines;
+    }
+
+    /**
+     * Renforts (Camera.js) : retenus par « group » jusqu'à ce qu'il ne reste qu'un ennemi debout,
+     * puis ils entrent tous ensemble ; « group 100 100 » rend la main aux vagues suivantes.
+     * Le moteur ne les retient que si la vague compte au moins autant d'ennemis que les renforts.
+     *
+     * @param array{at: int, enemies: list<string>, reinforcements: list<string>} $wave
+     * @return list<string>
+     */
+    private function reinforcements(array $wave, string $script, SeededRandom $random): array
+    {
+        $more = $this->wave(['at' => $wave['at'], 'enemies' => $wave['reinforcements']], $random);
+
+        return [
+            sprintf("group\t2 %d", count($wave['reinforcements']) + 1),
+            "at\t{$wave['at']}",
+            ...$this->event($script, $wave['at']),
+            ...array_slice($more, 2), // sans le « wait » : la caméra est déjà bloquée
+            "group\t100 100",
+            "at\t{$wave['at']}",
+        ];
     }
 
     /**
@@ -202,6 +229,19 @@ final readonly class LevelExport
         $lines[] = '}';
 
         return Latin1::encode(implode("\n", $lines) . "\n");
+    }
+
+    /** Un message à l'écran, comme game.hud.message. */
+    private static function messageScript(string $title, float $seconds): string
+    {
+        return Latin1::encode(implode("\n", [
+            '#include "data/scripts/lib.c"',
+            '',
+            'void main()',
+            '{',
+            sprintf('    message(%s, "", "", "", "", %s);', Latin1::literal($title), $seconds),
+            '}',
+        ]) . "\n");
     }
 
     /** « WAVE n » et une phrase des paroles (Camera.#spawnWave). */
